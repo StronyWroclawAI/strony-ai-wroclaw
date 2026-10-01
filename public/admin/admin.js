@@ -1318,6 +1318,135 @@
   // =========================================================
   // PORTFOLIO
   // =========================================================
+  // =========================================================
+  // KARTA PROJEKTU (paczka ZIP: index.html + obrazy)
+  // =========================================================
+  const CARD_EXT = ['html', 'htm', 'css', 'js', 'mjs', 'json', 'txt', 'svg', 'png', 'jpg', 'jpeg', 'webp', 'avif', 'gif', 'ico', 'woff', 'woff2', 'ttf', 'otf', 'mp4', 'webm', 'pdf'];
+  const CARD_PATH_RE = /^(?!.*(?:^|\/)\.)[A-Za-z0-9_-][A-Za-z0-9._-]{0,99}(?:\/[A-Za-z0-9_-][A-Za-z0-9._-]{0,99}){0,5}$/;
+  const CARD_MAX_FILE = 10 * 1024 * 1024;
+  const CARD_MAX_TOTAL = 40 * 1024 * 1024;
+  const IMG_EXT = ['png', 'jpg', 'jpeg', 'webp', 'avif', 'gif', 'svg'];
+  const extOf = (p) => ((/\.([A-Za-z0-9]+)$/.exec(p) || [])[1] || '').toLowerCase();
+  const fmtSize = (n) => (n > 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1024))} KB`);
+
+  /** Czyta archiwum ZIP w przeglądarce (bez bibliotek). Zwraca [{name, data: Uint8Array}]. */
+  async function readZip(file) {
+    if (typeof DecompressionStream === 'undefined') throw new Error('Ta przeglądarka nie obsługuje rozpakowywania ZIP. Użyj aktualnego Chrome, Edge, Firefox lub Safari.');
+    const buf = new Uint8Array(await file.arrayBuffer());
+    const dv = new DataView(buf.buffer);
+    let eocd = -1;
+    for (let i = buf.length - 22; i >= Math.max(0, buf.length - 65557); i--) {
+      if (dv.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
+    }
+    if (eocd < 0) throw new Error('To nie jest prawidłowy plik ZIP.');
+    const count = dv.getUint16(eocd + 10, true);
+    let p = dv.getUint32(eocd + 16, true);
+    const dec = new TextDecoder();
+    const out = [];
+    for (let n = 0; n < count; n++) {
+      if (dv.getUint32(p, true) !== 0x02014b50) throw new Error('Uszkodzony plik ZIP.');
+      const flags = dv.getUint16(p + 8, true);
+      const method = dv.getUint16(p + 10, true);
+      const csize = dv.getUint32(p + 20, true);
+      const nlen = dv.getUint16(p + 28, true);
+      const elen = dv.getUint16(p + 30, true);
+      const clen = dv.getUint16(p + 32, true);
+      const lho = dv.getUint32(p + 42, true);
+      const name = dec.decode(buf.subarray(p + 46, p + 46 + nlen));
+      p += 46 + nlen + elen + clen;
+      if (name.endsWith('/')) continue;
+      if (flags & 1) throw new Error('Plik ZIP jest zaszyfrowany hasłem — spakuj go bez hasła.');
+      const start = lho + 30 + dv.getUint16(lho + 26, true) + dv.getUint16(lho + 28, true);
+      const raw = buf.subarray(start, start + csize);
+      let data;
+      if (method === 0) data = raw.slice();
+      else if (method === 8) data = new Uint8Array(await new Response(new Blob([raw]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer());
+      else throw new Error(`Nieobsługiwana metoda kompresji w pliku ${name}. Spakuj folder zwykłym ZIP-em.`);
+      out.push({ name, data });
+    }
+    return out;
+  }
+
+  /** Wybiera pliki karty: folder z index.html staje się katalogiem głównym karty. */
+  function prepareCard(entries) {
+    const visible = entries.filter((e) => !/(^|\/)(__MACOSX|\.DS_Store|Thumbs\.db|desktop\.ini)(\/|$)/i.test(e.name) && !/(^|\/)\./.test(e.name));
+    const indexes = visible.filter((e) => /(^|\/)index\.html$/i.test(e.name)).sort((a, b) => a.name.split('/').length - b.name.split('/').length);
+    if (!indexes.length) throw new Error('W paczce nie ma pliku index.html.');
+    const prefix = indexes[0].name.slice(0, indexes[0].name.length - 'index.html'.length);
+    const files = [];
+    const skipped = [];
+    let opis = null;
+    for (const e of visible) {
+      if (!e.name.startsWith(prefix)) { skipped.push(`${e.name} (poza folderem z index.html)`); continue; }
+      const path = e.name.slice(prefix.length).replace(/^index\.HTML$/i, 'index.html');
+      if (/^opis[-_ ]?do[-_ ]?portfolio\.txt$/i.test(path) || /(^|\/)opis.*\.txt$/i.test(path)) { opis = new TextDecoder().decode(e.data); continue; }
+      const ext = extOf(path);
+      if (!CARD_EXT.includes(ext)) { skipped.push(`${path} (typ pliku niedozwolony)`); continue; }
+      if (!CARD_PATH_RE.test(path)) { skipped.push(`${path} (niedozwolone znaki w nazwie — użyj liter bez polskich znaków, cyfr i myślników)`); continue; }
+      if (e.data.byteLength > CARD_MAX_FILE) { skipped.push(`${path} (ponad 10 MB)`); continue; }
+      files.push({ path, data: e.data, ext });
+    }
+    const total = files.reduce((a, f) => a + f.data.byteLength, 0);
+    if (total > CARD_MAX_TOTAL) throw new Error(`Karta ma ${fmtSize(total)} — maksymalnie 40 MB. Zmniejsz zdjęcia (np. WebP, szerokość 1600 px).`);
+    if (files.length > 200) throw new Error('Karta może mieć maksymalnie 200 plików.');
+    const html = new TextDecoder().decode(files.find((f) => f.path === 'index.html').data);
+    const scripts = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]).join('\n');
+    const markup = html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '').replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, '');
+    const warnings = [];
+    if (/\b(localStorage|sessionStorage|indexedDB)\b/.test(scripts)) warnings.push('index.html używa pamięci przeglądarki (localStorage / IndexedDB). Na karcie ta funkcja nie zadziała — karta działa w bezpiecznej „piaskownicy”.');
+    const missing = [...markup.matchAll(/(?:src|href)="(?!https?:|mailto:|tel:|sms:|#|data:|\/|javascript:)([^"?#'+]+)"/g)].map((m) => decodeURI(m[1])).filter((ref) => !files.some((f) => f.path === ref.replace(/^\.\//, '')));
+    if (missing.length) warnings.push(`index.html odwołuje się do plików, których nie ma w paczce: ${[...new Set(missing)].slice(0, 6).join(', ')}`);
+    if (/(?:src|href)="\/(?!\/)/.test(markup)) warnings.push('index.html ma ścieżki zaczynające się od „/” — na karcie wskazywałyby na Twoją stronę główną. Używaj ścieżek względnych, np. img/zdjecie.webp.');
+    return { files, skipped, opis, total, warnings };
+  }
+
+  /** Odczytuje plik opis-do-portfolio.txt. */
+  function parseOpis(text) {
+    const get = (re) => {
+      const m = re.exec(text);
+      return m ? m[1].trim() : '';
+    };
+    const r = {
+      title: get(/^\s*Tytuł\s*:\s*(.+)$/im),
+      industry: get(/^\s*Podtytuł\s*:\s*(.+)$/im),
+      description: get(/^\s*Opis[^:\n]*:\s*(.+)$/im),
+      tags: get(/^\s*Tagi\s*:\s*(.+)$/im),
+      cover: (get(/^\s*Miniatura\s*:\s*(.+)$/im).match(/[A-Za-z0-9_./-]+\.(?:webp|png|jpe?g|avif|gif|svg)/i) || [''])[0],
+      site_url: (get(/^\s*Link do strony\s*:\s*(.+)$/im).match(/https?:\/\/[^\s←]+/) || [''])[0],
+      slug: (get(/^\s*Link do karty\s*:\s*(.+)$/im).match(/\/portfolio\/([a-z0-9-]+)/) || ['', ''])[1],
+      is_demo: /demonstracyjn|fikcyjn/i.test(text),
+    };
+    return r;
+  }
+
+  async function uploadCard(projectId, card, cover, onProgress) {
+    const ver = Array.from(crypto.getRandomValues(new Uint8Array(6)), (b) => b.toString(16).padStart(2, '0')).join('');
+    let done = 0;
+    const queue = card.files.slice();
+    async function worker() {
+      while (queue.length) {
+        const f = queue.shift();
+        let res;
+        try {
+          res = await fetch(`/api/admin/portfolio/${projectId}/card-file?ver=${ver}&path=${encodeURIComponent(f.path)}`, {
+            method: 'PUT',
+            headers: { 'X-Panel': '1', 'Content-Type': 'application/octet-stream', Accept: 'application/json' },
+            credentials: 'same-origin',
+            body: f.data,
+          });
+        } catch {
+          throw new Error('Brak połączenia z serwerem podczas wgrywania karty.');
+        }
+        const b = await res.json().catch(() => ({}));
+        if (!res.ok || b.ok === false) throw new Error(b.message || `Nie wgrano pliku ${f.path} (${res.status}).`);
+        done++;
+        onProgress(done, card.files.length);
+      }
+    }
+    await Promise.all([worker(), worker(), worker()]);
+    return api(`portfolio/${projectId}/card`, { method: 'POST', body: { ver, cover, expected: card.files.length } });
+  }
+
   async function viewPortfolio(main, param) {
     if (param) return viewProject(main, param);
     const items = (await api('portfolio')).items;
@@ -1334,7 +1463,7 @@
     }
 
     main.replaceChildren(
-      head('Portfolio', 'Prawdziwe realizacje. Sekcja „Portfolio” pojawi się na stronie automatycznie, gdy opublikujesz pierwszą realizację, i zniknie, gdy żadna nie będzie opublikowana.', h('a', { class: 'btn btn--primary', href: '#portfolio/nowa', text: 'Dodaj realizację' })),
+      head('Portfolio', 'Realizacje i projekty demonstracyjne. Do każdej możesz wgrać kartę projektu (paczkę ZIP z index.html i zrzutami). Sekcja „Portfolio” pojawi się na stronie automatycznie, gdy opublikujesz pierwszą realizację, i zniknie, gdy żadna nie będzie opublikowana.', h('a', { class: 'btn btn--primary', href: '#portfolio/nowa', text: 'Dodaj realizację' })),
       h('div', { class: `alert ${published ? 'alert--ok' : 'alert--info'}`, text: published ? `Opublikowane realizacje: ${published}. Sekcja Portfolio jest widoczna na stronie.` : 'Brak opublikowanych realizacji — sekcja Portfolio jest ukryta na stronie.' }),
       items.length
         ? h(
@@ -1344,10 +1473,12 @@
               h(
                 'li',
                 { class: 'lead-row' },
-                h('div', null, h('a', { class: 'lead-row__title', href: `#portfolio/${p.id}`, text: p.title }), h('div', { class: 'lead-row__meta', text: `${p.industry || 'bez branży'} · zdjęć: ${p.images}` })),
+                h('div', null, h('a', { class: 'lead-row__title', href: `#portfolio/${p.id}`, text: p.title }), h('div', { class: 'lead-row__meta', text: `${p.industry || 'bez branży'} · ${p.card_files ? `karta projektu (${p.card_files} plików)` : 'bez karty'} · zdjęć: ${p.images}` })),
                 h(
                   'div',
                   { class: 'lead-row__badges' },
+                  p.is_demo ? h('span', { class: 'status status--odrzucone', text: 'Demo' }) : null,
+                  p.card_files && p.slug ? h('a', { class: 'btn btn--sm', href: `/portfolio/${p.slug}/`, target: '_blank', rel: 'noopener', text: 'Karta ↗' }) : null,
                   h('span', { class: `status status--${p.status}`, text: p.status === 'published' ? 'Opublikowana' : 'Szkic' }),
                   h('button', { class: 'btn btn--sm icon-btn', type: 'button', 'aria-label': `Przesuń „${p.title}” wyżej`, text: '↑', disabled: idx === 0, onclick: () => move(idx, -1) }),
                   h('button', { class: 'btn btn--sm icon-btn', type: 'button', 'aria-label': `Przesuń „${p.title}” niżej`, text: '↓', disabled: idx === items.length - 1, onclick: () => move(idx, 1) }),
@@ -1362,8 +1493,9 @@
 
   async function viewProject(main, id) {
     const isNew = id === 'nowa';
-    let project = { title: '', industry: '', description: '', site_url: '', status: 'draft' };
+    let project = { title: '', industry: '', description: '', site_url: '', status: 'draft', slug: '', tags: '', is_demo: 0 };
     let images = [];
+    let card = null;
     if (!isNew) {
       const { data, error } = await q(api(`portfolio/${encodeURIComponent(id)}`));
       if (error && !/Nie znaleziono/.test(error.message)) throw error;
@@ -1373,6 +1505,7 @@
       }
       project = data.project;
       images = data.images;
+      card = data.card;
     }
     const originalStatus = project.status;
     const originalImageIds = images.map((m) => m.id);
@@ -1384,7 +1517,125 @@
     const url = h('input', { type: 'url', maxlength: '500', value: project.site_url || '', placeholder: 'https://' });
     const statusSel = h('select', null, h('option', { value: 'draft', text: 'Szkic (niewidoczna na stronie)' }), h('option', { value: 'published', text: 'Opublikowana (widoczna na stronie)' }));
     statusSel.value = project.status;
-    [title, industry, desc, url, statusSel].forEach((el) => el.addEventListener('input', () => (dirty = true)));
+    const slugIn = h('input', { type: 'text', maxlength: '60', value: project.slug || '', placeholder: 'np. szalone-auto', pattern: '[a-z0-9-]+' });
+    const tagsIn = h('input', { type: 'text', maxlength: '300', value: project.tags || '', placeholder: 'np. Logo · Strona 5 podstron · Panel CMS · Wersja na telefon' });
+    const demoCb = h('input', { type: 'checkbox', checked: Boolean(project.is_demo) });
+    [title, industry, desc, url, statusSel, slugIn, tagsIn, demoCb].forEach((el) => el.addEventListener('input', () => (dirty = true)));
+    demoCb.addEventListener('change', () => (dirty = true));
+
+    // ----- Karta projektu -----
+    let pending = null; // { files, skipped, opis, total, warnings, urls }
+    let coverChoice = (card && project.card_cover) || '';
+    const cardBox = h('div');
+    const zipInput = h('input', { type: 'file', accept: '.zip,application/zip', hidden: true, id: 'card-zip', 'aria-label': 'Paczka ZIP z kartą projektu' });
+    const progress = h('div', { 'aria-live': 'polite' });
+    function fillFromOpis(o) {
+      if (o.title) title.value = o.title;
+      if (o.industry) industry.value = o.industry.slice(0, 100);
+      if (o.description) desc.value = o.description;
+      if (o.tags) tagsIn.value = o.tags.slice(0, 300);
+      if (o.site_url) url.value = o.site_url;
+      if (o.slug) slugIn.value = o.slug;
+      demoCb.checked = o.is_demo;
+      if (o.cover && pending && pending.files.some((f) => f.path === o.cover)) coverChoice = o.cover;
+      dirty = true;
+      drawCard();
+      toast('Uzupełniłem pola z pliku z opisem — sprawdź je przed zapisaniem.');
+    }
+    function coverPicker(list) {
+      if (!list.length) return h('p', { class: 'small muted', text: 'W karcie nie ma obrazów — kafelek na stronie pokaże pierwsze zdjęcie realizacji (jeśli je dodasz).' });
+      if (!list.some((x) => x.path === coverChoice)) coverChoice = (list.find((x) => /start|cover|okladka|hero/i.test(x.path) && !/(^|\/)m-/.test(x.path)) || list[0]).path;
+      const grid = h(
+        'div',
+        { class: 'cover-grid', role: 'radiogroup', 'aria-label': 'Okładka kafelka na stronie' },
+        list.map((x) =>
+          h(
+            'label',
+            { class: 'cover-opt' },
+            h('input', { type: 'radio', name: 'card-cover', value: x.path, checked: x.path === coverChoice, onchange: async () => {
+              coverChoice = x.path;
+              if (!pending && card) {
+                const { error } = await q(api(`portfolio/${project.id}/card`, { method: 'PATCH', body: { cover: x.path } }));
+                if (error) return toast(errMsg(error), 'error');
+                toast('Okładka zmieniona. Zmiana jest już na stronie.');
+              } else dirty = true;
+            } }),
+            h('img', { src: x.url, alt: '', loading: 'lazy' }),
+            h('span', { class: 'small', text: x.path })
+          )
+        )
+      );
+      return h('div', null, h('p', { class: 'small', text: 'Okładka kafelka na stronie głównej (najlepiej poziomy zrzut, np. 1600×1000):' }), grid);
+    }
+    function drawCard() {
+      const parts = [];
+      if (pending) {
+        parts.push(
+          h('div', { class: 'alert alert--info' },
+            h('strong', { text: `Wybrana paczka: ${pending.files.length} plików, ${fmtSize(pending.total)}. ` }),
+            'Zostanie wgrana po kliknięciu „Zapisz”.',
+            card ? ' Zastąpi obecną kartę.' : ''
+          )
+        );
+        if (pending.opis) parts.push(h('div', { class: 'alert alert--ok' }, 'W paczce jest plik z opisem do portfolio. ', h('button', { class: 'btn btn--sm', type: 'button', text: 'Wstaw dane z opisu do formularza', onclick: () => fillFromOpis(parseOpis(pending.opis)) })));
+        pending.warnings.forEach((w) => parts.push(h('div', { class: 'alert alert--warn', text: w })));
+        if (pending.skipped.length) parts.push(h('details', { class: 'small' }, h('summary', { text: `Pominięte pliki (${pending.skipped.length})` }), h('ul', null, pending.skipped.map((x) => h('li', { text: x })))));
+        parts.push(coverPicker(pending.files.filter((f) => IMG_EXT.includes(f.ext)).map((f) => ({ path: f.path, url: pending.urls[f.path] }))));
+        parts.push(h('button', { class: 'btn btn--sm', type: 'button', text: 'Anuluj wybór paczki', onclick: () => { Object.values(pending.urls).forEach(URL.revokeObjectURL); pending = null; zipInput.value = ''; drawCard(); } }));
+      } else if (card) {
+        parts.push(
+          h('div', { class: 'card-status' },
+            h('div', null,
+              h('strong', { text: 'Karta jest wgrana' }),
+              h('p', { class: 'small muted', text: `${card.files.length} plików · ${fmtSize(project.card_size || 0)} · ${project.card_at ? fmtDate(project.card_at) : ''}` }),
+              h('p', { class: 'small' }, 'Adres: ', h('code', { text: `${location.origin}${card.url}` }))
+            ),
+            h('div', { class: 'actions' },
+              h('a', { class: 'btn btn--primary btn--sm', href: card.url, target: '_blank', rel: 'noopener', text: project.status === 'published' ? 'Otwórz kartę ↗' : 'Podgląd karty ↗' }),
+              h('button', { class: 'btn btn--sm btn--danger-outline', type: 'button', text: 'Usuń kartę', onclick: async () => {
+                if (!(await confirmDialog({ title: 'Usunąć kartę projektu?', text: 'Pliki karty zostaną usunięte, a kafelek na stronie przestanie do niej prowadzić. Sama realizacja zostaje.' }))) return;
+                const { error } = await q(api(`portfolio/${project.id}/card`, { method: 'DELETE' }));
+                if (error) return toast(errMsg(error), 'error');
+                toast('Karta usunięta.');
+                route();
+              } })
+            )
+          ),
+          coverPicker(card.images)
+        );
+      } else {
+        parts.push(h('p', { class: 'small muted', text: 'Brak karty. Kafelek na stronie pokaże opis i zdjęcia realizacji.' }));
+      }
+      parts.push(
+        h('div', { class: 'actions' },
+          h('button', { class: 'btn btn--sm', type: 'button', 'data-card-pick': '', text: card || pending ? 'Wybierz inną paczkę ZIP…' : 'Wybierz paczkę ZIP…', onclick: () => zipInput.click() }),
+          h('span', { class: 'small muted', text: 'index.html + folder img/ (+ opcjonalnie opis-do-portfolio.txt)' })
+        ),
+        progress
+      );
+      cardBox.replaceChildren(...parts);
+    }
+    zipInput.addEventListener('change', async () => {
+      const f = zipInput.files && zipInput.files[0];
+      if (!f) return;
+      progress.replaceChildren(h('p', { class: 'small muted', text: 'Rozpakowuję…' }));
+      try {
+        if (f.size > 60 * 1024 * 1024) throw new Error('Plik ZIP jest za duży (maksymalnie 60 MB).');
+        const prepared = prepareCard(await readZip(f));
+        if (pending) Object.values(pending.urls).forEach(URL.revokeObjectURL);
+        prepared.urls = {};
+        prepared.files.filter((x) => IMG_EXT.includes(x.ext)).forEach((x) => (prepared.urls[x.path] = URL.createObjectURL(new Blob([x.data], { type: x.ext === 'svg' ? 'image/svg+xml' : `image/${x.ext === 'jpg' ? 'jpeg' : x.ext}` }))));
+        pending = prepared;
+        dirty = true;
+        progress.replaceChildren();
+        if (pending.opis && !title.value.trim()) fillFromOpis(parseOpis(pending.opis));
+        else drawCard();
+      } catch (e) {
+        zipInput.value = '';
+        progress.replaceChildren(h('div', { class: 'alert alert--error', text: errMsg(e) }));
+      }
+    });
+    drawCard();
 
     const imgList = h('ul', { class: 'thumbs' });
     function drawImages() {
@@ -1475,18 +1726,44 @@
           if (statusSel.value === 'published' && originalStatus !== 'published') {
             const ok = await confirmDialog({
               title: 'Opublikować realizację?',
-              text: 'Upewnij się, że firma wyraziła zgodę na pokazanie nazwy, zrzutów ekranu i linku do strony w Twoim portfolio. Realizacja będzie widoczna publicznie.',
-              ok: 'Mam zgodę — publikuję',
+              text: demoCb.checked
+                ? 'Projekt zostanie oznaczony na stronie jako „Projekt demonstracyjny”. Upewnij się, że firma i dane w projekcie są fikcyjne (albo masz zgodę prawdziwej firmy).'
+                : 'Upewnij się, że firma wyraziła zgodę na pokazanie nazwy, zrzutów ekranu i linku do strony w Twoim portfolio. Realizacja będzie widoczna publicznie.',
+              ok: demoCb.checked ? 'Publikuję' : 'Mam zgodę — publikuję',
               danger: false,
             });
             if (!ok) return;
           }
+          const slugVal = slugIn.value.trim().toLowerCase();
+          if (slugVal && !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slugVal)) {
+            slugIn.focus();
+            return msg.replaceChildren(h('div', { class: 'alert alert--error', text: 'Adres karty: tylko małe litery bez polskich znaków, cyfry i pojedyncze myślniki, np. salon-ola.' }));
+          }
           busy(saveBtn, true);
-          const payload = { title: t, industry: industry.value.trim(), description: desc.value.trim(), site_url: site || null, status: statusSel.value };
+          const payload = { title: t, industry: industry.value.trim(), description: desc.value.trim(), site_url: site || null, status: statusSel.value, slug: slugVal, tags: tagsIn.value.trim(), is_demo: demoCb.checked };
           const res = await q(api(isNew ? 'portfolio' : `portfolio/${project.id}`, { method: isNew ? 'POST' : 'PUT', body: { ...payload, image_ids: images.map((m) => m.id) } }));
-          busy(saveBtn, false);
-          if (res.error) return msg.replaceChildren(h('div', { class: 'alert alert--error', text: `Nie zapisano: ${errMsg(res.error)}` }));
+          if (res.error) {
+            busy(saveBtn, false);
+            return msg.replaceChildren(h('div', { class: 'alert alert--error', text: `Nie zapisano: ${errMsg(res.error)}` }));
+          }
           const pid = res.data.id;
+          if (pending) {
+            const bar = h('progress', { max: String(pending.files.length), value: '0', style: 'width:100%' });
+            const lbl = h('p', { class: 'small', text: 'Wgrywam kartę projektu…' });
+            progress.replaceChildren(lbl, bar);
+            try {
+              await uploadCard(pid, pending, coverChoice, (d, n) => { bar.value = d; lbl.textContent = `Wgrywam kartę projektu… ${d} / ${n}`; });
+              Object.values(pending.urls).forEach(URL.revokeObjectURL);
+              pending = null;
+            } catch (err) {
+              busy(saveBtn, false);
+              dirty = false;
+              progress.replaceChildren(h('div', { class: 'alert alert--error', text: `Realizacja zapisana, ale karty nie wgrano: ${errMsg(err)} Spróbuj ponownie.` }));
+              if (isNew) location.hash = `#portfolio/${pid}`;
+              return;
+            }
+          }
+          busy(saveBtn, false);
           dirty = false;
           toast('Realizacja zapisana. Zmiana jest już na stronie.');
           if (isNew) location.hash = `#portfolio/${pid}`;
@@ -1497,9 +1774,20 @@
         'section',
         { class: 'panel' },
         h('h2', { text: 'Informacje' }),
-        h('div', { class: 'grid-2' }, field('Nazwa realizacji / firmy *', title), field('Branża', industry)),
-        field('Opis', desc, 'Co przygotowałeś i co było ważne dla firmy.'),
-        h('div', { class: 'grid-2' }, field('Adres strony', url), field('Status', statusSel, 'Szkic jest widoczny tylko w panelu.'))
+        h('div', { class: 'grid-2' }, field('Nazwa realizacji / firmy *', title), field('Branża / podtytuł', industry, 'np. Warsztat samochodowy · Wrocław')),
+        field('Opis (1–2 zdania na kafelek)', desc, 'Co przygotowałeś i co było ważne dla firmy.'),
+        field('Tagi (zakres projektu)', tagsIn, 'Oddziel kropką „·” albo przecinkiem. Pokażą się jako etykiety na kafelku.'),
+        h('div', { class: 'grid-2' }, field('Adres strony (na żywo)', url), field('Status', statusSel, 'Szkic jest widoczny tylko w panelu.')),
+        h('label', { class: 'check' }, demoCb, 'Projekt demonstracyjny (fikcyjna firma / koncepcja) — na stronie pojawi się oznaczenie „Projekt demonstracyjny”')
+      ),
+      h(
+        'section',
+        { class: 'panel' },
+        h('h2', { text: 'Karta projektu' }),
+        h('p', { class: 'small muted', text: 'Osobna podstrona ze studium przypadku, np. /portfolio/szalone-auto/. Wgraj paczkę ZIP przygotowaną według instrukcji (docs/PORTFOLIO.md). Kafelek na stronie głównej dostanie przycisk „Zobacz projekt”.' }),
+        field('Adres karty', slugIn, `Twoja strona/portfolio/${'<adres>'}/ — zostaw puste, a utworzę go z nazwy.`),
+        zipInput,
+        cardBox
       ),
       h(
         'section',

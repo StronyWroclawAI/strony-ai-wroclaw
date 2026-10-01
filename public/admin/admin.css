@@ -217,3 +217,14 @@ code { background: var(--gray-100); padding: 1px 6px; border-radius: 4px; font-s
 .brief-sec--ideas { border-left: 4px solid #ffb547; background: #fffaf1; }
 .steps-list { margin: 0 0 14px; padding-left: 20px; line-height: 1.6; }
 .steps-list li { margin-bottom: 6px; }
+/* Karta projektu */
+.cover-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin: 8px 0 14px; }
+.cover-opt { position: relative; display: grid; gap: 4px; padding: 6px; border: 2px solid var(--gray-200); border-radius: 10px; cursor: pointer; background: #fff; }
+.cover-opt input { position: absolute; opacity: 0; }
+.cover-opt img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; object-position: top; border-radius: 6px; background: var(--gray-100); }
+.cover-opt span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cover-opt:has(input:checked) { border-color: var(--navy); box-shadow: 0 0 0 3px rgba(31, 95, 191, .2); }
+.cover-opt:has(input:focus-visible) { outline: 3px solid var(--focus, #1f5fbf); outline-offset: 2px; }
+.card-status { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: flex-start; background: var(--gray-50); border-radius: 10px; padding: 14px; margin-bottom: 12px; }
+.card-status p { margin: 4px 0 0; }
+.card-status code { word-break: break-all; }

@@ -607,7 +607,7 @@ export const SEED = {
    "section": "Portfolio – nagłówek",
    "label": "Wstęp",
    "kind": "text",
-   "value": "Strony przygotowane dla firm, które zgodziły się na ich prezentację.",
+   "value": "Strony przygotowane dla firm (za ich zgodą) oraz projekty demonstracyjne — kliknij, aby zobaczyć szczegóły.",
    "sort_order": 8075
   },
   {

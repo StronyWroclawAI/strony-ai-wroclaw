@@ -90,27 +90,45 @@ export function renderLines(value) {
 
 /**
  * Realizacje w portfolio. images: [{url, alt, width, height}]
+ * Jeśli realizacja ma kartę projektu (ZIP wgrany w panelu), kafelek prowadzi do /portfolio/<adres>/,
+ * a okładką jest wybrany obraz z karty.
  */
 export function renderPortfolio(projects) {
   return projects
     .map((p, i) => {
       const imgs = (p.images || []).filter((im) => im.url);
-      const cover = imgs[0];
-      const rest = imgs.slice(1, 5);
+      const hasCard = Boolean(p.card_ver && p.slug);
+      const cardHref = hasCard ? `/portfolio/${encodeURIComponent(p.slug)}/` : null;
+      const cover = hasCard && p.card_cover
+        ? { url: `/portfolio/${encodeURIComponent(p.slug)}/${p.card_cover.split('/').map(encodeURIComponent).join('/')}`, alt: `Zrzut ekranu projektu ${p.title}` }
+        : imgs[0];
+      const rest = (hasCard && p.card_cover ? imgs : imgs.slice(1)).slice(0, 4);
       const link = safeUrl(p.site_url);
+      const tags = String(p.tags || '')
+        .split(/\s*[·•|,\n]\s*/)
+        .map((t) => t.trim())
+        .filter(Boolean)
+        .slice(0, 8);
+      const coverImg = cover
+        ? `<img src="${esc(cover.url)}" alt="${esc(cover.alt)}" loading="lazy" decoding="async"${cover.width ? ` width="${Number(cover.width)}" height="${Number(cover.height)}"` : ''}>`
+        : '';
+      const frame = coverImg
+        ? `<div class="work__frame"><span class="work__dots" aria-hidden="true"><i></i><i></i><i></i></span>${coverImg}</div>`
+        : '';
       return `
-<article class="work reveal${i === 0 ? ' work--featured' : ''}">
+<article class="work reveal${i === 0 ? ' work--featured' : ''}${hasCard ? ' work--card' : ''}">
   ${
-    cover
-      ? `<figure class="work__cover"><img src="${esc(cover.url)}" alt="${esc(cover.alt)}" loading="lazy" decoding="async"${
-          cover.width ? ` width="${Number(cover.width)}" height="${Number(cover.height)}"` : ''
-        }></figure>`
+    frame
+      ? cardHref
+        ? `<a class="work__cover" href="${esc(cardHref)}" tabindex="-1" aria-hidden="true">${frame}</a>`
+        : `<figure class="work__cover">${frame}</figure>`
       : ''
   }
   <div class="work__body">
-    ${p.industry ? `<p class="work__meta">${esc(p.industry)}</p>` : ''}
-    <h3 class="work__title">${esc(p.title)}</h3>
+    <p class="work__meta">${p.industry ? esc(p.industry) : ''}${p.is_demo ? `<span class="work__demo" title="Koncepcja na przykładzie fikcyjnej firmy">Projekt demonstracyjny</span>` : ''}</p>
+    <h3 class="work__title">${cardHref ? `<a href="${esc(cardHref)}">${esc(p.title)}</a>` : esc(p.title)}</h3>
     ${p.description ? `<p class="work__desc">${esc(p.description)}</p>` : ''}
+    ${tags.length ? `<ul class="work__tags" aria-label="Zakres projektu">${tags.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>` : ''}
     ${
       rest.length
         ? `<ul class="work__thumbs">${rest
@@ -124,10 +142,14 @@ export function renderPortfolio(projects) {
         : ''
     }
     ${
-      link
-        ? `<a class="link-arrow" href="${esc(link)}" target="_blank" rel="noopener">Zobacz stronę<span class="visually-hidden"> ${esc(
-            p.title
-          )} (otwiera się w nowej karcie)</span></a>`
+      cardHref || link
+        ? `<div class="work__actions">${
+            cardHref ? `<a class="btn btn--primary btn--sm" href="${esc(cardHref)}">Zobacz projekt<span class="visually-hidden"> ${esc(p.title)}</span> →</a>` : ''
+          }${
+            link
+              ? `<a class="link-arrow" href="${esc(link)}" target="_blank" rel="noopener">${p.is_demo ? 'Wersja demonstracyjna' : 'Strona na żywo'}<span class="visually-hidden"> ${esc(p.title)} (otwiera się w nowej karcie)</span></a>`
+              : ''
+          }</div>`
         : ''
     }
   </div>

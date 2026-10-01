@@ -26,7 +26,7 @@ export async function loadContent(context) {
       db.prepare(`SELECT name, description FROM industries WHERE is_published = 1 ORDER BY sort_order, created_at`),
       db.prepare(`SELECT title, description, size FROM capabilities WHERE is_published = 1 ORDER BY sort_order, created_at`),
       db.prepare(`SELECT question, answer FROM faq_items WHERE is_published = 1 ORDER BY sort_order, created_at`),
-      db.prepare(`SELECT id, title, industry, description, site_url FROM portfolio_projects WHERE status = 'published' ORDER BY sort_order, created_at DESC`),
+      db.prepare(`SELECT id, title, industry, description, site_url, slug, tags, is_demo, card_ver, card_cover FROM portfolio_projects WHERE status = 'published' ORDER BY sort_order, created_at DESC`),
       db.prepare(`SELECT pi.project_id, m.kv_key, m.alt, m.width, m.height FROM portfolio_images pi
                   JOIN media m ON m.id = pi.media_id
                   JOIN portfolio_projects p ON p.id = pi.project_id AND p.status = 'published'

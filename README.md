@@ -47,7 +47,7 @@ Zgodność sprawdzona w dokumentacji (październik 2026):
   - brief projektowy przypięty do zgłoszenia, z pełnym podglądem odpowiedzi;
   - edycja treści, FAQ, branż i możliwości;
   - zdjęcia z tekstem alternatywnym, automatycznie zmniejszane do WebP;
-  - portfolio: szkic i publikacja, kolejność, zdjęcia;
+  - portfolio: szkic i publikacja, kolejność, zdjęcia, **karty projektów wgrywane jako ZIP** (instrukcja i polecenie dla AI: [`docs/PORTFOLIO.md`](docs/PORTFOLIO.md));
   - ustawienia i test powiadomień;
   - generator hasła.
 - **Bezpieczeństwo:**
@@ -89,6 +89,7 @@ strony-ai-wroclaw/
 │   ├── index.js, polityka-prywatnosci.js   ← strony z treściami z bazy
 │   ├── robots.txt.js, sitemap.xml.js
 │   ├── media/[[path]].js         ← zdjęcia z KV
+│   ├── portfolio/[[path]].js     ← karty projektów (/portfolio/<adres>/)
 │   ├── api/zgloszenie.js         ← formularz
 │   ├── api/admin/[[path]].js     ← API panelu (logowanie, zgłoszenia, treści, zdjęcia, portfolio)
 │   └── _lib/                     ← baza (db.js), logowanie (auth.js), e-mail, walidacja, HTML, ikony, dane początkowe

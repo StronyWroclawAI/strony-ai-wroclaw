@@ -7,6 +7,7 @@ import { ensureSchema, hasDb, uuid, nowIso, all, first, run, mediaUrl } from '..
 import { sendEmail, notifyAboutLead, emailConfigured } from '../../_lib/email.js';
 import { normalizeUrl } from '../../_lib/validate.js';
 import { newToken } from '../../_lib/brief.js';
+import { SLUG_RE, VER_RE, PATH_RE, MAX_FILE, MAX_TOTAL, MAX_FILES, CARD_TYPES, extOf, isImagePath, sniffOk, slugify, deleteCardFiles, cardUrl } from '../../_lib/card.js';
 
 const STATUSES = ['nowe', 'kontakt', 'w_realizacji', 'zakonczone', 'odrzucone'];
 const ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -364,13 +365,21 @@ export async function onRequest(context) {
       case 'GET /portfolio':
         return json({
           ok: true,
-          items: await all(env, `SELECT p.id, p.title, p.industry, p.status, p.sort_order, (SELECT COUNT(*) FROM portfolio_images pi WHERE pi.project_id = p.id) AS images FROM portfolio_projects p ORDER BY sort_order, created_at DESC`),
+          items: await all(env, `SELECT p.id, p.title, p.industry, p.status, p.sort_order, p.slug, p.is_demo, p.card_files, (SELECT COUNT(*) FROM portfolio_images pi WHERE pi.project_id = p.id) AS images FROM portfolio_projects p ORDER BY sort_order, created_at DESC`),
         });
       case 'GET /portfolio/:id': {
         const p = await first(env, `SELECT * FROM portfolio_projects WHERE id = ?`, checkId(seg[1]));
         if (!p) throw notFound('Nie znaleziono realizacji.');
         const images = await all(env, `SELECT m.* FROM portfolio_images pi JOIN media m ON m.id = pi.media_id WHERE pi.project_id = ? ORDER BY pi.sort_order`, p.id);
-        return json({ ok: true, project: p, images: images.map((m) => ({ ...m, url: mediaUrl(m.kv_key) })) });
+        const cardFiles = p.card_ver
+          ? await all(env, `SELECT path, content_type, size_bytes FROM portfolio_files WHERE project_id = ? AND ver = ? ORDER BY path`, p.id, p.card_ver)
+          : [];
+        return json({
+          ok: true,
+          project: p,
+          images: images.map((m) => ({ ...m, url: mediaUrl(m.kv_key) })),
+          card: p.card_ver && p.slug ? { url: cardUrl(p.slug), files: cardFiles, images: cardFiles.filter((f) => isImagePath(f.path)).map((f) => ({ path: f.path, url: cardUrl(p.slug, f.path) })) } : null,
+        });
       }
       case 'POST /portfolio':
       case 'PUT /portfolio/:id': {
@@ -381,29 +390,108 @@ export async function onRequest(context) {
         const u = normalizeUrl(b.site_url || '');
         if (!u.ok) throw bad('Adres strony ma niepoprawny format.');
         const status = b.status === 'published' ? 'published' : 'draft';
+        const tags = str(b.tags ?? '', [0, 300], 'Tagi');
+        const isDemo = bool(b.is_demo);
         const imageIds = Array.isArray(b.image_ids) ? b.image_ids.slice(0, 30) : [];
         imageIds.forEach(checkId);
         const t = nowIso();
         const isNew = method === 'POST';
         const id = isNew ? uuid() : checkId(seg[1]);
         if (!isNew && !(await first(env, `SELECT id FROM portfolio_projects WHERE id = ?`, id))) throw notFound();
+        // Adres karty (/portfolio/<slug>/)
+        let slug = typeof b.slug === 'string' ? b.slug.trim().toLowerCase() : '';
+        const auto = !slug;
+        if (auto) slug = slugify(title);
+        if (!SLUG_RE.test(slug) || slug.length > 60) throw bad('Adres karty może zawierać tylko małe litery, cyfry i myślniki (np. salon-ola).');
+        for (let n = 2; ; n++) {
+          const taken = await first(env, `SELECT id FROM portfolio_projects WHERE slug = ? AND id != ?`, slug, id);
+          if (!taken) break;
+          if (!auto) throw bad(`Adres karty „${slug}” jest już zajęty przez inną realizację.`);
+          slug = `${slugify(title).slice(0, 55)}-${n}`;
+        }
         if (imageIds.length) {
           const found = await all(env, `SELECT id FROM media WHERE id IN (${imageIds.map(() => '?').join(',')})`, ...imageIds);
           if (found.length !== new Set(imageIds).size) throw bad('Część wybranych zdjęć już nie istnieje. Odśwież stronę.');
         }
         const stmts = [
           isNew
-            ? env.DB.prepare(`INSERT INTO portfolio_projects (id, title, industry, description, site_url, status, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?)`).bind(id, title, industry, description, u.value, status, t, t)
-            : env.DB.prepare(`UPDATE portfolio_projects SET title = ?, industry = ?, description = ?, site_url = ?, status = ?, updated_at = ? WHERE id = ?`).bind(title, industry, description, u.value, status, t, id),
+            ? env.DB.prepare(`INSERT INTO portfolio_projects (id, title, industry, description, site_url, status, sort_order, created_at, updated_at, slug, tags, is_demo) VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?)`).bind(id, title, industry, description, u.value, status, t, t, slug, tags, isDemo)
+            : env.DB.prepare(`UPDATE portfolio_projects SET title = ?, industry = ?, description = ?, site_url = ?, status = ?, updated_at = ?, slug = ?, tags = ?, is_demo = ? WHERE id = ?`).bind(title, industry, description, u.value, status, t, slug, tags, isDemo, id),
           env.DB.prepare(`DELETE FROM portfolio_images WHERE project_id = ?`).bind(id),
           ...[...new Set(imageIds)].map((mid, i) => env.DB.prepare(`INSERT INTO portfolio_images (project_id, media_id, sort_order) VALUES (?, ?, ?)`).bind(id, mid, (i + 1) * 10)),
         ];
         await env.DB.batch(stmts);
-        return json({ ok: true, id });
+        return json({ ok: true, id, slug });
       }
       case 'DELETE /portfolio/:id': {
         const id = checkId(seg[1]);
+        await deleteCardFiles(env, id);
         await env.DB.batch([env.DB.prepare(`DELETE FROM portfolio_images WHERE project_id = ?`).bind(id), env.DB.prepare(`DELETE FROM portfolio_projects WHERE id = ?`).bind(id)]);
+        return json({ ok: true });
+      }
+      // ----- Karta projektu (pliki z ZIP-a) -----
+      case 'PUT /portfolio/:id/card-file': {
+        if (!env.MEDIA) throw new HttpError(503, 'Brak powiązania magazynu KV o nazwie MEDIA (Settings → Bindings).');
+        const id = checkId(seg[1]);
+        const qs = new URL(request.url).searchParams;
+        const ver = qs.get('ver') || '';
+        const path = qs.get('path') || '';
+        if (!VER_RE.test(ver)) throw bad('Nieprawidłowa wersja karty.');
+        if (!PATH_RE.test(path)) throw bad(`Niedozwolona nazwa pliku: ${path.slice(0, 120)}`);
+        const ext = extOf(path);
+        const type = CARD_TYPES[ext];
+        if (!type) throw bad(`Niedozwolony typ pliku: ${path}`);
+        if (!(await first(env, `SELECT id FROM portfolio_projects WHERE id = ?`, id))) throw notFound();
+        const len = Number(request.headers.get('Content-Length') || 0);
+        if (len > MAX_FILE) throw bad(`Plik ${path} jest za duży (maksymalnie 10 MB).`);
+        const buf = await request.arrayBuffer();
+        if (buf.byteLength > MAX_FILE) throw bad(`Plik ${path} jest za duży (maksymalnie 10 MB).`);
+        if (!sniffOk(ext, new Uint8Array(buf.slice(0, 16)))) throw bad(`Plik ${path} nie jest prawidłowym plikiem ${ext.toUpperCase()}.`);
+        const stats = await first(env, `SELECT COUNT(*) AS n, COALESCE(SUM(size_bytes), 0) AS total FROM portfolio_files WHERE project_id = ? AND ver = ? AND path != ?`, id, ver, path);
+        if (stats.n >= MAX_FILES) throw bad(`Karta może mieć maksymalnie ${MAX_FILES} plików.`);
+        if (stats.total + buf.byteLength > MAX_TOTAL) throw bad('Karta jest za duża (maksymalnie 40 MB razem). Zmniejsz zdjęcia, np. zapisz je jako WebP.');
+        const kvKey = `pf/${id}/${ver}/${path}`;
+        await env.MEDIA.put(kvKey, buf, { metadata: { contentType: type } });
+        await run(env, `INSERT OR REPLACE INTO portfolio_files (project_id, ver, path, kv_key, content_type, size_bytes, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)`, id, ver, path, kvKey, type, buf.byteLength, nowIso());
+        return json({ ok: true });
+      }
+      case 'POST /portfolio/:id/card': {
+        const id = checkId(seg[1]);
+        const b = await body(request);
+        const ver = String(b.ver || '');
+        if (!VER_RE.test(ver)) throw bad('Nieprawidłowa wersja karty.');
+        const p = await first(env, `SELECT id, title, slug FROM portfolio_projects WHERE id = ?`, id);
+        if (!p) throw notFound();
+        const files = await all(env, `SELECT path, size_bytes FROM portfolio_files WHERE project_id = ? AND ver = ?`, id, ver);
+        if (!files.some((f) => f.path === 'index.html')) throw bad('W paczce brakuje pliku index.html w głównym folderze.');
+        if (Number.isInteger(b.expected) && b.expected !== files.length) throw bad('Nie wszystkie pliki zostały wgrane. Spróbuj ponownie.');
+        const images = files.map((f) => f.path).filter(isImagePath);
+        let cover = typeof b.cover === 'string' && images.includes(b.cover) ? b.cover : null;
+        if (!cover) cover = images.find((x) => /start|cover|okladka|miniatura|hero/i.test(x) && !/(^|\/)m-/.test(x)) || images[0] || null;
+        let slug = p.slug;
+        if (!slug) {
+          slug = slugify(p.title);
+          for (let n = 2; await first(env, `SELECT id FROM portfolio_projects WHERE slug = ? AND id != ?`, slug, id); n++) slug = `${slugify(p.title).slice(0, 55)}-${n}`;
+        }
+        const total = files.reduce((a, f) => a + (f.size_bytes || 0), 0);
+        await run(env, `UPDATE portfolio_projects SET slug = ?, card_ver = ?, card_cover = ?, card_files = ?, card_size = ?, card_at = ?, updated_at = ? WHERE id = ?`, slug, ver, cover, files.length, total, nowIso(), nowIso(), id);
+        await deleteCardFiles(env, id, ver);
+        return json({ ok: true, url: cardUrl(slug), cover, files: files.length });
+      }
+      case 'PATCH /portfolio/:id/card': {
+        const id = checkId(seg[1]);
+        const b = await body(request);
+        const p = await first(env, `SELECT card_ver FROM portfolio_projects WHERE id = ?`, id);
+        if (!p || !p.card_ver) throw notFound('Ta realizacja nie ma karty.');
+        const cover = typeof b.cover === 'string' ? b.cover : '';
+        if (cover && !(isImagePath(cover) && (await first(env, `SELECT path FROM portfolio_files WHERE project_id = ? AND ver = ? AND path = ?`, id, p.card_ver, cover)))) throw bad('Nie ma takiego obrazu w karcie.');
+        await run(env, `UPDATE portfolio_projects SET card_cover = ?, updated_at = ? WHERE id = ?`, cover || null, nowIso(), id);
+        return json({ ok: true });
+      }
+      case 'DELETE /portfolio/:id/card': {
+        const id = checkId(seg[1]);
+        await deleteCardFiles(env, id);
+        await run(env, `UPDATE portfolio_projects SET card_ver = NULL, card_cover = NULL, card_files = 0, card_size = 0, card_at = NULL, updated_at = ? WHERE id = ?`, nowIso(), id);
         return json({ ok: true });
       }
       case 'PUT /portfolio/order':

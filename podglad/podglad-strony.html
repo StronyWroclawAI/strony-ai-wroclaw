@@ -808,6 +808,39 @@ button { font: inherit; }
 }
 .about__art svg.ab-mono { width: 54px; height: 33px; max-width: none; }
 
+/* ===== Portfolio: kafelki z kartami projektów ===== */
+.work { position: relative; transition: transform .35s var(--ease), box-shadow .35s var(--ease); }
+.work:hover { transform: translateY(-4px); box-shadow: 0 30px 60px -36px rgba(20, 46, 80, .45); }
+.work__cover { display: block; background: linear-gradient(135deg, #142e50 0%, #1f4a7a 55%, #8b7cf6 130%); padding: 22px 22px 0; aspect-ratio: auto; text-decoration: none; overflow: hidden; }
+.work--featured .work__cover { min-height: 0; padding: 32px 32px 0; display: flex; align-items: flex-end; }
+.work__frame { background: #fff; border-radius: 10px 10px 0 0; box-shadow: 0 -14px 40px rgba(0, 0, 0, .28); overflow: hidden; width: 100%; }
+.work__dots { display: flex; gap: 6px; padding: 9px 12px; background: #eef1f6; border-bottom: 1px solid #dde3ec; }
+.work__dots i { width: 9px; height: 9px; border-radius: 50%; background: #c5cedb; }
+.work__dots i:nth-child(1) { background: #ff6b5a; }
+.work__dots i:nth-child(2) { background: #ffb547; }
+.work__dots i:nth-child(3) { background: #19c2b0; }
+.work__frame img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 10; object-fit: cover; object-position: top center; transition: transform .8s var(--ease); }
+.work:hover .work__frame img { transform: scale(1.025); }
+.work__cover img { height: auto; }
+.work__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.work__meta:empty { display: none; }
+.work__demo { display: inline-block; padding: 3px 10px; border-radius: 999px; background: #fff3dc; color: #7a4b00; font-size: .6875rem; letter-spacing: .08em; }
+.work .work__title a { color: inherit; text-decoration: none; }
+.work .work__title a:hover { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; }
+.work__tags { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.work__tags li { font-size: .8125rem; font-weight: 600; color: var(--navy-900); background: var(--gray-100); border: 1px solid var(--gray-200); border-radius: 999px; padding: 4px 11px; }
+.work__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; margin-top: 8px; }
+.work--featured .work__body { justify-content: center; padding: clamp(28px, 4vw, 44px); }
+.work--featured .work__title { font-size: clamp(1.6rem, 2.6vw, 2.1rem); }
+@media (max-width: 900px) {
+  .work--featured .work__cover { padding: 22px 22px 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .work, .work__frame img { transition: none; }
+  .work:hover { transform: none; }
+  .work:hover .work__frame img { transform: none; }
+}
+
 
 .preview-bar{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:90;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;max-width:calc(100vw - 24px);padding:10px 12px 10px 16px;border-radius:14px;background:#fff;color:#0b1d36;font-size:.875rem;box-shadow:0 20px 50px -18px rgba(0,0,0,.55);border:2px solid transparent;background-image:linear-gradient(#fff,#fff),linear-gradient(90deg,#ff6b5a,#ffb547,#19c2b0,#8b7cf6);background-origin:border-box;background-clip:padding-box,border-box}
 .preview-bar span{color:#4d5a70}
@@ -1552,7 +1585,7 @@ button { font: inherit; }
     <div class="section-head">
       <p class="eyebrow" data-cms="portfolio.eyebrow">Portfolio</p>
       <h2 class="h2" id="portfolio-title" data-cms="portfolio.title">Realizacje</h2>
-      <p class="lead" data-cms="portfolio.intro">Strony przygotowane dla firm, które zgodziły się na ich prezentację.</p>
+      <p class="lead" data-cms="portfolio.intro">Strony przygotowane dla firm (za ich zgodą) oraz projekty demonstracyjne — kliknij, aby zobaczyć szczegóły.</p>
     </div>
     <div class="work-list" data-cms-list="portfolio"></div>
   </div>

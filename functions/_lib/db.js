@@ -4,7 +4,7 @@
 
 import { SEED } from './seed.js';
 
-export const SCHEMA_VERSION = '3';
+export const SCHEMA_VERSION = '4';
 
 // Każda instrukcja w osobnym elemencie (D1 wykonuje je w jednej transakcji przez batch()).
 export const SCHEMA = [
@@ -50,6 +50,10 @@ export const SCHEMA = [
     project_id TEXT NOT NULL REFERENCES portfolio_projects(id) ON DELETE CASCADE,
     media_id TEXT NOT NULL REFERENCES media(id) ON DELETE CASCADE,
     sort_order INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (project_id, media_id))`,
+  `CREATE TABLE IF NOT EXISTS portfolio_files (
+    project_id TEXT NOT NULL, ver TEXT NOT NULL, path TEXT NOT NULL,
+    kv_key TEXT NOT NULL, content_type TEXT NOT NULL, size_bytes INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL, PRIMARY KEY (project_id, ver, path))`,
   `CREATE TABLE IF NOT EXISTS leads (
     id TEXT PRIMARY KEY, submission_id TEXT NOT NULL UNIQUE,
     created_at TEXT NOT NULL, updated_at TEXT NOT NULL,
@@ -91,6 +95,16 @@ export const MIGRATIONS = [
   `ALTER TABLE briefs ADD COLUMN lead_id TEXT`,
   `ALTER TABLE leads ADD COLUMN source TEXT NOT NULL DEFAULT 'formularz'`,
   `CREATE INDEX IF NOT EXISTS briefs_lead_idx ON briefs (lead_id)`,
+  // v4: karty projektów w portfolio (pliki z ZIP-a)
+  `ALTER TABLE portfolio_projects ADD COLUMN slug TEXT`,
+  `ALTER TABLE portfolio_projects ADD COLUMN tags TEXT NOT NULL DEFAULT ''`,
+  `ALTER TABLE portfolio_projects ADD COLUMN is_demo INTEGER NOT NULL DEFAULT 0`,
+  `ALTER TABLE portfolio_projects ADD COLUMN card_ver TEXT`,
+  `ALTER TABLE portfolio_projects ADD COLUMN card_cover TEXT`,
+  `ALTER TABLE portfolio_projects ADD COLUMN card_files INTEGER NOT NULL DEFAULT 0`,
+  `ALTER TABLE portfolio_projects ADD COLUMN card_size INTEGER NOT NULL DEFAULT 0`,
+  `ALTER TABLE portfolio_projects ADD COLUMN card_at TEXT`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS portfolio_slug_idx ON portfolio_projects (slug)`,
 ];
 
 export const uuid = () => crypto.randomUUID();

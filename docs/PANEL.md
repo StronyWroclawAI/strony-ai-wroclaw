@@ -39,9 +39,10 @@ Zestawienie wszystkich briefów. Brief tworzysz w konkretnym zgłoszeniu i tam p
 - Pliki zdjęć mają losowe, trudne do odgadnięcia adresy. Na stronie pojawiają się wyłącznie zdjęcia przypięte do opublikowanych realizacji.
 
 ## Portfolio
-- **Dodaj realizację:** nazwa, branża, opis, adres strony, status, zdjęcia (z biblioteki albo wgrane od razu na dole strony).
-- **Szkic** widzisz tylko Ty. **Opublikowana** jest widoczna na stronie. Przed pierwszą publikacją panel przypomni o zgodzie firmy.
-- Pierwsze zdjęcie realizacji jest zdjęciem głównym, a pierwsza realizacja na liście jest wyróżniona.
+- **Dodaj realizację:** nazwa, branża/podtytuł, opis, tagi, adres strony, status, oznaczenie „Projekt demonstracyjny”, zdjęcia.
+- **Karta projektu:** wgraj paczkę ZIP (`index.html` + `img/` + `opis-do-portfolio.txt`). Panel sam uzupełni pola z opisu i pozwoli wybrać okładkę kafelka. Pełna instrukcja i gotowe polecenie dla AI: [`PORTFOLIO.md`](PORTFOLIO.md).
+- **Szkic** widzisz tylko Ty (także podgląd karty). **Opublikowana** jest widoczna na stronie. Przed publikacją panel przypomni o zgodzie firmy, a przy projekcie demonstracyjnym — o fikcyjnych danych.
+- Pierwsza realizacja na liście jest wyróżniona dużym kafelkiem. Kolejność zmieniasz strzałkami.
 - Sekcja „Portfolio” i link w menu pojawiają się automatycznie po opublikowaniu pierwszej realizacji.
 
 ## Ustawienia
