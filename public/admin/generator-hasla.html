@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Generator hasła — panel Strony AI Wrocław</title>
+<link rel="stylesheet" href="admin.css?v=2">
+<script src="generator-hasla.js?v=1" defer></script>
+</head>
+<body>
+<main class="screen screen--center screen--brand">
+  <div class="card card--narrow" style="max-width:560px">
+    <h1 class="h1">Generator hasła do panelu</h1>
+    <p class="small muted">Wszystko liczy się <strong>w Twojej przeglądarce</strong> — hasło nigdzie nie jest wysyłane. Ta strona działa też bez internetu (otwarta z dysku).</p>
+
+    <form data-gen novalidate>
+      <div class="alert alert--error" role="alert" hidden data-err></div>
+      <div class="field">
+        <label for="g1">Nowe hasło (minimum 12 znaków)</label>
+        <input id="g1" type="password" autocomplete="new-password" minlength="12" required>
+        <p class="hint">Najlepiej kilka losowych słów, np. „rower-kubek-zima-147”. Zapisz je w menedżerze haseł.</p>
+      </div>
+      <div class="field">
+        <label for="g2">Powtórz hasło</label>
+        <input id="g2" type="password" autocomplete="new-password" minlength="12" required>
+      </div>
+      <button class="btn btn--primary btn--block" type="submit">Wygeneruj</button>
+    </form>
+
+    <div data-out hidden>
+      <h2 class="h1" style="font-size:18px;margin-top:22px">Gotowe — wklej w Cloudflare</h2>
+      <p class="small muted">Cloudflare → Twój projekt Pages → <strong>Settings → Variables and Secrets → Add</strong>, typ <strong>Secret</strong>:</p>
+      <div class="field">
+        <label for="o1">ADMIN_PASSWORD_HASH</label>
+        <textarea id="o1" rows="3" readonly></textarea>
+        <button class="btn btn--sm" type="button" data-copy="o1">Kopiuj</button>
+      </div>
+      <div class="field">
+        <label for="o2">SESSION_SECRET <span class="muted">(tylko przy pierwszej konfiguracji)</span></label>
+        <textarea id="o2" rows="2" readonly></textarea>
+        <button class="btn btn--sm" type="button" data-copy="o2">Kopiuj</button>
+      </div>
+      <div class="field">
+        <label for="o3">IP_HASH_SALT <span class="muted">(tylko przy pierwszej konfiguracji)</span></label>
+        <textarea id="o3" rows="2" readonly></textarea>
+        <button class="btn btn--sm" type="button" data-copy="o3">Kopiuj</button>
+      </div>
+      <div class="alert alert--info small">Po zapisaniu zmiennych: <strong>Deployments → ⋯ → Retry deployment</strong>. Przy zmianie hasła podmień tylko ADMIN_PASSWORD_HASH — pozostałych dwóch wartości nie zmieniaj.</div>
+    </div>
+    <p class="small"><a href="/admin/">← Panel</a></p>
+  </div>
+</main>
+</body>
+</html>

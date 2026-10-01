@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Panel administratora — Strony AI Wrocław</title>
+<link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/admin/admin.css?v=2">
+<script src="/admin/admin.js?v=2" defer></script>
+</head>
+<body>
+<div class="toasts" aria-live="polite" aria-atomic="false" data-toasts></div>
+
+<!-- Ładowanie -->
+<div class="screen screen--center" data-screen="loading">
+  <p class="muted">Ładowanie panelu…</p>
+</div>
+
+<!-- Błąd konfiguracji -->
+<div class="screen screen--center" data-screen="config-error" hidden>
+  <div class="card card--narrow">
+    <h1 class="h1">Panel nie jest jeszcze skonfigurowany</h1>
+    <p data-config-error>Brakuje części ustawień w Cloudflare.</p>
+    <ul class="status-list" data-config-list></ul>
+    <p class="muted small">Szczegóły: docs/INSTRUKCJA.md. Hasło i klucz sesji wygenerujesz tutaj: <a href="/admin/generator-hasla.html">generator hasła</a>.</p>
+  </div>
+</div>
+
+<!-- Logowanie -->
+<div class="screen screen--center screen--brand" data-screen="login" hidden>
+  <div class="card card--narrow">
+    <div class="login-brand">
+      <img src="/assets/img/logo-znak.svg" alt="" width="64" height="39">
+      <div><strong>Strony AI Wrocław</strong><span>Panel administratora</span></div>
+    </div>
+    <form data-login-form novalidate>
+      <div class="alert alert--error" role="alert" hidden data-login-error></div>
+      <input type="text" name="username" value="administrator" autocomplete="username" hidden>
+      <div class="field">
+        <label for="l-pass">Hasło administratora</label>
+        <input id="l-pass" name="password" type="password" autocomplete="current-password" required>
+      </div>
+      <button class="btn btn--primary btn--block" type="submit">Zaloguj się</button>
+    </form>
+    <details class="small muted forgot"><summary>Nie pamiętasz hasła?</summary><p>Wygeneruj nowe w <a href="/admin/generator-hasla.html">generatorze hasła</a> i wklej wynik w Cloudflare jako ADMIN_PASSWORD_HASH (instrukcja: docs/PANEL.md).</p></details>
+    <p class="muted small"><a href="/">← Wróć na stronę</a></p>
+  </div>
+</div>
+
+
+
+<!-- Panel -->
+<div class="app" data-screen="app" hidden>
+  <aside class="sidebar">
+    <a class="sidebar__brand" href="#zgloszenia">
+      <img src="/assets/img/logo-znak-bialy.svg" alt="" width="44" height="27">
+      <span>Panel<br><small>Strony AI Wrocław</small></span>
+    </a>
+    <nav aria-label="Sekcje panelu">
+      <ul class="sidebar__nav">
+        <li><a href="#zgloszenia" data-nav="zgloszenia">Zgłoszenia <span class="badge" data-new-count hidden></span></a></li>
+        <li><a href="#tresci" data-nav="tresci">Treści strony</a></li>
+        <li><a href="#faq" data-nav="faq">FAQ</a></li>
+        <li><a href="#branze" data-nav="branze">Branże</a></li>
+        <li><a href="#mozliwosci" data-nav="mozliwosci">Możliwości</a></li>
+        <li><a href="#portfolio" data-nav="portfolio">Portfolio</a></li>
+        <li><a href="#zdjecia" data-nav="zdjecia">Zdjęcia</a></li>
+        <li><a href="#ustawienia" data-nav="ustawienia">Ustawienia</a></li>
+      </ul>
+    </nav>
+    <div class="sidebar__foot">
+      <a href="/" target="_blank" rel="noopener">Zobacz stronę ↗</a>
+      <span class="small" data-user-email></span>
+      <button class="btn btn--ghost btn--sm" type="button" data-logout>Wyloguj</button>
+    </div>
+  </aside>
+  <main class="main" id="main" tabindex="-1" data-view></main>
+</div>
+
+<dialog class="dialog" data-confirm>
+  <form method="dialog">
+    <h2 class="dialog__title" data-confirm-title>Potwierdź</h2>
+    <p data-confirm-text></p>
+    <div class="dialog__actions">
+      <button class="btn" value="cancel" type="submit">Anuluj</button>
+      <button class="btn btn--danger" value="ok" type="submit" data-confirm-ok>Usuń</button>
+    </div>
+  </form>
+</dialog>
+</body>
+</html>

@@ -1,0 +1,9 @@
+{
+  "name": "strony-ai-wroclaw",
+  "private": true,
+  "description": "Strona marki Strony AI Wrocław z panelem administratora (Cloudflare Pages + D1 + KV)",
+  "scripts": {
+    "dev": "npx wrangler@4 pages dev public --port 8788 --d1 DB --kv MEDIA",
+    "deploy": "npx wrangler@4 pages deploy public --project-name strony-ai-wroclaw"
+  }
+}
