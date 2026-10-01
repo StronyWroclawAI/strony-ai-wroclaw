@@ -92,7 +92,8 @@ export async function onRequestPost(context) {
 
   // --- 4. Turnstile ---
   const ip = request.headers.get('CF-Connecting-IP') || '';
-  if (env.TURNSTILE_SECRET_KEY) {
+  // Turnstile wymagany tylko, gdy ustawiono OBA klucze (inaczej formularz byłby zablokowany).
+  if (env.TURNSTILE_SECRET_KEY && env.TURNSTILE_SITE_KEY) {
     const token = typeof body.turnstile_token === 'string' ? body.turnstile_token : '';
     let passed = false;
     if (token && token.length < 4096) {
@@ -113,7 +114,7 @@ export async function onRequestPost(context) {
       );
     }
   } else {
-    console.warn('TURNSTILE_SECRET_KEY nie jest ustawiony — formularz chronią tylko pole-pułapka i limity.');
+    console.warn('Brak TURNSTILE_SITE_KEY lub TURNSTILE_SECRET_KEY — formularz chronią tylko pole-pułapka i limity.');
   }
 
   // --- 5. Limity ---

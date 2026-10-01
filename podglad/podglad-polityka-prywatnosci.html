@@ -437,7 +437,7 @@ button { font: inherit; }
 .field__error { color: var(--danger); font-size: .875rem; font-weight: 600; margin: 6px 0 0; }
 .field__error:empty { display: none; }
 .hp-field { position: absolute !important; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
-.turnstile-box:empty { display: none; }
+.turnstile-box:not([data-sitekey]) { display: none; }
 .turnstile-box { margin-bottom: 14px; min-height: 65px; }
 .form-privacy { font-size: .875rem; color: var(--muted); margin: 4px 0 20px; }
 .form-alert { border-radius: 10px; padding: 14px 16px; margin-bottom: 20px; background: var(--danger-bg); color: var(--danger); border: 1px solid #fecdca; font-weight: 600; font-size: .9375rem; }
@@ -1141,7 +1141,7 @@ button { font: inherit; }
         instagram_url: val(f.instagram_url),
         message: val(f.message),
         company_fax: f.company_fax ? f.company_fax.value : '',
-        turnstile_token: tokenInput ? tokenInput.value : null,
+        turnstile_token: (tokenInput && tokenInput.value) || (window.turnstile && window.turnstile.getResponse ? window.turnstile.getResponse() || null : null),
         turnstile_present: !!form.querySelector('[data-turnstile] .cf-turnstile, [data-turnstile][data-sitekey]')
       };
     }

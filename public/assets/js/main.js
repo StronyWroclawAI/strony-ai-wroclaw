@@ -291,7 +291,7 @@
         instagram_url: val(f.instagram_url),
         message: val(f.message),
         company_fax: f.company_fax ? f.company_fax.value : '',
-        turnstile_token: tokenInput ? tokenInput.value : null,
+        turnstile_token: (tokenInput && tokenInput.value) || (window.turnstile && window.turnstile.getResponse ? window.turnstile.getResponse() || null : null),
         turnstile_present: !!form.querySelector('[data-turnstile] .cf-turnstile, [data-turnstile][data-sitekey]')
       };
     }
