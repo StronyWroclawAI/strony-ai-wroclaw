@@ -56,7 +56,12 @@ export async function loadContent(context) {
 
 export async function renderPage(context) {
   const { request, env } = context;
-  const asset = await context.next();
+  // Pobieramy plik HTML BEZ nagłówków warunkowych (If-None-Match / If-Modified-Since).
+  // Inaczej serwer plików odpowiadałby „304 — bez zmian” (plik się nie zmienił),
+  // a przeglądarka pokazywałaby starą wersję mimo zmian zapisanych w panelu.
+  const assetUrl = new URL(request.url);
+  assetUrl.search = '';
+  const asset = env.ASSETS ? await env.ASSETS.fetch(new Request(assetUrl.toString(), { method: 'GET' })) : await context.next();
   const type = asset.headers.get('Content-Type') || '';
   if (!asset.ok || !type.includes('text/html')) return asset;
 
@@ -152,6 +157,9 @@ export async function renderPage(context) {
 
   const res = rw.transform(asset);
   const headers = withSecurityHeaders(res.headers);
-  headers.set('Cache-Control', 'public, max-age=0, must-revalidate');
+  // Treść zależy od bazy, więc nie podajemy ETag/Last-Modified pliku i nie pozwalamy na pamięć podręczną.
+  headers.delete('ETag');
+  headers.delete('Last-Modified');
+  headers.set('Cache-Control', 'no-store');
   return new Response(res.body, { status: res.status, headers });
 }
