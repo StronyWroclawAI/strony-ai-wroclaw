@@ -259,6 +259,8 @@
   const VIEWS = {
     zgloszenia: viewLeads,
     zgloszenie: viewLead,
+    briefy: viewBriefs,
+    brief: viewBrief,
     tresci: viewContent,
     faq: () => viewList(LISTS.faq),
     branze: () => viewList(LISTS.branze),
@@ -282,7 +284,7 @@
     }
     dirty = false;
     lastHash = raw;
-    const navKey = key === 'zgloszenie' ? 'zgloszenia' : key;
+    const navKey = key === 'zgloszenie' ? 'zgloszenia' : key === 'brief' ? 'briefy' : key;
     $$('[data-nav]').forEach((a) => (a.getAttribute('data-nav') === navKey ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current')));
     const main = $('[data-view]');
     main.replaceChildren(h('p', { class: 'muted', text: 'Ładowanie…' }));
@@ -308,8 +310,9 @@
   // =========================================================
   const leadFilter = { status: 'all', q: '', failed: false };
 
-  async function viewLeads(main) {
+  async function viewLeads(main, param) {
     const leads = (await api('leads')).items;
+    const manualForm = leadManualForm(param === 'nowe');
 
     const listBox = h('div');
     const counts = Object.fromEntries(STATUSES.map(([k]) => [k, leads.filter((l) => l.status === k).length]));
@@ -334,14 +337,14 @@
     );
     const search = h('input', { type: 'search', class: 'input', placeholder: 'Firma, imię lub e-mail', value: leadFilter.q, oninput: (e) => { leadFilter.q = e.target.value; draw(); } });
     const failed = h('input', { type: 'checkbox', checked: leadFilter.failed, onchange: (e) => { leadFilter.failed = e.target.checked; draw(); } });
-    const failedCount = leads.filter((l) => l.notification_status === 'failed').length;
+    const failedCount = leads.filter((l) => l.notification_status === 'failed' && l.source !== 'reczne').length;
 
     function draw() {
       const q = leadFilter.q.trim().toLowerCase();
       const rows = leads.filter(
         (l) =>
           (leadFilter.status === 'all' || l.status === leadFilter.status) &&
-          (!leadFilter.failed || l.notification_status === 'failed' || l.notification_status === 'skipped') &&
+          (!leadFilter.failed || (l.source !== 'reczne' && (l.notification_status === 'failed' || l.notification_status === 'skipped'))) &&
           (!q || [l.company_name, l.contact_name, l.email, l.industry].some((v) => String(v || '').toLowerCase().includes(q)))
       );
       if (!rows.length) {
@@ -363,7 +366,9 @@
                 h(
                   'div',
                   { class: 'lead-row__badges' },
-                  ['failed', 'skipped'].includes(l.notification_status) ? h('span', { class: `status status--${l.notification_status}`, text: NOTIF_LABEL[l.notification_status] }) : null,
+                  l.source === 'reczne' ? h('span', { class: 'status status--odrzucone', text: 'Dodane ręcznie' }) : null,
+                  l.source !== 'reczne' && ['failed', 'skipped'].includes(l.notification_status) ? h('span', { class: `status status--${l.notification_status}`, text: NOTIF_LABEL[l.notification_status] }) : null,
+                  l.brief_status ? h('span', { class: `status status--${BRIEF_CLASS[l.brief_status]}`, text: `Brief: ${BRIEF_STATUS[l.brief_status].toLowerCase()}` }) : null,
                   h('span', { class: `status status--${l.status}`, text: STATUS_LABEL[l.status] })
                 )
               )
@@ -374,7 +379,12 @@
     }
 
     main.replaceChildren(
-      head('Zgłoszenia', 'Zgłoszenia z formularza na stronie. Widzisz je tylko Ty — są chronione regułami dostępu w bazie.'),
+      head(
+        'Zgłoszenia',
+        'Zgłoszenia z formularza na stronie i kontakty dodane ręcznie. W każdym zgłoszeniu możesz utworzyć brief projektowy dla klienta.',
+        h('button', { class: 'btn btn--primary', type: 'button', text: '+ Dodaj zgłoszenie ręcznie', onclick: () => { manualForm.hidden = false; manualForm.querySelector('input').focus(); } })
+      ),
+      manualForm,
       failedCount
         ? h('div', { class: 'alert alert--warn', text: `${failedCount} zgłoszeń nie ma wysłanego powiadomienia e-mail. Zgłoszenia są bezpiecznie zapisane — otwórz je, aby wysłać powiadomienie ponownie, albo sprawdź konfigurację w Ustawieniach.` })
         : null,
@@ -386,10 +396,54 @@
     refreshNewCount(leads);
   }
 
+  function leadManualForm(open) {
+    const f = {
+      company_name: h('input', { type: 'text', maxlength: '150', required: true }),
+      contact_name: h('input', { type: 'text', maxlength: '100', required: true }),
+      email: h('input', { type: 'email', maxlength: '254', required: true }),
+      phone: h('input', { type: 'tel', maxlength: '30' }),
+      industry: h('input', { type: 'text', maxlength: '100', placeholder: 'np. salon kosmetyczny' }),
+      website_url: h('input', { type: 'url', maxlength: '500', placeholder: 'https://' }),
+      message: h('textarea', { rows: '3', maxlength: '5000', placeholder: 'np. „Napisałem 3.10, odpowiedziała, że jest zainteresowana”' }),
+    };
+    const btn = h('button', { class: 'btn btn--primary', type: 'submit', text: 'Zapisz zgłoszenie' });
+    const form = h(
+      'form',
+      {
+        class: 'panel',
+        hidden: !open,
+        onsubmit: async (e) => {
+          e.preventDefault();
+          for (const k of ['company_name', 'contact_name', 'email']) {
+            if (!f[k].value.trim()) {
+              f[k].focus();
+              return toast('Uzupełnij nazwę firmy, osobę kontaktową i e-mail.', 'error');
+            }
+          }
+          const payload = {};
+          Object.keys(f).forEach((k) => (payload[k] = f[k].value.trim()));
+          busy(btn, true);
+          const { data, error } = await q(api('leads', { method: 'POST', body: payload }));
+          busy(btn, false);
+          if (error) return toast(errMsg(error), 'error');
+          toast('Zgłoszenie dodane. Możesz teraz utworzyć brief.');
+          location.hash = `#zgloszenie/${data.id}`;
+        },
+      },
+      h('h2', { text: 'Dodaj zgłoszenie ręcznie' }),
+      h('p', { class: 'small muted', text: 'Dla firm, z którymi kontakt nawiązałeś mailowo lub telefonicznie, a nie przez formularz na stronie. Dzięki temu wszyscy klienci i ich briefy są w jednym miejscu.' }),
+      h('div', { class: 'grid-2' }, field('Nazwa firmy *', f.company_name), field('Osoba kontaktowa *', f.contact_name), field('E-mail *', f.email), field('Telefon', f.phone), field('Branża', f.industry), field('Obecna strona', f.website_url)),
+      field('Opis / jak nawiązano kontakt', f.message),
+      h('div', { class: 'actions' }, btn, h('button', { class: 'btn', type: 'button', text: 'Anuluj', onclick: () => { form.reset(); form.hidden = true; } }))
+    );
+    return form;
+  }
+
   async function viewLead(main, id) {
     const res = await q(api(`leads/${encodeURIComponent(id || '')}`));
     const lead = res.data && res.data.lead;
     const notes = res.data ? res.data.notes : [];
+    const leadBrief = res.data ? res.data.brief : null;
     if (!lead) {
       main.replaceChildren(h('a', { class: 'back', href: '#zgloszenia', text: '← Wszystkie zgłoszenia' }), h('div', { class: 'empty', text: 'Nie znaleziono zgłoszenia — mogło zostać usunięte.' }));
       return;
@@ -524,7 +578,12 @@
     const subject = encodeURIComponent(`Strona internetowa dla ${lead.company_name}`);
     main.replaceChildren(
       h('a', { class: 'back', href: '#zgloszenia', text: '← Wszystkie zgłoszenia' }),
-      head(lead.company_name, `Zgłoszenie z ${fmtDate(lead.created_at)}`, h('a', { class: 'btn btn--primary', href: `mailto:${lead.email}?subject=${subject}`, text: 'Odpowiedz e-mailem' })),
+      head(
+        lead.company_name,
+        `${lead.source === 'reczne' ? 'Dodane ręcznie' : 'Zgłoszenie'} z ${fmtDate(lead.created_at)}`,
+        h('a', { class: 'btn', href: '#brief-zgloszenia', onclick: (e) => { e.preventDefault(); const t = $('#brief-zgloszenia'); if (t) t.scrollIntoView({ behavior: 'smooth' }); }, text: leadBrief ? 'Brief ↓' : 'Utwórz brief ↓' }),
+        h('a', { class: 'btn btn--primary', href: `mailto:${lead.email}?subject=${subject}`, text: 'Odpowiedz e-mailem' })
+      ),
       h(
         'div',
         { class: 'detail-grid' },
@@ -533,19 +592,21 @@
           'div',
           null,
           h('section', { class: 'panel' }, h('h2', { text: 'Status' }), field('Status zgłoszenia', statusSel, 'Zmiana zapisuje się od razu.')),
-          h('section', { class: 'panel' }, h('h2', { text: 'Powiadomienie e-mail' }), notifBox),
+          lead.source === 'reczne'
+            ? h('section', { class: 'panel' }, h('h2', { text: 'Źródło' }), h('p', { class: 'small muted', text: 'Zgłoszenie dodane ręcznie w panelu (kontakt mailowy lub telefoniczny).' }))
+            : h('section', { class: 'panel' }, h('h2', { text: 'Powiadomienie e-mail' }), notifBox),
           h('section', { class: 'panel' }, h('h2', { text: 'Prywatne notatki' }), notesList, noteForm),
           h(
             'section',
             { class: 'panel' },
             h('h2', { text: 'Usuwanie danych' }),
-            h('p', { class: 'small muted', text: 'Usunięcie zgłoszenia trwale kasuje dane kontaktowe i notatki. Użyj tego np. na prośbę zgłaszającego. To co innego niż wyłączenie naboru w Ustawieniach.' }),
+            h('p', { class: 'small muted', text: 'Usunięcie zgłoszenia trwale kasuje dane kontaktowe, notatki i przypięty brief. Użyj tego np. na prośbę zgłaszającego. To co innego niż wyłączenie naboru w Ustawieniach.' }),
             h('button', {
               class: 'btn btn--danger-outline',
               type: 'button',
               text: 'Usuń zgłoszenie',
               onclick: async () => {
-                const ok = await confirmDialog({ title: 'Usunąć zgłoszenie?', text: `Zgłoszenie firmy „${lead.company_name}” i wszystkie jego notatki zostaną trwale usunięte. Tej operacji nie można cofnąć.`, ok: 'Usuń na stałe' });
+                const ok = await confirmDialog({ title: 'Usunąć zgłoszenie?', text: `Zgłoszenie firmy „${lead.company_name}”, jego notatki${leadBrief ? ' i przypięty brief' : ''} zostaną trwale usunięte. Tej operacji nie można cofnąć.`, ok: 'Usuń na stałe' });
                 if (!ok) return;
                 const { error: e } = await q(api(`leads/${lead.id}`, { method: 'DELETE' }));
                 if (e) return toast(errMsg(e), 'error');
@@ -555,7 +616,296 @@
             })
           )
         )
-      )
+      ),
+      leadBriefSection(lead, leadBrief)
+    );
+  }
+
+  /** Sekcja „Brief projektowy” w szczegółach zgłoszenia. */
+  function leadBriefSection(lead, b) {
+    const box = h('section', { class: 'brief-attached', id: 'brief-zgloszenia' });
+    if (!b) {
+      const btn = h('button', {
+        class: 'btn btn--primary',
+        type: 'button',
+        text: 'Utwórz brief dla tego zgłoszenia',
+        onclick: async () => {
+          busy(btn, true, 'Tworzę…');
+          const { error } = await q(api(`leads/${lead.id}/brief`, { method: 'POST' }));
+          busy(btn, false);
+          if (error) return toast(errMsg(error), 'error');
+          toast('Brief utworzony — skopiuj link albo przygotuj e-mail do klienta.');
+          await route();
+          const t = $('#brief-zgloszenia');
+          if (t) t.scrollIntoView({ behavior: 'smooth' });
+        },
+      });
+      box.append(
+        h(
+          'div',
+          { class: 'panel brief-empty' },
+          h('h2', { text: 'Brief projektowy' }),
+          h('p', { text: 'Gdy klient zgodzi się na współpracę, utwórz brief — szczegółowy formularz o oczekiwaniach (języki, sekcje, cennik, rezerwacje, wygląd, materiały, pomysły). Dane ze zgłoszenia wpiszą się do niego automatycznie, a odpowiedzi zobaczysz tutaj, w tym zgłoszeniu.' }),
+          h('div', { class: 'actions' }, btn, h('a', { class: 'btn', href: '/brief/podglad', target: '_blank', rel: 'noopener', text: 'Jak to widzi klient? ↗' }))
+        )
+      );
+      return box;
+    }
+    box.append(...briefBlocks({ ...b, company_name: b.company_name || lead.company_name, contact_email: b.contact_email || lead.email }, { inLead: true }));
+    return box;
+  }
+
+  // =========================================================
+  // BRIEFY KLIENTÓW
+  // =========================================================
+  const BRIEF_STATUS = { nowy: 'Czeka na klienta', w_trakcie: 'Klient wypełnia', wyslany: 'Wypełniony' };
+  const BRIEF_CLASS = { nowy: 'kontakt', w_trakcie: 'w_realizacji', wyslany: 'zakonczone' };
+  const briefLink = (token) => `${location.origin}/brief/${token}`;
+
+  async function copyText(text, okMsg) {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast(okMsg || 'Skopiowano do schowka.');
+    } catch {
+      const ta = h('textarea', { style: 'position:fixed;left:-9999px' });
+      ta.value = text;
+      document.body.append(ta);
+      ta.select();
+      document.execCommand('copy');
+      ta.remove();
+      toast(okMsg || 'Skopiowano do schowka.');
+    }
+  }
+
+  function briefMailto(b) {
+    const subject = encodeURIComponent(`Brief strony internetowej — ${b.company_name}`);
+    const text = encodeURIComponent(
+      `Dzień dobry,\n\nzgodnie z rozmową przesyłam krótki formularz (brief), który pomoże mi przygotować stronę internetową dla ${b.company_name}:\n\n${briefLink(b.token)}\n\n` +
+        `Wypełnienie zajmuje ok. 15 minut. Odpowiedzi zapisują się automatycznie, więc można przerwać i wrócić przez ten sam link. Jeśli czegoś nie wiesz — pomiń pytanie, omówimy to razem.\n\n` +
+        `Pozdrawiam\nGrzegorz\nStrony AI Wrocław`
+    );
+    return `mailto:${b.contact_email || ''}?subject=${subject}&body=${text}`;
+  }
+
+  /** Panel działań + pełny podgląd odpowiedzi briefu. Używane w zgłoszeniu i w osobnym widoku briefu. */
+  function briefBlocks(b, opts = {}) {
+    const S = window.BRIEF_SCHEMA;
+    const H = S && S.helpers;
+    const a = b.answers || {};
+    const company = a.company_name || b.company_name || 'firma';
+    const meta = { company_name: company, submitted_at: b.submitted_at ? fmtDate(b.submitted_at) : '' };
+
+    let stateText;
+    if (b.status === 'wyslany') stateText = null;
+    else if (b.status === 'w_trakcie') stateText = 'Klient jest w trakcie wypełniania — poniżej widzisz zapisane dotąd odpowiedzi.';
+    else if (b.opened_at) stateText = `Klient otworzył link ${fmtDate(b.opened_at)}, ale jeszcze nic nie zapisał.`;
+    else stateText = 'Klient jeszcze nie otworzył linku. Wyślij mu go e-mailem (przycisk poniżej) albo skopiuj i wklej do własnej wiadomości.';
+
+    const sections = H
+      ? S.steps.map((st, i) => {
+          const rowsEl = [];
+          st.fields.forEach((f) => {
+            if (!H.isVisible(f, a)) return;
+            const val = H.formatValue(f, a);
+            if (!val) return;
+            rowsEl.push(h('dt', { text: f.label }), h('dd', { style: 'white-space:pre-wrap', text: val }));
+          });
+          return h(
+            'section',
+            { class: `panel brief-sec${st.id === 'pomysly' ? ' brief-sec--ideas' : ''}` },
+            h('h3', { text: `${i + 1}. ${st.title}` }),
+            rowsEl.length ? h('dl', { class: 'dl' }, rowsEl) : h('p', { class: 'muted small', text: 'Brak odpowiedzi.' })
+          );
+        })
+      : [h('div', { class: 'alert alert--error', text: 'Nie wczytano definicji briefu (schema.js).' })];
+
+    const note = h('textarea', { rows: '3', maxlength: '5000', placeholder: 'Twoje prywatne notatki do tego briefu' });
+    note.value = b.admin_note || '';
+    const download = () => {
+      const blob = new Blob([H.toMarkdown(a, meta)], { type: 'text/markdown;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = h('a', { href: url, download: `brief-${company.toLowerCase().replace(/[^a-z0-9ąćęłńóśźż]+/gi, '-')}.md` });
+      document.body.append(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    };
+    const filled = b.status === 'wyslany' || b.status === 'w_trakcie';
+
+    const actions = h(
+      'section',
+      { class: 'panel no-print brief-actions' },
+      h(
+        'div',
+        { class: 'brief-actions__head' },
+        h('h2', { text: opts.inLead ? 'Brief projektowy' : 'Działania' }),
+        h('span', { class: `status status--${BRIEF_CLASS[b.status]}`, text: BRIEF_STATUS[b.status] })
+      ),
+      h(
+        'p',
+        { class: 'small muted' },
+        `Utworzono ${fmtDate(b.created_at)}`,
+        b.opened_at ? ` · otwarty przez klienta ${fmtDate(b.opened_at)}` : '',
+        b.submitted_at ? ` · wypełniony ${fmtDate(b.submitted_at)}` : ''
+      ),
+      stateText ? h('p', { class: 'alert alert--info', text: stateText }) : null,
+      H && filled && (H.needsLogo(a) || H.needsTagline(a))
+        ? h('p', { class: 'alert alert--warn', text: `Klient prosi o: ${[H.needsLogo(a) ? (a.logo === 'odswiezenie' ? 'odświeżenie logo' : 'projekt logo') : '', H.needsTagline(a) ? 'propozycje hasła' : ''].filter(Boolean).join(' i ')}. Tekst dla AI zawiera to zadanie, a „Kopiuj tekst dla AI: logo” daje osobne polecenie tylko do logo.` })
+        : null,
+      h('p', { class: 'brief-link' }, h('span', { class: 'small muted', text: 'Link dla klienta: ' }), h('code', { text: briefLink(b.token) })),
+      h(
+        'div',
+        { class: 'actions' },
+        h('a', { class: `btn${filled ? '' : ' btn--primary'}`, href: briefMailto(b), text: 'Wyślij link e-mailem' }),
+        h('button', { class: 'btn', type: 'button', text: 'Kopiuj link', onclick: () => copyText(briefLink(b.token), 'Link skopiowany.') }),
+        h('a', { class: 'btn', href: `/brief/${b.token}`, target: '_blank', rel: 'noopener noreferrer', text: 'Otwórz jak klient ↗' })
+      ),
+      filled && H
+        ? h(
+            'div',
+            { class: 'actions' },
+            h('button', { class: 'btn btn--primary', type: 'button', text: 'Kopiuj tekst dla AI', onclick: () => copyText(H.toAiPrompt(a, meta), 'Skopiowano — wklej do narzędzia AI.') }),
+            H.needsLogo && H.needsLogo(a) ? h('button', { class: 'btn btn--primary', type: 'button', text: 'Kopiuj tekst dla AI: logo', onclick: () => copyText(H.toLogoPrompt(a, meta), 'Skopiowano polecenie do projektu logo.') }) : null,
+            h('button', { class: 'btn', type: 'button', text: 'Kopiuj odpowiedzi', onclick: () => copyText(H.toMarkdown(a, meta), 'Odpowiedzi skopiowane.') }),
+            h('button', { class: 'btn', type: 'button', text: 'Pobierz plik .md', onclick: download }),
+            h('button', {
+              class: 'btn',
+              type: 'button',
+              text: 'Drukuj / PDF',
+              onclick: () => {
+                document.body.classList.add('print-brief');
+                window.addEventListener('afterprint', () => document.body.classList.remove('print-brief'), { once: true });
+                window.print();
+              },
+            })
+          )
+        : null,
+      h(
+        'div',
+        { class: 'actions' },
+        b.status === 'wyslany'
+          ? h('button', {
+              class: 'btn btn--sm',
+              type: 'button',
+              text: 'Odblokuj do edycji',
+              onclick: async () => {
+                const ok = await confirmDialog({ title: 'Odblokować brief?', text: 'Klient będzie mógł ponownie edytować odpowiedzi przez ten sam link i wysłać je jeszcze raz.', ok: 'Odblokuj', danger: false });
+                if (!ok) return;
+                const { error: e } = await q(api(`briefs/${b.id}`, { method: 'PATCH', body: { reopen: true } }));
+                if (e) return toast(errMsg(e), 'error');
+                toast('Brief odblokowany.');
+                route();
+              },
+            })
+          : null,
+        h('button', {
+          class: 'btn btn--sm btn--danger-outline',
+          type: 'button',
+          text: 'Usuń brief',
+          onclick: async () => {
+            const ok = await confirmDialog({
+              title: 'Usunąć brief?',
+              text: `Brief „${company}” i wszystkie odpowiedzi zostaną trwale usunięte, a link przestanie działać.${opts.inLead ? ' Samo zgłoszenie zostaje — możesz potem utworzyć nowy brief.' : ''}`,
+            });
+            if (!ok) return;
+            const { error: e } = await q(api(`briefs/${b.id}`, { method: 'DELETE' }));
+            if (e) return toast(errMsg(e), 'error');
+            toast('Brief usunięty.');
+            if (opts.inLead) route();
+            else location.hash = '#briefy';
+          },
+        })
+      ),
+      field('Notatki do briefu (prywatne)', note),
+      h('button', {
+        class: 'btn btn--sm',
+        type: 'button',
+        text: 'Zapisz notatki',
+        onclick: async () => {
+          const { error: e } = await q(api(`briefs/${b.id}`, { method: 'PATCH', body: { admin_note: note.value } }));
+          if (e) toast(errMsg(e), 'error');
+          else toast('Notatki zapisane.');
+        },
+      })
+    );
+
+    const answersHead = h(
+      'div',
+      { class: 'brief-answers-head' },
+      h('h2', { text: `Odpowiedzi klienta — ${company}` }),
+      H && H.industryLabel(a) ? h('p', null, h('span', { class: 'status status--kontakt', text: `Branża: ${H.industryLabel(a)}` })) : null,
+      h('p', { class: 'small muted', text: b.status === 'wyslany' ? `Wypełniony ${fmtDate(b.submitted_at)}.` : 'Wersja robocza — klient może jeszcze zmieniać odpowiedzi.' })
+    );
+    if (!filled) return [actions, h('p', { class: 'muted small brief-answers-head', text: 'Odpowiedzi klienta pojawią się tutaj, gdy zacznie wypełniać brief (zapisują się automatycznie w trakcie).' })];
+    return [actions, answersHead, ...sections];
+  }
+
+  async function viewBriefs(main) {
+    const items = (await api('briefs')).items;
+    const rows = items.length
+      ? items.map((b) =>
+          h(
+            'li',
+            null,
+            h(
+              'a',
+              { class: 'lead-row', href: b.lead_id ? `#zgloszenie/${b.lead_id}` : `#brief/${b.id}` },
+              h(
+                'div',
+                null,
+                h('div', { class: 'lead-row__title', text: b.company_name }),
+                h('div', { class: 'lead-row__meta', text: `Utworzono ${fmtDate(b.created_at)}${b.opened_at ? ' · otwarty ' + fmtDate(b.opened_at) : ' · jeszcze nieotwarty'}${b.submitted_at ? ' · wypełniony ' + fmtDate(b.submitted_at) : ''}` })
+              ),
+              h(
+                'div',
+                { class: 'lead-row__badges' },
+                b.lead_id ? null : h('span', { class: 'status status--odrzucone', text: 'Bez zgłoszenia' }),
+                h('span', { class: `status status--${BRIEF_CLASS[b.status]}`, text: BRIEF_STATUS[b.status] })
+              )
+            )
+          )
+        )
+      : [h('li', { class: 'empty', text: 'Nie utworzono jeszcze żadnego briefu. Otwórz zgłoszenie i kliknij „Utwórz brief dla tego zgłoszenia”.' })];
+
+    main.replaceChildren(
+      head(
+        'Briefy klientów',
+        'Zestawienie wszystkich briefów. Każdy brief jest przypięty do zgłoszenia — kliknij, aby otworzyć zgłoszenie z pełnym podglądem odpowiedzi.',
+        h('a', { class: 'btn', href: '/brief/podglad', target: '_blank', rel: 'noopener', text: 'Jak to widzi klient? ↗' })
+      ),
+      h(
+        'section',
+        { class: 'panel' },
+        h('h2', { text: 'Jak wysłać brief klientowi' }),
+        h(
+          'ol',
+          { class: 'steps-list' },
+          h('li', null, 'Klient pisze przez formularz na stronie — zgłoszenie pojawia się w zakładce ', h('a', { href: '#zgloszenia', text: 'Zgłoszenia' }), '. Jeśli to Ty napisałeś pierwszy (np. mailowo), ', h('a', { href: '#zgloszenia/nowe', text: 'dodaj zgłoszenie ręcznie' }), '.'),
+          h('li', { text: 'Gdy klient zgodzi się na współpracę, otwórz jego zgłoszenie i kliknij „Utwórz brief dla tego zgłoszenia”. Dane firmy wpiszą się same.' }),
+          h('li', { text: 'Kliknij „Wyślij link e-mailem” — otworzy się gotowa wiadomość do klienta z linkiem.' }),
+          h('li', { text: 'Po wypełnieniu dostaniesz e-mail, a pełne odpowiedzi zobaczysz w tym zgłoszeniu.' })
+        ),
+        h('div', { class: 'actions' }, h('a', { class: 'btn btn--primary', href: '#zgloszenia/nowe', text: '+ Dodaj zgłoszenie ręcznie' }), h('a', { class: 'btn', href: '#zgloszenia', text: 'Przejdź do zgłoszeń' }))
+      ),
+      h('ul', { class: 'lead-list' }, rows)
+    );
+  }
+
+  async function viewBrief(main, id) {
+    const { data, error } = await q(api(`briefs/${encodeURIComponent(id || '')}`));
+    if (error || !data) {
+      main.replaceChildren(h('a', { class: 'back', href: '#briefy', text: '← Briefy' }), h('div', { class: 'empty', text: error ? errMsg(error) : 'Nie znaleziono briefu.' }));
+      return;
+    }
+    const b = data.brief;
+    if (b.lead_id) {
+      location.replace(`#zgloszenie/${b.lead_id}`);
+      return;
+    }
+    main.replaceChildren(
+      h('a', { class: 'back no-print', href: '#briefy', text: '← Briefy' }),
+      head(`Brief: ${(b.answers && b.answers.company_name) || b.company_name}`, 'Brief utworzony bez zgłoszenia (starsza wersja panelu).'),
+      ...briefBlocks(b)
     );
   }
 

@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Brief projektowy — Strony AI Wrocław</title>
+<meta name="theme-color" content="#0f2544">
+<link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/style.css?v=3">
+<link rel="stylesheet" href="/brief/brief.css?v=2">
+<script src="/brief/schema.js?v=4" defer></script>
+<script src="/brief/brief.js?v=3" defer></script>
+</head>
+<body class="brief-body">
+<a class="skip-link" href="#brief-main">Przejdź do formularza</a>
+
+<header class="bf-top">
+  <div class="bf-top__inner">
+    <a class="bf-brand" href="/" aria-label="Strony AI Wrocław — strona główna">
+      <img src="/assets/img/logo-znak-bialy.svg" alt="" width="44" height="27">
+      <span><strong>Strony AI Wrocław</strong><small>Brief projektowy</small></span>
+    </a>
+    <p class="bf-save" role="status" aria-live="polite" data-save-status></p>
+  </div>
+  <div class="bf-progress" aria-hidden="true"><span data-progress-bar></span></div>
+</header>
+
+<main id="brief-main" class="bf-main" tabindex="-1">
+  <div class="bf-loading" data-view="loading"><span class="bf-spinner" aria-hidden="true"></span><p>Wczytuję brief…</p></div>
+
+  <!-- Błąd / brak linku -->
+  <section class="bf-card bf-card--center" data-view="error" hidden>
+    <span class="bf-icon bf-icon--warn" aria-hidden="true">!</span>
+    <h1 class="bf-h1">Nie można otworzyć briefu</h1>
+    <p data-error-text>Ten adres wymaga indywidualnego linku.</p>
+    <p class="bf-muted">Jeśli link nie działa, napisz na <a href="mailto:stronywroclawai@gmail.com">stronywroclawai@gmail.com</a> — wyślę nowy.</p>
+  </section>
+
+  <!-- Powitanie -->
+  <section class="bf-welcome" data-view="welcome" hidden>
+    <div class="bf-welcome__card">
+      <p class="eyebrow">Brief projektowy</p>
+      <h1 class="bf-h1">Zaprojektujmy stronę dla <span class="bf-accent" data-company>Twojej firmy</span></h1>
+      <p class="bf-lead">Ten formularz pomoże mi dobrze zrozumieć Twoją firmę i oczekiwania. Na jego podstawie przygotuję propozycję strony.</p>
+      <ul class="bf-facts">
+        <li><strong>ok. 15–20 minut</strong><span data-steps-count>12 krótkich kroków</span></li>
+        <li><strong>Zapis automatyczny</strong><span>Możesz przerwać i wrócić przez ten sam link</span></li>
+        <li><strong>Bez zobowiązań</strong><span>Wysłanie briefu nie jest zamówieniem</span></li>
+      </ul>
+      <p class="bf-muted">Pola oznaczone <span class="req">*</span> są wymagane. Jeśli czegoś nie wiesz — pomiń pytanie albo zaznacz „Nie wiem”. Wszystko możemy omówić później.</p>
+      <button class="btn btn--accent btn--lg" type="button" data-start>Zaczynamy</button>
+    </div>
+  </section>
+
+  <!-- Kreator -->
+  <div class="bf-wizard" data-view="wizard" hidden>
+    <nav class="bf-steps" aria-label="Kroki briefu">
+      <p class="bf-steps__title">Kroki</p>
+      <ol data-steps-list></ol>
+    </nav>
+    <section class="bf-card" aria-live="off">
+      <p class="bf-stepno" data-step-no></p>
+      <h1 class="bf-h1" data-step-title tabindex="-1"></h1>
+      <p class="bf-lead" data-step-intro></p>
+      <div class="bf-alert" role="alert" hidden data-step-alert></div>
+      <form class="bf-form" data-step-form novalidate></form>
+      <div class="bf-nav">
+        <button class="btn bf-btn-ghost" type="button" data-prev>← Wstecz</button>
+        <button class="btn btn--primary" type="button" data-next>Dalej →</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- Podsumowanie -->
+  <section class="bf-card bf-summary" data-view="summary" hidden>
+    <p class="bf-stepno">Ostatni krok</p>
+    <h1 class="bf-h1" tabindex="-1" data-summary-title>Sprawdź i wyślij</h1>
+    <p class="bf-lead" data-summary-lead>Przejrzyj odpowiedzi. Każdą sekcję możesz jeszcze poprawić.</p>
+    <div class="bf-alert" role="alert" hidden data-summary-alert></div>
+    <div data-summary-body></div>
+    <div class="bf-send" data-send-box>
+      <p class="bf-muted">Wysłanie briefu nie jest zamówieniem ani zawarciem umowy. Zakres, terminy i zgody na wykorzystanie materiałów ustalimy wspólnie przed rozpoczęciem projektu. Dane przetwarzam zgodnie z <a href="/polityka-prywatnosci" target="_blank" rel="noopener">polityką prywatności</a>.</p>
+      <div class="bf-nav">
+        <button class="btn bf-btn-ghost" type="button" data-back-edit>← Wróć do edycji</button>
+        <button class="btn btn--accent btn--lg" type="button" data-submit><span class="btn__label">Wyślij brief</span><span class="btn__spinner" aria-hidden="true"></span></button>
+      </div>
+    </div>
+    <div class="bf-nav bf-nav--print">
+      <button class="btn bf-btn-ghost" type="button" data-print>Drukuj / zapisz jako PDF</button>
+    </div>
+  </section>
+
+  <!-- Dziękuję -->
+  <section class="bf-card bf-card--center" data-view="done" hidden>
+    <span class="bf-icon bf-icon--ok" aria-hidden="true"></span>
+    <h1 class="bf-h1" tabindex="-1">Dziękuję! Brief został wysłany</h1>
+    <p class="bf-lead">Przeczytam go i odezwę się na podany adres e-mail, żeby omówić szczegóły.</p>
+    <div class="bf-nav bf-nav--center">
+      <button class="btn bf-btn-ghost" type="button" data-show-copy>Zobacz swoje odpowiedzi</button>
+      <a class="btn btn--primary" href="/">Strona Strony AI Wrocław</a>
+    </div>
+  </section>
+</main>
+
+<footer class="bf-footer">
+  <p>Strony AI Wrocław · <a href="mailto:stronywroclawai@gmail.com">stronywroclawai@gmail.com</a> · <a href="/polityka-prywatnosci">Polityka prywatności</a></p>
+</footer>
+</body>
+</html>

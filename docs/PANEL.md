@@ -6,12 +6,17 @@ Zmiany są widoczne na stronie **od razu** po zapisaniu. Sesja wygasa po 12 godz
 ## Zgłoszenia
 - Lista pokazuje zgłoszenia od najnowszych. Liczba przy zakładce to zgłoszenia o statusie „Nowe”.
 - **Filtry:** status (przyciski u góry), wyszukiwarka (firma, imię, e-mail), „Tylko bez wysłanego powiadomienia”.
+- **+ Dodaj zgłoszenie ręcznie:** dla firm, z którymi kontakt zacząłeś sam (mailowo, telefonicznie). Takie zgłoszenie ma odznakę „Dodane ręcznie”.
 - Kliknij zgłoszenie, aby zobaczyć szczegóły.
   - **Status:** Nowe → Kontakt → W realizacji → Zakończone, albo Odrzucone. Zmiana zapisuje się od razu.
   - **Odpowiedz e-mailem:** otwiera Twój program pocztowy z gotowym adresem.
   - **Prywatne notatki** widzisz tylko Ty. Nie trafiają na stronę ani do zgłaszającego.
   - **Powiadomienie e-mail:** jeśli się nie udało, kliknij **Wyślij powiadomienie ponownie**. Zgłoszenie jest bezpieczne w bazie niezależnie od tego.
-  - **Usuń zgłoszenie** trwale kasuje dane i notatki, np. na prośbę zgłaszającego. Panel zawsze prosi o potwierdzenie.
+  - **Brief projektowy** (na dole zgłoszenia): gdy klient zgodzi się na współpracę, kliknij **Utwórz brief dla tego zgłoszenia**, a potem **Wyślij link e-mailem**. Po wypełnieniu pełne odpowiedzi zobaczysz w tym samym miejscu.
+  - **Usuń zgłoszenie** trwale kasuje dane, notatki i przypięty brief, np. na prośbę zgłaszającego. Panel zawsze prosi o potwierdzenie.
+
+## Briefy klientów
+Zestawienie wszystkich briefów. Brief tworzysz w konkretnym zgłoszeniu i tam przeglądasz odpowiedzi, drukujesz je i kopiujesz jako tekst dla AI. Szczegóły w [`BRIEF.md`](BRIEF.md).
 
 ## Treści strony
 - Teksty są pogrupowane według sekcji strony. Każdą sekcję zapisujesz przyciskiem **Zapisz sekcję**.

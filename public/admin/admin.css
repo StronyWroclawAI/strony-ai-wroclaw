@@ -190,3 +190,30 @@ code { background: var(--gray-100); padding: 1px 6px; border-radius: 4px; font-s
 .forgot summary { cursor: pointer; color: var(--navy-600); }
 .forgot p { margin-top: 8px; }
 .sidebar::after { content: ""; display: block; height: 4px; margin: 14px -14px -18px; background: linear-gradient(90deg, #ff6b5a, #ffb547, #19c2b0, #8b7cf6); }
+.brief-sec .dl { grid-template-columns: minmax(180px, .8fr) minmax(0, 1.2fr); }
+@media (max-width: 900px) { .brief-sec .dl { grid-template-columns: 1fr; } .brief-sec .dl dd { margin-bottom: 8px; } }
+@media print {
+  .sidebar, .no-print, .toasts, .view-head .actions { display: none !important; }
+  .app { display: block; background: #fff; }
+  body { background: #fff; }
+  .main { padding: 0; }
+  .panel { border-color: #bbb; break-inside: avoid; }
+}
+@media print {
+  body.print-brief [data-view] > :not(.brief-attached) { display: none !important; }
+  .brief-answers-head { break-after: avoid; }
+}
+/* Brief przypięty do zgłoszenia */
+.brief-attached { margin-top: 28px; padding-top: 24px; border-top: 3px solid transparent; border-image: linear-gradient(90deg, #ff6b5a, #ffb547, #19c2b0, #8b7cf6) 1; scroll-margin-top: 20px; }
+.brief-empty { background: linear-gradient(135deg, #f4f8ff, #fff7ec); }
+.brief-empty h2 { margin-top: 0; }
+.brief-actions__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.brief-actions__head h2 { margin: 0; }
+.brief-actions .actions { margin: 10px 0; }
+.brief-link code { word-break: break-all; background: #f1f4f9; padding: 3px 7px; border-radius: 6px; font-size: .9em; }
+.brief-answers-head { margin: 24px 0 12px; }
+.brief-answers-head h2 { margin: 0 0 4px; }
+.brief-sec h3 { margin: 0 0 12px; font-size: 1.05rem; color: var(--navy-700, #142e50); }
+.brief-sec--ideas { border-left: 4px solid #ffb547; background: #fffaf1; }
+.steps-list { margin: 0 0 14px; padding-left: 20px; line-height: 1.6; }
+.steps-list li { margin-bottom: 6px; }

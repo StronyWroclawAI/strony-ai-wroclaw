@@ -6,6 +6,7 @@ import { guardAdmin, login, clearSessionCookie, hasValidSession, authConfigured 
 import { ensureSchema, hasDb, uuid, nowIso, all, first, run, mediaUrl } from '../../_lib/db.js';
 import { sendEmail, notifyAboutLead, emailConfigured } from '../../_lib/email.js';
 import { normalizeUrl } from '../../_lib/validate.js';
+import { newToken } from '../../_lib/brief.js';
 
 const STATUSES = ['nowe', 'kontakt', 'w_realizacji', 'zakonczone', 'odrzucone'];
 const ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -114,13 +115,26 @@ export async function onRequest(context) {
       case 'GET /leads':
         return json({
           ok: true,
-          items: await all(env, `SELECT id, created_at, company_name, industry, contact_name, email, status, notification_status FROM leads ORDER BY created_at DESC LIMIT 1000`),
+          items: await all(
+            env,
+            `SELECT l.id, l.created_at, l.company_name, l.industry, l.contact_name, l.email, l.status, l.notification_status, l.source,
+                    (SELECT b.status FROM briefs b WHERE b.lead_id = l.id ORDER BY b.created_at DESC LIMIT 1) AS brief_status
+             FROM leads l ORDER BY l.created_at DESC LIMIT 1000`
+          ),
         });
       case 'GET /leads/:id': {
         const lead = await first(env, `SELECT * FROM leads WHERE id = ?`, checkId(seg[1]));
         if (!lead) throw notFound('Nie znaleziono zgłoszenia — mogło zostać usunięte.');
         const notes = await all(env, `SELECT id, body, created_at FROM lead_notes WHERE lead_id = ? ORDER BY created_at`, lead.id);
-        return json({ ok: true, lead, notes });
+        const brief = await first(env, `SELECT * FROM briefs WHERE lead_id = ? ORDER BY created_at DESC LIMIT 1`, lead.id);
+        if (brief) {
+          try {
+            brief.answers = JSON.parse(brief.answers || '{}');
+          } catch {
+            brief.answers = {};
+          }
+        }
+        return json({ ok: true, lead, notes, brief: brief || null });
       }
       case 'PATCH /leads/:id': {
         const b = await body(request);
@@ -131,8 +145,67 @@ export async function onRequest(context) {
       }
       case 'DELETE /leads/:id': {
         const id = checkId(seg[1]);
-        await env.DB.batch([env.DB.prepare(`DELETE FROM lead_notes WHERE lead_id = ?`).bind(id), env.DB.prepare(`DELETE FROM leads WHERE id = ?`).bind(id)]);
+        await env.DB.batch([
+          env.DB.prepare(`DELETE FROM lead_notes WHERE lead_id = ?`).bind(id),
+          env.DB.prepare(`DELETE FROM briefs WHERE lead_id = ?`).bind(id),
+          env.DB.prepare(`DELETE FROM leads WHERE id = ?`).bind(id),
+        ]);
         return json({ ok: true });
+      }
+      case 'POST /leads': {
+        // Ręczne dodanie zgłoszenia (np. kontakt nawiązany mailowo, poza formularzem)
+        const b = await body(request);
+        const company = str(b.company_name, [1, 150], 'Nazwa firmy');
+        const contact = str(b.contact_name, [1, 100], 'Osoba kontaktowa');
+        const email = str(b.email, [3, 254], 'E-mail').toLowerCase();
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) throw bad('Podaj poprawny adres e-mail.');
+        const industry = str(b.industry || 'Nie podano', [1, 100], 'Branża');
+        const phone = str(b.phone || '', [0, 30], 'Telefon') || null;
+        const site = normalizeUrl(b.website_url || '');
+        if (!site.ok) throw bad('Adres strony ma niepoprawny format.');
+        const message = str(b.message || 'Kontakt nawiązany mailowo.', [1, 5000], 'Opis');
+        const t = nowIso();
+        const id = uuid();
+        await run(
+          env,
+          `INSERT INTO leads (id, submission_id, created_at, updated_at, company_name, industry, contact_name, email, phone, website_url, message, status, notification_status, source)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'kontakt', 'skipped', 'reczne')`,
+          id, uuid(), t, t, company, industry, contact, email, phone, site.value, message
+        );
+        return json({ ok: true, id });
+      }
+      case 'POST /leads/:id/brief': {
+        // Brief przypięty do zgłoszenia — wstępnie wypełniony danymi ze zgłoszenia
+        const lead = await first(env, `SELECT * FROM leads WHERE id = ?`, checkId(seg[1]));
+        if (!lead) throw notFound();
+        const existing = await first(env, `SELECT id, token, status FROM briefs WHERE lead_id = ? ORDER BY created_at DESC LIMIT 1`, lead.id);
+        if (existing) return json({ ok: true, item: existing, existed: true });
+        const pre = {
+          company_name: lead.company_name,
+          contact_name: lead.contact_name,
+          contact_email: lead.email,
+          industry: String(lead.industry || '').replace(/^Inna:\s*/, ''),
+          languages: ['pl'],
+        };
+        if (lead.phone) pre.contact_phone = lead.phone;
+        if (lead.website_url) {
+          pre.current_site = 'tak_zastapic';
+          pre.current_site_url = lead.website_url;
+        }
+        const social = [];
+        const links = [];
+        if (lead.facebook_url) { social.push('facebook'); links.push(lead.facebook_url); }
+        if (lead.instagram_url) { social.push('instagram'); links.push(lead.instagram_url); }
+        if (social.length) { pre.social = social; pre.social_links = links.join('\n'); }
+        if (pre.industry === 'Nie podano') delete pre.industry;
+        const t = nowIso();
+        const item = { id: uuid(), token: newToken(), status: 'nowy' };
+        await run(
+          env,
+          `INSERT INTO briefs (id, token, company_name, contact_email, status, answers, created_at, updated_at, lead_id) VALUES (?, ?, ?, ?, 'nowy', ?, ?, ?, ?)`,
+          item.id, item.token, lead.company_name, lead.email, JSON.stringify(pre), t, t, lead.id
+        );
+        return json({ ok: true, item });
       }
       case 'POST /leads/:id/notes': {
         const b = await body(request);
@@ -238,6 +311,54 @@ export async function onRequest(context) {
         if (env.MEDIA) await env.MEDIA.delete(m.kv_key);
         return json({ ok: true });
       }
+
+      // ===== Briefy projektowe =====
+      case 'GET /briefs':
+        return json({
+          ok: true,
+          items: await all(env, `SELECT id, token, company_name, contact_email, status, created_at, updated_at, opened_at, submitted_at, lead_id FROM briefs ORDER BY created_at DESC LIMIT 500`),
+        });
+      case 'POST /briefs': {
+        const b = await body(request);
+        const company = str(b.company_name, [1, 150], 'Nazwa firmy');
+        let email = typeof b.contact_email === 'string' ? b.contact_email.trim() : '';
+        if (email && (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))) throw bad('Podaj poprawny adres e-mail albo zostaw pole puste.');
+        const t = nowIso();
+        const item = { id: uuid(), token: newToken(), company_name: company, contact_email: email || null, status: 'nowy', created_at: t, updated_at: t };
+        await run(env, `INSERT INTO briefs (id, token, company_name, contact_email, status, answers, created_at, updated_at) VALUES (?, ?, ?, ?, 'nowy', ?, ?, ?)`, item.id, item.token, item.company_name, item.contact_email, JSON.stringify({ company_name: company }), t, t);
+        return json({ ok: true, item });
+      }
+      case 'GET /briefs/:id': {
+        const r = await first(env, `SELECT * FROM briefs WHERE id = ?`, checkId(seg[1]));
+        if (!r) throw notFound('Nie znaleziono briefu.');
+        let answers = {};
+        try {
+          answers = JSON.parse(r.answers || '{}');
+        } catch {
+          answers = {};
+        }
+        return json({ ok: true, brief: { ...r, answers } });
+      }
+      case 'PATCH /briefs/:id': {
+        const b = await body(request);
+        const id = checkId(seg[1]);
+        const sets = [];
+        const vals = [];
+        if (b.reopen === true) {
+          sets.push(`status = 'w_trakcie'`, 'submitted_at = NULL');
+        }
+        if (typeof b.admin_note === 'string') {
+          sets.push('admin_note = ?');
+          vals.push(str(b.admin_note, [0, 5000], 'Notatka'));
+        }
+        if (!sets.length) throw bad('Brak zmian.');
+        const r = await run(env, `UPDATE briefs SET ${sets.join(', ')}, updated_at = ? WHERE id = ?`, ...vals, nowIso(), id);
+        if (!r.meta.changes) throw notFound();
+        return json({ ok: true });
+      }
+      case 'DELETE /briefs/:id':
+        await run(env, `DELETE FROM briefs WHERE id = ?`, checkId(seg[1]));
+        return json({ ok: true });
 
       // ===== Portfolio =====
       case 'GET /portfolio':

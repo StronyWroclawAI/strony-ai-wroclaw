@@ -4,7 +4,7 @@
 
 import { SEED } from './seed.js';
 
-export const SCHEMA_VERSION = '1';
+export const SCHEMA_VERSION = '3';
 
 // Każda instrukcja w osobnym elemencie (D1 wykonuje je w jednej transakcji przez batch()).
 export const SCHEMA = [
@@ -74,6 +74,23 @@ export const SCHEMA = [
   `CREATE INDEX IF NOT EXISTS submission_log_idx ON submission_log (ip_hash, created_at)`,
   `CREATE TABLE IF NOT EXISTS login_attempts (ip_hash TEXT NOT NULL, created_at INTEGER NOT NULL)`,
   `CREATE INDEX IF NOT EXISTS login_attempts_idx ON login_attempts (ip_hash, created_at)`,
+  `CREATE TABLE IF NOT EXISTS briefs (
+    id TEXT PRIMARY KEY, token TEXT NOT NULL UNIQUE,
+    company_name TEXT NOT NULL CHECK (length(company_name) BETWEEN 1 AND 150),
+    contact_email TEXT CHECK (contact_email IS NULL OR length(contact_email) <= 254),
+    status TEXT NOT NULL DEFAULT 'nowy' CHECK (status IN ('nowy','w_trakcie','wyslany')),
+    answers TEXT NOT NULL DEFAULT '{}' CHECK (length(answers) <= 200000),
+    admin_note TEXT NOT NULL DEFAULT '' CHECK (length(admin_note) <= 5000),
+    created_at TEXT NOT NULL, updated_at TEXT NOT NULL, opened_at TEXT, submitted_at TEXT,
+    notification_status TEXT)`,
+  `CREATE INDEX IF NOT EXISTS briefs_created_idx ON briefs (created_at DESC)`,
+];
+
+// Kolumny dodane w kolejnych wersjach (ALTER TABLE nie ma „IF NOT EXISTS” w SQLite).
+export const MIGRATIONS = [
+  `ALTER TABLE briefs ADD COLUMN lead_id TEXT`,
+  `ALTER TABLE leads ADD COLUMN source TEXT NOT NULL DEFAULT 'formularz'`,
+  `CREATE INDEX IF NOT EXISTS briefs_lead_idx ON briefs (lead_id)`,
 ];
 
 export const uuid = () => crypto.randomUUID();
@@ -106,6 +123,15 @@ async function init(env) {
     /* tabela meta jeszcze nie istnieje */
   }
   await db.batch(SCHEMA.map((s) => db.prepare(s)));
+
+  // Uzupełnienia kolumn w istniejących tabelach (bezpieczne przy ponownym uruchomieniu)
+  for (const sql of MIGRATIONS) {
+    try {
+      await db.prepare(sql).run();
+    } catch (e) {
+      if (!/duplicate column|already exists/i.test(String(e && e.message))) throw e;
+    }
+  }
 
   const t = nowIso();
   const stmts = [db.prepare(`INSERT OR IGNORE INTO settings (id, recruitment_open, contact_email, updated_at) VALUES (1, 1, 'stronywroclawai@gmail.com', ?)`).bind(t)];

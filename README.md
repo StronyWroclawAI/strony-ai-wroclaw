@@ -5,6 +5,8 @@ Całość działa na **Cloudflare** (strona, funkcje serwerowe, baza D1, magazyn
 
 > **Chcesz najpierw tylko obejrzeć stronę?** Otwórz dwuklikiem plik [`podglad/podglad-strony.html`](podglad/podglad-strony.html). Nie potrzebujesz serwera, internetu ani kont. Formularz w podglądzie niczego nie wysyła, a dolny pasek pozwala przełączyć widok „nabór wyłączony”.
 >
+> **Brief dla klientów:** szczegółowy kwestionariusz online o oczekiwaniach firmy, tworzony i przeglądany w zgłoszeniu klienta. Opis w [`docs/BRIEF.md`](docs/BRIEF.md), podgląd w `podglad/podglad-brief.html`.
+>
 > **Publikacja:** [`docs/INSTRUKCJA.md`](docs/INSTRUKCJA.md) — 9 kroków. **Obsługa panelu:** [`docs/PANEL.md`](docs/PANEL.md). **Lista kontrolna:** [`docs/WERYFIKACJA.md`](docs/WERYFIKACJA.md).
 
 ---
@@ -41,7 +43,8 @@ Zgodność sprawdzona w dokumentacji (październik 2026):
 - **Portfolio:** sekcja pojawia się automatycznie po opublikowaniu pierwszej realizacji.
 - **Panel:**
   - logowanie z blokadą po 5 błędnych próbach;
-  - zgłoszenia: filtry, szczegóły, statusy, prywatne notatki, usuwanie;
+  - zgłoszenia: filtry, szczegóły, statusy, prywatne notatki, usuwanie, ręczne dodawanie kontaktów;
+  - brief projektowy przypięty do zgłoszenia, z pełnym podglądem odpowiedzi;
   - edycja treści, FAQ, branż i możliwości;
   - zdjęcia z tekstem alternatywnym, automatycznie zmniejszane do WebP;
   - portfolio: szkic i publikacja, kolejność, zdjęcia;
