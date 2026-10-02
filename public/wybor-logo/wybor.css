@@ -42,3 +42,5 @@
   .wl-brand small { display: none; }
   .wl-frame iframe { height: 70vh; }
 }
+.wl-thumb { display: block; width: 100%; height: 76px; object-fit: contain; background: #fff; border: 1px solid var(--gray-200); border-radius: 8px; padding: 8px; margin-top: 8px; }
+.wl-choice > span { flex: 1; min-width: 0; }

@@ -240,3 +240,14 @@ code { background: var(--gray-100); padding: 1px 6px; border-radius: 4px; font-s
 #email-klienta h3 { margin: 22px 0 8px; font-size: 1rem; }
 #email-klienta details summary { cursor: pointer; font-weight: 700; }
 #email-klienta .note__body { white-space: pre-wrap; margin-top: 8px; }
+.logo-chosen { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 8px 0 12px; max-width: 620px; }
+.logo-chosen > img, .logo-chosen__dark { background: #fff; border: 1px solid #cfe9e2; border-radius: 10px; padding: 16px; display: grid; place-items: center; min-height: 120px; }
+.logo-chosen img { width: 100%; max-height: 160px; object-fit: contain; }
+.logo-chosen__dark { background: #142e50; border-color: #142e50; }
+.logo-gallery__title { font-size: .9375rem; margin: 14px 0 8px; }
+.logo-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 10px; margin-bottom: 12px; }
+.logo-thumb { margin: 0; border: 2px solid var(--gray-200); border-radius: 10px; overflow: hidden; background: #fff; }
+.logo-thumb.is-chosen { border-color: #19a08f; box-shadow: 0 0 0 3px rgba(25, 194, 176, .2); }
+.logo-thumb img, .logo-thumb__none { display: block; width: 100%; height: 96px; object-fit: contain; padding: 10px; background: #fff; }
+.logo-thumb__none { display: grid; place-items: center; color: var(--muted); font-size: .8125rem; background: var(--gray-50); }
+.logo-thumb figcaption { padding: 8px 10px; font-size: .8125rem; border-top: 1px solid var(--gray-200); display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; }

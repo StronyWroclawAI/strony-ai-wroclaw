@@ -471,6 +471,63 @@
       ].map(([k, v]) => [h('dt', { text: k }), h('dd', null, v)])
     );
 
+    // Dane zgłoszenia + edycja (np. poprawienie błędnego adresu e-mail)
+    const dataPanel = h('section', { class: 'panel' });
+    function drawData(editing) {
+      if (!editing) {
+        dataPanel.replaceChildren(
+          h('div', { class: 'brief-sec__head' }, h('h2', { text: 'Dane zgłoszenia' }), h('button', { class: 'btn btn--sm no-print', type: 'button', 'data-edit-lead': '', text: 'Edytuj dane', onclick: () => drawData(true) })),
+          dl
+        );
+        return;
+      }
+      const f = {
+        company_name: h('input', { type: 'text', maxlength: '150', value: lead.company_name, required: true }),
+        industry: h('input', { type: 'text', maxlength: '100', value: lead.industry || '' }),
+        contact_name: h('input', { type: 'text', maxlength: '100', value: lead.contact_name, required: true }),
+        email: h('input', { type: 'email', maxlength: '254', value: lead.email, required: true }),
+        phone: h('input', { type: 'tel', maxlength: '30', value: lead.phone || '' }),
+        website_url: h('input', { type: 'url', maxlength: '500', value: lead.website_url || '', placeholder: 'https://' }),
+        facebook_url: h('input', { type: 'url', maxlength: '500', value: lead.facebook_url || '', placeholder: 'https://' }),
+        instagram_url: h('input', { type: 'url', maxlength: '500', value: lead.instagram_url || '', placeholder: 'https://' }),
+        message: h('textarea', { rows: '6', maxlength: '5000' }),
+      };
+      f.message.value = lead.message || '';
+      Object.values(f).forEach((i) => i.addEventListener('input', () => (dirty = true)));
+      const emsg = h('div', { 'aria-live': 'polite' });
+      const save = h('button', { class: 'btn btn--primary', type: 'submit', text: 'Zapisz dane' });
+      dataPanel.replaceChildren(
+        h('h2', { text: 'Edycja danych zgłoszenia' }),
+        h(
+          'form',
+          {
+            novalidate: true,
+            'data-lead-form': '',
+            onsubmit: async (e) => {
+              e.preventDefault();
+              const payload = {};
+              Object.keys(f).forEach((k) => (payload[k] = f[k].value.trim()));
+              if (!payload.company_name || !payload.contact_name || !payload.email) return emsg.replaceChildren(h('div', { class: 'alert alert--error', text: 'Nazwa firmy, osoba kontaktowa i e-mail są wymagane.' }));
+              busy(save, true);
+              const { error } = await q(api(`leads/${lead.id}`, { method: 'PATCH', body: payload }));
+              busy(save, false);
+              if (error) return emsg.replaceChildren(h('div', { class: 'alert alert--error', text: errMsg(error) }));
+              dirty = false;
+              toast(payload.email.toLowerCase() !== lead.email ? 'Dane zapisane. Kolejne wiadomości pójdą na nowy adres e-mail.' : 'Dane zgłoszenia zapisane.');
+              route();
+            },
+          },
+          h('div', { class: 'grid-2' }, field('Nazwa firmy *', f.company_name), field('Branża', f.industry), field('Osoba kontaktowa *', f.contact_name), field('E-mail *', f.email), field('Telefon', f.phone), field('Obecna strona', f.website_url), field('Facebook', f.facebook_url), field('Instagram', f.instagram_url)),
+          field('Oczekiwania / opis', f.message),
+          h('p', { class: 'small muted', text: 'Zmieniasz dane zapisane w zgłoszeniu. Odpowiedzi klienta w briefie zostają bez zmian (popraw je przyciskiem „Popraw” przy briefie).' }),
+          emsg,
+          h('div', { class: 'actions' }, save, h('button', { class: 'btn', type: 'button', text: 'Anuluj', onclick: () => { dirty = false; drawData(false); } }))
+        )
+      );
+      f.email.focus();
+    }
+    drawData(false);
+
     // Status
     const statusSel = h('select', { class: 'input' }, STATUSES.map(([k, l]) => h('option', { value: k, text: l })));
     statusSel.value = lead.status;
@@ -592,7 +649,7 @@
       h(
         'div',
         { class: 'detail-grid' },
-        h('div', null, h('section', { class: 'panel' }, h('h2', { text: 'Dane zgłoszenia' }), dl), h('section', { class: 'panel' }, h('h2', { text: 'Oczekiwania' }), h('div', { class: 'message-box', text: lead.message }))),
+        h('div', null, dataPanel, h('section', { class: 'panel' }, h('h2', { text: 'Oczekiwania' }), h('div', { class: 'message-box', text: lead.message }))),
         h(
           'div',
           null,
@@ -708,6 +765,70 @@
     };
   }
 
+  const svgUri = (svg) => `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+
+  /**
+   * Czyta z pliku z propozycjami nazwy opcji, hasła i wygląd każdego logo (SVG).
+   * 1) blok <script id="logo-options"> (nazwa, hasła, opcjonalnie svg), 2) pierwsze logo SVG pod nagłówkiem „Opcja N”.
+   */
+  function extractLogoOptions(html) {
+    let meta = [];
+    const m = /<script[^>]*id=["']logo-options["'][^>]*>([\s\S]*?)<\/script>/i.exec(html);
+    if (m) {
+      try {
+        const j = JSON.parse(m[1]);
+        if (j && Array.isArray(j.options)) meta = j.options;
+      } catch {
+        meta = [];
+      }
+    }
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const css = Array.from(doc.querySelectorAll('style')).map((x) => x.textContent).join('\n');
+    const NS = 'http://www.w3.org/2000/svg';
+    const prep = (svgText) => {
+      // samodzielny plik SVG: przestrzeń nazw, style strony (żeby klasy działały), rozmiar
+      const d = new DOMParser().parseFromString(svgText, 'image/svg+xml');
+      const root = d.documentElement;
+      if (!root || root.nodeName.toLowerCase() !== 'svg' || d.querySelector('parsererror')) return '';
+      if (!root.getAttribute('xmlns')) root.setAttribute('xmlns', NS);
+      root.querySelectorAll('script, foreignObject').forEach((x) => x.remove());
+      if (!root.getAttribute('viewBox') && root.getAttribute('width') && root.getAttribute('height')) root.setAttribute('viewBox', `0 0 ${parseFloat(root.getAttribute('width'))} ${parseFloat(root.getAttribute('height'))}`);
+      if (css && css.length < 40000 && root.querySelector('[class]')) {
+        const st = d.createElementNS(NS, 'style');
+        st.textContent = css;
+        root.insertBefore(st, root.firstChild);
+      }
+      const out = new XMLSerializer().serializeToString(root);
+      return out.length <= 120000 ? out : '';
+    };
+    // logo pod nagłówkami „Opcja N”
+    const found = {};
+    const marks = [];
+    const walker = doc.createTreeWalker(doc.body || doc, NodeFilter.SHOW_ELEMENT);
+    let node;
+    let cur = 0;
+    while ((node = walker.nextNode())) {
+      const tag = node.nodeName.toLowerCase();
+      if (/^h[1-6]$/.test(tag) || node.id) {
+        const mm = /^\s*opcja\s*(\d)\b/i.exec(node.textContent || '') || /^opcja-?(\d)$/i.exec(node.id || '');
+        if (mm && Number(mm[1]) !== cur && /^h[1-6]$|^section$|^article$|^div$/.test(tag)) { cur = Number(mm[1]); marks.push(cur); }
+      }
+      if (tag === 'svg' && cur && !found[cur]) {
+        const w = parseFloat(node.getAttribute('width')) || 0;
+        const big = node.querySelectorAll('*').length >= 2 && (w === 0 || w >= 48);
+        if (big) found[cur] = prep(node.outerHTML);
+      }
+    }
+    const count = Math.min(8, Math.max(meta.length, marks.length ? Math.max(...marks) : 0));
+    const options = [];
+    for (let i = 0; i < count; i++) {
+      const o = meta[i] || {};
+      const own = typeof o.svg === 'string' && /^\s*<svg[\s>]/i.test(o.svg) ? prep(o.svg) : '';
+      options.push({ name: String(o.name || ''), taglines: Array.isArray(o.taglines) ? o.taglines.map(String) : [], svg: own || found[i + 1] || '' });
+    }
+    return options;
+  }
+
   /** Sekcja „Logo i hasło — propozycje dla klienta”. */
   function leadLogoSection(lead, logo, brief, mailer) {
     const box = h('section', { class: 'panel no-print', id: 'logo-zgloszenia' }, h('h2', { text: 'Logo i hasło — propozycje dla klienta' }));
@@ -721,19 +842,13 @@
       try {
         if (f.size > 8 * 1024 * 1024) throw new Error('Plik jest za duży (maksymalnie 8 MB).');
         const text = await f.text();
-        let options = [];
-        const m = /<script[^>]*id=["']logo-options["'][^>]*>([\s\S]*?)<\/script>/i.exec(text);
-        if (m) {
-          try {
-            const j = JSON.parse(m[1]);
-            if (j && Array.isArray(j.options)) options = j.options.map((o) => ({ name: String((o && o.name) || ''), taglines: Array.isArray(o && o.taglines) ? o.taglines.map(String) : [] }));
-          } catch {
-            options = [];
-          }
-        }
-        const res = await fetch(`/api/admin/leads/${lead.id}/logo?name=${encodeURIComponent(f.name)}&options=${encodeURIComponent(JSON.stringify(options))}`, { method: 'PUT', credentials: 'same-origin', headers: { 'X-Panel': '1', 'Content-Type': 'application/octet-stream', Accept: 'application/json' }, body: await f.arrayBuffer() });
+        const options = extractLogoOptions(text);
+        const light = options.map((o) => ({ name: o.name, taglines: o.taglines }));
+        const res = await fetch(`/api/admin/leads/${lead.id}/logo?name=${encodeURIComponent(f.name)}&options=${encodeURIComponent(JSON.stringify(light))}`, { method: 'PUT', credentials: 'same-origin', headers: { 'X-Panel': '1', 'Content-Type': 'application/octet-stream', Accept: 'application/json' }, body: await f.arrayBuffer() });
         const d = await res.json().catch(() => ({}));
         if (!res.ok || !d.ok) throw new Error(d.message || `Nie wgrano pliku (${res.status}).`);
+        if (options.some((o) => o.svg)) await q(api(`leads/${lead.id}/logo`, { method: 'PATCH', body: { options } }));
+        else await q(api(`leads/${lead.id}/logo`, { method: 'PATCH', body: { options: [] } }));
         toast(options.length ? `Wgrano propozycje (${options.length} opcje z nazwami i hasłami).` : 'Wgrano propozycje. W pliku nie było bloku z nazwami opcji — klient wybierze „Opcja 1–4”.');
         await route();
         const t = $('#logo-zgloszenia');
@@ -765,16 +880,40 @@
     }
 
     const opt = (logo.options || []).find((o) => o.nr === logo.choice_option);
+    const hasPreviews = (logo.options || []).some((o) => o.svg);
+    const gallery = h('div', { class: 'logo-gallery', 'data-logo-gallery': '' },
+      (logo.options || []).map((o) =>
+        h('figure', { class: `logo-thumb${o.nr === logo.choice_option ? ' is-chosen' : ''}` },
+          o.svg ? h('img', { src: svgUri(o.svg), alt: `Logo — opcja ${o.nr}${o.name ? `: ${o.name}` : ''}` }) : h('div', { class: 'logo-thumb__none', text: 'brak podglądu' }),
+          h('figcaption', null, h('strong', { text: `Opcja ${o.nr}` }), o.name ? ` · ${o.name}` : '', o.nr === logo.choice_option ? h('span', { class: 'status status--zakonczone', text: 'Wybrana' }) : null))));
+    // Starsze propozycje (wgrane przed tą funkcją): jednorazowo odczytaj wygląd opcji z zapisanego pliku
+    if (!hasPreviews && !logo.scanned) {
+      (async () => {
+        try {
+          const r = await fetch(`/logo/${logo.token}/propozycje`, { credentials: 'same-origin' });
+          if (!r.ok) return;
+          const options = extractLogoOptions(await r.text());
+          const { data } = await q(api(`leads/${lead.id}/logo`, { method: 'PATCH', body: { options } }));
+          if (data && data.options.some((o) => o.svg) && location.hash === `#zgloszenie/${lead.id}`) route();
+        } catch (e) {
+          console.error(e);
+        }
+      })();
+    }
     box.append(
       logo.chosen_at
         ? h('div', { class: 'logo-choice' },
             h('p', { class: 'logo-choice__head' }, h('span', { class: 'status status--zakonczone', text: 'Klient wybrał' }), ` ${fmtDate(logo.chosen_at)}`),
             h('p', { class: 'logo-choice__main', text: `Opcja ${logo.choice_option}${logo.choice_name || (opt && opt.name) ? ` — ${logo.choice_name || opt.name}` : ''}` }),
+            opt && opt.svg
+              ? h('div', { class: 'logo-chosen', 'data-logo-chosen': '' }, h('img', { src: svgUri(opt.svg), alt: `Wybrane logo — opcja ${logo.choice_option}` }), h('div', { class: 'logo-chosen__dark' }, h('img', { src: svgUri(opt.svg), alt: '' })))
+              : h('p', { class: 'small' }, h('a', { href: `/logo/${logo.token}/propozycje#opcja-${logo.choice_option}`, target: '_blank', rel: 'noopener noreferrer', text: 'Zobacz wybraną opcję w pliku z propozycjami ↗' })),
             h('dl', { class: 'dl' },
               h('dt', { text: 'Hasło' }), h('dd', { text: logo.choice_tagline || '—' }),
               h('dt', { text: 'Akceptacja kierunku' }), h('dd', { text: logo.choice_accepted ? 'Tak — zaakceptowano' : 'Nie zaznaczono' }),
               h('dt', { text: 'Uwagi i poprawki' }), h('dd', { style: 'white-space:pre-wrap', text: logo.choice_notes || '—' })))
         : h('p', { class: 'alert alert--info', text: logo.opened_at ? `Klient otworzył propozycje ${fmtDate(logo.opened_at)}, ale jeszcze nie zapisał wyboru.` : 'Klient jeszcze nie otworzył linku z propozycjami.' }),
+      hasPreviews ? h('div', null, h('h3', { class: 'logo-gallery__title', text: 'Wszystkie opcje' }), gallery) : null,
       h('p', { class: 'small muted', text: `Plik: ${logo.file_name} · ${fmtSize(logo.size_bytes || 0)} · wgrany ${fmtDate(logo.created_at)} · opcje: ${(logo.options || []).map((o) => o.name || `Opcja ${o.nr}`).join(', ')}` }),
       h('p', { class: 'brief-link' }, h('span', { class: 'small muted', text: 'Link dla klienta: ' }), h('code', { text: link })),
       h('div', { class: 'actions' },

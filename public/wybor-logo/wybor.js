@@ -41,6 +41,8 @@
           var txt = el('span');
           txt.appendChild(el('strong', { text: 'Opcja ' + o.nr }));
           if (o.name) txt.appendChild(el('small', { text: o.name }));
+          // miniatura logo (obrazek SVG — bez możliwości uruchamiania skryptów)
+          if (o.svg) txt.appendChild(el('img', { class: 'wl-thumb', alt: 'Logo — opcja ' + o.nr, src: 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(o.svg) }));
           box.appendChild(el('label', { class: 'wl-choice' }, inp, txt));
         });
         if (d.choice) {

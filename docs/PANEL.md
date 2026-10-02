@@ -8,6 +8,7 @@ Zmiany są widoczne na stronie **od razu** po zapisaniu. Sesja wygasa po 12 godz
 - **Filtry:** status (przyciski u góry), wyszukiwarka (firma, imię, e-mail), „Tylko bez wysłanego powiadomienia”.
 - **+ Dodaj zgłoszenie ręcznie:** dla firm, z którymi kontakt zacząłeś sam (mailowo, telefonicznie). Takie zgłoszenie ma odznakę „Dodane ręcznie”.
 - Kliknij zgłoszenie, aby zobaczyć szczegóły.
+  - **Edytuj dane:** poprawiasz firmę, osobę, e-mail, telefon, linki i opis (np. gdy klient pomylił adres e-mail). Kolejne wiadomości z panelu idą na nowy adres.
   - **Status:** Nowe → Kontakt → W realizacji → Zakończone, albo Odrzucone. Zmiana zapisuje się od razu.
   - **Odpowiedz e-mailem:** otwiera Twój program pocztowy z gotowym adresem.
   - **Prywatne notatki** widzisz tylko Ty. Nie trafiają na stronę ani do zgłaszającego.
@@ -25,6 +26,8 @@ Zmiany są widoczne na stronie **od razu** po zapisaniu. Sesja wygasa po 12 godz
 2. **Wgraj plik HTML z propozycjami** — panel odczyta z niego nazwy opcji i hasła.
 3. **Wyślij link e-mailem** — klient otwiera stronę `twojastrona/logo/…`, ogląda propozycje i w formularzu pod nimi zaznacza opcję i hasło, dopisuje uwagi i akceptuje kierunek.
 4. Wybór zapisuje się w zgłoszeniu („Klient wybrał: Opcja 2 — …”), na liście zgłoszeń pojawia się odznaka „Logo: wybrane”, a Ty dostajesz e-mail.
+
+W zgłoszeniu widzisz też **wygląd wybranego logo** (na jasnym i ciemnym tle) oraz miniatury wszystkich opcji. Panel odczytuje je z wgranego pliku: z bloku danych przygotowanego przez AI albo z pierwszej grafiki SVG pod nagłówkiem „Opcja N”. Jeśli opcja jest obrazkiem PNG/JPG zamiast SVG, zobaczysz „brak podglądu” i link do pliku.
 
 Klient może zmienić wybór, wysyłając formularz ponownie — w panelu widzisz ostatnią wersję. Wgranie nowego pliku zastępuje poprzedni i tworzy nowy link.
 

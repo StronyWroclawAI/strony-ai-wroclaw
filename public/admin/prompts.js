@@ -245,12 +245,14 @@ Tę stronę wgram do panelu mojej strony; klient zobaczy ją w ramce, a POD NIĄ
 - OBOWIĄZKOWO umieść w <head> ten blok danych (mój panel czyta z niego nazwy opcji i hasła do formularza wyboru) — uzupełnij prawdziwymi nazwami i hasłami z części A:
 <script type="application/json" id="logo-options">
 {"options":[
-  {"name":"[nazwa kierunku 1]","taglines":["[hasło 1a]","[hasło 1b]"]},
-  {"name":"[nazwa kierunku 2]","taglines":["[hasło 2a]","[hasło 2b]"]},
-  {"name":"[nazwa kierunku 3]","taglines":["[hasło 3a]","[hasło 3b]"]},
-  {"name":"[nazwa kierunku 4]","taglines":["[hasło 4a]","[hasło 4b]"]}
+  {"name":"[nazwa kierunku 1]","taglines":["[hasło 1a]","[hasło 1b]"],"svg":"[kompletny kod SVG logo poziomego opcji 1]"},
+  {"name":"[nazwa kierunku 2]","taglines":["[hasło 2a]","[hasło 2b]"],"svg":"[…opcji 2]"},
+  {"name":"[nazwa kierunku 3]","taglines":["[hasło 3a]","[hasło 3b]"],"svg":"[…opcji 3]"},
+  {"name":"[nazwa kierunku 4]","taglines":["[hasło 4a]","[hasło 4b]"],"svg":"[…opcji 4]"}
 ]}
 </script>
+  Pole "svg": samodzielne logo poziome danej opcji jako jeden tekst — z atrybutami xmlns i viewBox, kolory i style wpisane w SVG (bez klas CSS ze strony), napis zamieniony na krzywe, cudzysłowy zapisane jako \\" (poprawny JSON), do ok. 60 KB. Dzięki temu w moim panelu i w formularzu wyboru widać miniaturę każdej opcji.
+  Sekcja każdej opcji na stronie ma mieć id="opcja-1" … id="opcja-4".
   (jeśli klient nie potrzebuje haseł — zostaw "taglines":[]).
 
 ${files}

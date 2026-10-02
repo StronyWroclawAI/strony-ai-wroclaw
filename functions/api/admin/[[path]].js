@@ -159,9 +159,36 @@ export async function onRequest(context) {
       }
       case 'PATCH /leads/:id': {
         const b = await body(request);
-        if (!STATUSES.includes(b.status)) throw bad('Nieprawidłowy status.');
-        const r = await run(env, `UPDATE leads SET status = ?, updated_at = ? WHERE id = ?`, b.status, nowIso(), checkId(seg[1]));
-        if (!r.meta.changes) throw notFound();
+        const id = checkId(seg[1]);
+        if (b.status !== undefined && b.company_name === undefined) {
+          if (!STATUSES.includes(b.status)) throw bad('Nieprawidłowy status.');
+          const r = await run(env, `UPDATE leads SET status = ?, updated_at = ? WHERE id = ?`, b.status, nowIso(), id);
+          if (!r.meta.changes) throw notFound();
+          return json({ ok: true });
+        }
+        // Poprawienie danych zgłoszenia (np. błędny adres e-mail)
+        const old = await first(env, `SELECT email FROM leads WHERE id = ?`, id);
+        if (!old) throw notFound();
+        const company = str(b.company_name, [1, 150], 'Nazwa firmy');
+        const contact = str(b.contact_name, [1, 100], 'Osoba kontaktowa');
+        const email = str(b.email, [3, 254], 'E-mail').toLowerCase();
+        if (!/^[^\s@<>()[\]\\,;:"]+@[^\s@<>()[\]\\,;:"]+\.[^\s@<>()[\]\\,;:"]{2,}$/.test(email)) throw bad('Podaj poprawny adres e-mail, np. jan@firma.pl.');
+        const industry = str(b.industry || 'Nie podano', [1, 100], 'Branża');
+        const phone = str(b.phone || '', [0, 30], 'Telefon') || null;
+        if (phone && (!/^[0-9+()\-\s]{7,30}$/.test(phone) || phone.replace(/\D/g, '').length < 7)) throw bad('Podaj poprawny numer telefonu.');
+        const urls = {};
+        for (const [k, label] of [['website_url', 'Obecna strona'], ['facebook_url', 'Facebook'], ['instagram_url', 'Instagram']]) {
+          const u = normalizeUrl(b[k] || '');
+          if (!u.ok) throw bad(`Pole „${label}” ma niepoprawny adres.`);
+          urls[k] = u.value;
+        }
+        const message = str(b.message, [1, 5000], 'Opis / oczekiwania');
+        const t = nowIso();
+        await env.DB.batch([
+          env.DB.prepare(`UPDATE leads SET company_name = ?, industry = ?, contact_name = ?, email = ?, phone = ?, website_url = ?, facebook_url = ?, instagram_url = ?, message = ?, updated_at = ? WHERE id = ?`).bind(company, industry, contact, email, phone, urls.website_url, urls.facebook_url, urls.instagram_url, message, t, id),
+          // adres do wysyłki briefu idzie za zgłoszeniem (odpowiedzi klienta w briefie zostają bez zmian)
+          env.DB.prepare(`UPDATE briefs SET contact_email = ?, updated_at = ? WHERE lead_id = ? AND (contact_email IS NULL OR contact_email = ?)`).bind(email, t, id, old.email),
+        ]);
         return json({ ok: true });
       }
       case 'DELETE /leads/:id': {
@@ -236,6 +263,42 @@ export async function onRequest(context) {
         ]);
         if (old) await env.MEDIA.delete(old.kv_key);
         return json({ ok: true, token, options });
+      }
+      case 'PATCH /leads/:id/logo': {
+        // Podglądy opcji (SVG) i nazwy — odczytane z pliku w panelu. Link i wybór klienta zostają bez zmian.
+        const id = checkId(seg[1]);
+        const lp = await first(env, `SELECT id, options FROM logo_proposals WHERE lead_id = ?`, id);
+        if (!lp) throw notFound('To zgłoszenie nie ma propozycji logo.');
+        const raw = await request.text();
+        if (raw.length > 700000) throw bad('Podglądy opcji są za duże.');
+        let b;
+        try {
+          b = JSON.parse(raw);
+        } catch {
+          throw bad('Nieprawidłowe dane.');
+        }
+        let cur = [];
+        try {
+          cur = JSON.parse(lp.options || '[]');
+        } catch {
+          cur = [];
+        }
+        const incoming = Array.isArray(b.options) ? b.options.slice(0, 8) : [];
+        const count = Math.max(cur.length, incoming.length);
+        const options = [];
+        for (let i = 0; i < count; i++) {
+          const c = cur[i] || {};
+          const n = incoming[i] || {};
+          const svg = typeof n.svg === 'string' && /^<svg[\s>]/i.test(n.svg.trim()) && n.svg.length <= 120000 ? n.svg.trim() : '';
+          options.push({
+            nr: i + 1,
+            name: String(c.name || n.name || '').replace(/\s+/g, ' ').trim().slice(0, 80),
+            taglines: Array.isArray(c.taglines) && c.taglines.length ? c.taglines : Array.isArray(n.taglines) ? n.taglines.slice(0, 6).map((x) => String(x).replace(/\s+/g, ' ').trim().slice(0, 120)).filter(Boolean) : [],
+            ...(svg ? { svg } : c.svg ? { svg: c.svg } : {}),
+          });
+        }
+        await run(env, `UPDATE logo_proposals SET options = ?, scanned = 1, updated_at = ? WHERE id = ?`, JSON.stringify(options), nowIso(), lp.id);
+        return json({ ok: true, options });
       }
       case 'DELETE /leads/:id/logo': {
         const id = checkId(seg[1]);
