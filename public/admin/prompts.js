@@ -225,33 +225,39 @@ ${sl}-hasla/
   hasla.txt   (wszystkie hasła z numerami)`;
     const page = logo ? 'wybor-logo.html' : 'wybor-hasla.html';
     return `Jesteś doświadczonym projektantem identyfikacji wizualnej i copywriterem marek.
-Na podstawie briefu klienta (na końcu) przygotuj STRONĘ WYBORU ${logo ? 'LOGO' : 'HASŁA'}${logo && tag ? ' I HASŁA' : ''} dla firmy „${n}”, którą wyślę klientowi do wyboru i akceptacji, oraz PACZKĘ ZIP z plikami.
+Na podstawie briefu klienta (na końcu) przygotuj STRONĘ WYBORU ${logo ? 'LOGO' : 'HASŁA'}${logo && tag ? ' I HASŁA' : ''} dla firmy „${n}”, którą pokażę klientowi do wyboru i akceptacji, oraz PACZKĘ ZIP z plikami.
 Przygotowuje: ${AUTHOR}.
 ${intro}
 Nie wymyślaj faktów o firmie, których nie ma w briefie.
 
 ${options}
 
-B. STRONA DLA KLIENTA — ${page}
-- Jeden samodzielny plik HTML (CSS i JS w środku, ${logo ? 'logo jako inline SVG, ' : ''}bez zewnętrznych skryptów). Ma działać po dwukliku z dysku i po wysłaniu e-mailem. Fonty mogą być z Google Fonts (z zapasowym krojem systemowym).
-- Po polsku, w tonie z briefu (jak zwracać się do klienta). Nagłówek: „Propozycje ${logo ? 'logo' : 'hasła'}${logo && tag ? ' i hasła' : ''} dla ${n}”, podpis „Przygotował: Strony AI Wrocław — Grzegorz”.
-- Krótkie wprowadzenie: jak czytać propozycje i co się stanie po wyborze (dopracuję wybraną opcję i przygotuję komplet plików).
-- 4 opcje jedna pod drugą, każda z dużym podglądem i opisem z części A, wyraźnie ponumerowane (Opcja 1–4).
-- Na końcu formularz wyboru (działa bez serwera):
-  • wybór opcji (pola jednokrotnego wyboru 1–4)${tag ? ',\n  • wybór hasła (lista haseł z wybranej opcji + pole „własna propozycja”)' : ''},
-  • pole „Uwagi i poprawki” (np. „opcja 2, ale kolor z opcji 4”),
-  • pole wyboru „Akceptuję wybraną opcję jako kierunek do dalszych prac”,
-  • przycisk „Wyślij wybór e-mailem” — otwiera wiadomość (mailto:stronywroclawai@gmail.com) z tematem „Wybór ${logo ? 'logo' : 'hasła'} — ${n}” i gotowym podsumowaniem wyboru,
-  • przycisk „Skopiuj podsumowanie” (dla osób bez programu pocztowego).
+B. STRONA Z PROPOZYCJAMI — ${page}
+Tę stronę wgram do panelu mojej strony; klient zobaczy ją w ramce, a POD NIĄ będzie mój formularz wyboru (opcja, hasło, uwagi, akceptacja). Dlatego:
+- Jeden samodzielny plik HTML (CSS i JS w środku, ${logo ? 'logo jako inline SVG, ' : ''}bez zewnętrznych skryptów i bez plików obok). Fonty mogą być z Google Fonts (z zapasowym krojem systemowym). Rozmiar najlepiej poniżej 2 MB.
+- NIE dodawaj własnego formularza, przycisków „wybieram”, mailto ani wysyłki — wybór odbywa się w moim formularzu pod ramką. Na końcu strony dodaj tylko zdanie: „Wybór zaznacz w formularzu poniżej propozycji.”
+- Po polsku, w tonie z briefu. Nagłówek: „Propozycje ${logo ? 'logo' : 'hasła'}${logo && tag ? ' i hasła' : ''} dla ${n}”, podpis „Przygotował: Strony AI Wrocław — Grzegorz”.
+- Krótkie wprowadzenie: jak czytać propozycje i co stanie się po wyborze (dopracuję wybraną opcję i przygotuję komplet plików).
+- 4 opcje jedna pod drugą, każda z dużym podglądem i opisem z części A, WYRAŹNIE ponumerowane dużym nagłówkiem „Opcja 1” … „Opcja 4” (klient wybiera po numerze).
 - Adnotacja: „Propozycje są wstępne. Ostateczną wersję dopracuję po Twoim wyborze.”
-- Dostępność: kontrast WCAG AA, obsługa z klawiatury, widoczny fokus, teksty alternatywne opisujące każde logo, wygląd bez przewijania poziomego na 390 px, czytelny wydruk (PDF).
-- Nie używaj localStorage, cookies ani analityki.
+- Dostępność: kontrast WCAG AA, teksty alternatywne opisujące każde logo, wygląd bez przewijania poziomego na 390 px, czytelny wydruk.
+- Nie używaj localStorage, cookies, analityki ani odnośników do innych plików.
+- OBOWIĄZKOWO umieść w <head> ten blok danych (mój panel czyta z niego nazwy opcji i hasła do formularza wyboru) — uzupełnij prawdziwymi nazwami i hasłami z części A:
+<script type="application/json" id="logo-options">
+{"options":[
+  {"name":"[nazwa kierunku 1]","taglines":["[hasło 1a]","[hasło 1b]"]},
+  {"name":"[nazwa kierunku 2]","taglines":["[hasło 2a]","[hasło 2b]"]},
+  {"name":"[nazwa kierunku 3]","taglines":["[hasło 3a]","[hasło 3b]"]},
+  {"name":"[nazwa kierunku 4]","taglines":["[hasło 4a]","[hasło 4b]"]}
+]}
+</script>
+  (jeśli klient nie potrzebuje haseł — zostaw "taglines":[]).
 
 ${files}
 
 D. NA KONIEC
-- Otwórz ${page} i sprawdź, czy wszystko się wyświetla, a przyciski „Wyślij wybór e-mailem” i „Skopiuj podsumowanie” działają.
-- Spakuj folder do ZIP i daj mi go do pobrania. Podaj listę plików z rozmiarami.
+- Otwórz ${page} i sprawdź, czy wszystko się wyświetla i czy blok <script id="logo-options"> jest poprawnym JSON-em z 4 opcjami.
+- Daj mi do pobrania: osobno plik ${page} (wgram go do panelu) oraz ZIP. Podaj listę plików z rozmiarami.
 
 === BRIEF KLIENTA ===
 

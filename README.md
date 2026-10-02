@@ -45,6 +45,7 @@ Zgodność sprawdzona w dokumentacji (październik 2026):
   - logowanie z blokadą po 5 błędnych próbach;
   - zgłoszenia: filtry, szczegóły, statusy, prywatne notatki, usuwanie, ręczne dodawanie kontaktów;
   - brief projektowy przypięty do zgłoszenia, z pełnym podglądem odpowiedzi;
+  - e-maile do klientów z konta Gmail prosto z panelu ([`docs/EMAIL.md`](docs/EMAIL.md)) i strona wyboru logo, na której klient zaznacza opcję, a wybór zapisuje się w zgłoszeniu;
   - edycja treści, FAQ, branż i możliwości;
   - zdjęcia z tekstem alternatywnym, automatycznie zmniejszane do WebP;
   - portfolio: szkic i publikacja, kolejność, zdjęcia, **karty projektów wgrywane jako ZIP** (instrukcja i polecenie dla AI: [`docs/PORTFOLIO.md`](docs/PORTFOLIO.md));

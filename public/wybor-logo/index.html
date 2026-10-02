@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Wybór logo — Strony AI Wrocław</title>
+<meta name="theme-color" content="#0f2544">
+<link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/style.css?v=5">
+<link rel="stylesheet" href="/wybor-logo/wybor.css?v=1">
+<script src="/wybor-logo/wybor.js?v=1" defer></script>
+</head>
+<body class="wl-body">
+<a class="skip-link" href="#wybor">Przejdź do formularza wyboru</a>
+<header class="wl-top">
+  <a class="wl-brand" href="/" aria-label="Strony AI Wrocław — strona główna">
+    <img src="/assets/img/logo-znak-bialy.svg" alt="" width="44" height="27">
+    <span><strong>Strony AI Wrocław</strong><small>Propozycje logo i hasła</small></span>
+  </a>
+  <a class="btn btn--accent btn--sm" href="#wybor" data-jump hidden>Przejdź do wyboru ↓</a>
+</header>
+
+<main class="wl-main">
+  <div class="wl-state" data-view="loading"><p>Wczytuję propozycje…</p></div>
+  <section class="wl-state" data-view="error" hidden>
+    <h1>Nie można otworzyć propozycji</h1>
+    <p data-error-text>Ten link jest nieaktywny.</p>
+    <p>Napisz na <a href="mailto:stronywroclawai@gmail.com">stronywroclawai@gmail.com</a> — wyślę nowy link.</p>
+  </section>
+
+  <div data-view="ready" hidden>
+    <div class="wl-intro">
+      <h1>Propozycje dla <span data-company>Twojej firmy</span></h1>
+      <p>Obejrzyj propozycje w ramce poniżej, a potem zaznacz swój wybór w formularzu pod spodem. Możesz dopisać uwagi i poprawki — wybór zapisze się u mnie od razu.</p>
+    </div>
+    <div class="wl-frame">
+      <iframe data-frame title="Propozycje logo i hasła" sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox allow-modals allow-downloads" referrerpolicy="no-referrer"></iframe>
+    </div>
+    <p class="wl-open"><a data-open target="_blank" rel="noopener noreferrer">Otwórz propozycje w osobnej karcie ↗</a></p>
+
+    <section class="wl-form-card" id="wybor" aria-labelledby="wybor-title">
+      <h2 id="wybor-title">Twój wybór</h2>
+      <div class="wl-saved" role="status" hidden data-saved></div>
+      <form data-form novalidate>
+        <fieldset>
+          <legend>Którą opcję wybierasz? <span class="req" aria-hidden="true">*</span></legend>
+          <div class="wl-options" data-options></div>
+          <p class="field__error" data-err-option></p>
+        </fieldset>
+        <fieldset data-taglines-box hidden>
+          <legend>Hasło firmowe</legend>
+          <div class="wl-taglines" data-taglines></div>
+        </fieldset>
+        <div class="field">
+          <label for="wl-tagline">Własne hasło albo zmiana w haśle <span class="wl-opt">(opcjonalnie)</span></label>
+          <input id="wl-tagline" type="text" maxlength="200" data-tagline-own>
+        </div>
+        <div class="field">
+          <label for="wl-notes">Uwagi i poprawki <span class="wl-opt">(opcjonalnie)</span></label>
+          <p class="field__hint" id="wl-notes-h">Np. „opcja 2, ale z kolorem z opcji 4”, „większy napis”, „bez ramki wokół znaku”.</p>
+          <textarea id="wl-notes" rows="5" maxlength="4000" aria-describedby="wl-notes-h" data-notes></textarea>
+        </div>
+        <label class="wl-check"><input type="checkbox" data-accept> <span>Akceptuję wybraną opcję jako kierunek do dalszych prac.</span></label>
+        <p class="wl-muted">Propozycje są wstępne — ostateczną wersję dopracuję po Twoim wyborze. Wybór możesz zmienić, wysyłając formularz ponownie.</p>
+        <div class="wl-alert" role="alert" hidden data-alert></div>
+        <button class="btn btn--accent btn--lg" type="submit" data-submit>Zapisz mój wybór</button>
+      </form>
+    </section>
+  </div>
+</main>
+<footer class="wl-footer"><p>Strony AI Wrocław · <a href="mailto:stronywroclawai@gmail.com">stronywroclawai@gmail.com</a> · <a href="/polityka-prywatnosci">Polityka prywatności</a></p></footer>
+</body>
+</html>

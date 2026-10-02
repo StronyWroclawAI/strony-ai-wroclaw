@@ -4,7 +4,7 @@
 
 import { SEED } from './seed.js';
 
-export const SCHEMA_VERSION = '6';
+export const SCHEMA_VERSION = '7';
 
 // Każda instrukcja w osobnym elemencie (D1 wykonuje je w jednej transakcji przez batch()).
 export const SCHEMA = [
@@ -54,6 +54,17 @@ export const SCHEMA = [
     project_id TEXT NOT NULL, ver TEXT NOT NULL, path TEXT NOT NULL,
     kv_key TEXT NOT NULL, content_type TEXT NOT NULL, size_bytes INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL, PRIMARY KEY (project_id, ver, path))`,
+  `CREATE TABLE IF NOT EXISTS lead_emails (
+    id TEXT PRIMARY KEY, lead_id TEXT NOT NULL, kind TEXT NOT NULL DEFAULT 'wlasna',
+    to_email TEXT NOT NULL, subject TEXT NOT NULL, body TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'sent', error TEXT, created_at TEXT NOT NULL)`,
+  `CREATE INDEX IF NOT EXISTS lead_emails_lead_idx ON lead_emails (lead_id, created_at)`,
+  `CREATE TABLE IF NOT EXISTS logo_proposals (
+    id TEXT PRIMARY KEY, lead_id TEXT NOT NULL UNIQUE, token TEXT NOT NULL UNIQUE,
+    kv_key TEXT NOT NULL, file_name TEXT NOT NULL DEFAULT '', size_bytes INTEGER NOT NULL DEFAULT 0,
+    options TEXT NOT NULL DEFAULT '[]', status TEXT NOT NULL DEFAULT 'nowa',
+    created_at TEXT NOT NULL, updated_at TEXT NOT NULL, opened_at TEXT, chosen_at TEXT,
+    choice_option INTEGER, choice_name TEXT, choice_tagline TEXT, choice_notes TEXT, choice_accepted INTEGER NOT NULL DEFAULT 0)`,
   `CREATE TABLE IF NOT EXISTS leads (
     id TEXT PRIMARY KEY, submission_id TEXT NOT NULL UNIQUE,
     created_at TEXT NOT NULL, updated_at TEXT NOT NULL,

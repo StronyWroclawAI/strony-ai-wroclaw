@@ -368,6 +368,7 @@
                   { class: 'lead-row__badges' },
                   l.source === 'reczne' ? h('span', { class: 'status status--odrzucone', text: 'Dodane ręcznie' }) : null,
                   l.source !== 'reczne' && ['failed', 'skipped'].includes(l.notification_status) ? h('span', { class: `status status--${l.notification_status}`, text: NOTIF_LABEL[l.notification_status] }) : null,
+                  l.logo_status ? h('span', { class: `status status--${l.logo_status === 'wybrana' ? 'zakonczone' : 'kontakt'}`, text: l.logo_status === 'wybrana' ? 'Logo: wybrane' : 'Logo: czeka na wybór' }) : null,
                   l.brief_status ? h('span', { class: `status status--${BRIEF_CLASS[l.brief_status]}`, text: `Brief: ${BRIEF_STATUS[l.brief_status].toLowerCase()}` }) : null,
                   h('span', { class: `status status--${l.status}`, text: STATUS_LABEL[l.status] })
                 )
@@ -444,6 +445,10 @@
     const lead = res.data && res.data.lead;
     const notes = res.data ? res.data.notes : [];
     const leadBrief = res.data ? res.data.brief : null;
+    const leadLogo = res.data ? res.data.logo : null;
+    const leadEmails = res.data ? res.data.emails || [] : [];
+    const mail = (res.data && res.data.mail) || { gmail: false, from: null };
+    const mailer = leadMailer(lead, leadEmails, mail);
     if (!lead) {
       main.replaceChildren(h('a', { class: 'back', href: '#zgloszenia', text: '← Wszystkie zgłoszenia' }), h('div', { class: 'empty', text: 'Nie znaleziono zgłoszenia — mogło zostać usunięte.' }));
       return;
@@ -582,7 +587,7 @@
         lead.company_name,
         `${lead.source === 'reczne' ? 'Dodane ręcznie' : 'Zgłoszenie'} z ${fmtDate(lead.created_at)}`,
         h('a', { class: 'btn', href: '#brief-zgloszenia', onclick: (e) => { e.preventDefault(); const t = $('#brief-zgloszenia'); if (t) t.scrollIntoView({ behavior: 'smooth' }); }, text: leadBrief ? 'Brief ↓' : 'Utwórz brief ↓' }),
-        h('a', { class: 'btn btn--primary', href: `mailto:${lead.email}?subject=${subject}`, text: 'Odpowiedz e-mailem' })
+        h('button', { class: 'btn btn--primary', type: 'button', text: 'Napisz e-mail', onclick: () => mailer.compose('wlasna', `Strona internetowa dla ${lead.company_name}`, `Dzień dobry,\n\n\n\n${SIGN}`) })
       ),
       h(
         'div',
@@ -617,12 +622,180 @@
           )
         )
       ),
-      leadBriefSection(lead, leadBrief)
+      leadBriefSection(lead, leadBrief, mailer),
+      leadLogoSection(lead, leadLogo, leadBrief, mailer),
+      mailer.el
     );
   }
 
   /** Sekcja „Brief projektowy” w szczegółach zgłoszenia. */
-  function leadBriefSection(lead, b) {
+  const SIGN = 'Pozdrawiam\nGrzegorz\nStrony AI Wrocław';
+
+  /** Sekcja „E-mail do klienta”: pisanie i wysyłka z konta Gmail + historia wysłanych wiadomości. */
+  function leadMailer(lead, emails, mail) {
+    const subject = h('input', { type: 'text', maxlength: '200' });
+    const bodyIn = h('textarea', { rows: '11', maxlength: '10000' });
+    let kind = 'wlasna';
+    const msg = h('div', { 'aria-live': 'polite' });
+    const history = h('div');
+    const KIND = { brief: 'Brief', logo: 'Wybór logo', wlasna: 'Wiadomość' };
+    function drawHistory() {
+      history.replaceChildren(
+        h('h3', { text: `Wysłane wiadomości (${emails.length})` }),
+        emails.length
+          ? h('ul', { class: 'notes' }, emails.map((m) =>
+              h('li', { class: 'note' },
+                h('div', { class: 'note__meta' }, h('span', { text: `${fmtDate(m.created_at)} · ${KIND[m.kind] || 'Wiadomość'} · do ${m.to_email}` }), h('span', { class: `status status--${m.status === 'sent' ? 'zakonczone' : 'failed'}`, text: m.status === 'sent' ? 'Wysłana' : 'Niewysłana' })),
+                h('details', null, h('summary', { text: m.subject }), h('div', { class: 'note__body', text: m.body }), m.error ? h('p', { class: 'small muted', text: m.error }) : null)
+              )))
+          : h('p', { class: 'small muted', text: 'Nie wysłano jeszcze żadnej wiadomości z panelu.' })
+      );
+    }
+    drawHistory();
+    const gmailUrl = () => `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(lead.email)}&su=${encodeURIComponent(subject.value)}&body=${encodeURIComponent(bodyIn.value)}`;
+    const sendBtn = h('button', { class: 'btn btn--primary', type: 'submit', 'data-send-email': '', text: mail.gmail ? `Wyślij z ${mail.from}` : 'Wyślij' });
+    const form = h(
+      'form',
+      {
+        novalidate: true,
+        onsubmit: async (e) => {
+          e.preventDefault();
+          msg.replaceChildren();
+          if (subject.value.trim().length < 3) { subject.focus(); return msg.replaceChildren(h('div', { class: 'alert alert--error', text: 'Wpisz temat wiadomości.' })); }
+          if (bodyIn.value.trim().length < 10) { bodyIn.focus(); return msg.replaceChildren(h('div', { class: 'alert alert--error', text: 'Wpisz treść wiadomości.' })); }
+          busy(sendBtn, true, 'Wysyłam…');
+          let res;
+          try {
+            res = await fetch(`/api/admin/leads/${lead.id}/email`, { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-Panel': '1' }, body: JSON.stringify({ kind, subject: subject.value.trim(), body: bodyIn.value }) });
+          } catch {
+            busy(sendBtn, false);
+            return msg.replaceChildren(h('div', { class: 'alert alert--error', text: 'Brak połączenia z serwerem.' }));
+          }
+          const d = await res.json().catch(() => ({}));
+          busy(sendBtn, false);
+          if (d.item) { emails.unshift(d.item); drawHistory(); }
+          if (!res.ok || !d.ok) return msg.replaceChildren(h('div', { class: 'alert alert--error', text: d.message || `Nie wysłano (${res.status}).` }));
+          msg.replaceChildren(h('div', { class: 'alert alert--ok', text: `${d.message} Kopia jest w folderze „Wysłane” w Gmailu.` }));
+          toast('Wiadomość wysłana.');
+          subject.value = '';
+          bodyIn.value = '';
+          kind = 'wlasna';
+        },
+      },
+      h('p', { class: 'small' }, 'Do: ', h('strong', { text: `${lead.contact_name} <${lead.email}>` })),
+      field('Temat', subject),
+      field('Treść', bodyIn),
+      msg,
+      mail.gmail
+        ? h('div', { class: 'actions' }, sendBtn, h('button', { class: 'btn', type: 'button', text: 'Otwórz w Gmailu', onclick: () => window.open(gmailUrl(), '_blank', 'noopener') }))
+        : h('div', null,
+            h('div', { class: 'alert alert--info' }, 'Wysyłka prosto z panelu nie jest jeszcze włączona. Dodaj w Cloudflare zmienne GMAIL_USER i GMAIL_APP_PASSWORD (instrukcja: docs/EMAIL.md). Do tego czasu wiadomość otworzysz w Gmailu jednym kliknięciem.'),
+            h('div', { class: 'actions' },
+              h('button', { class: 'btn btn--primary', type: 'button', 'data-open-gmail': '', text: 'Otwórz w Gmailu', onclick: () => window.open(gmailUrl(), '_blank', 'noopener') }),
+              h('button', { class: 'btn', type: 'button', text: 'Otwórz w programie pocztowym', onclick: () => { location.href = `mailto:${lead.email}?subject=${encodeURIComponent(subject.value)}&body=${encodeURIComponent(bodyIn.value)}`; } })))
+    );
+    const el = h('section', { class: 'panel no-print', id: 'email-klienta' }, h('h2', { text: 'E-mail do klienta' }), form, history);
+    return {
+      el,
+      compose(k, subj, text) {
+        kind = k;
+        subject.value = subj;
+        bodyIn.value = text;
+        msg.replaceChildren();
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        setTimeout(() => bodyIn.focus({ preventScroll: true }), 300);
+      },
+    };
+  }
+
+  /** Sekcja „Logo i hasło — propozycje dla klienta”. */
+  function leadLogoSection(lead, logo, brief, mailer) {
+    const box = h('section', { class: 'panel no-print', id: 'logo-zgloszenia' }, h('h2', { text: 'Logo i hasło — propozycje dla klienta' }));
+    const link = logo ? `${location.origin}/logo/${logo.token}` : '';
+    const input = h('input', { type: 'file', accept: '.html,.htm,text/html', hidden: true, id: 'logo-html', 'aria-label': 'Plik HTML z propozycjami logo' });
+    const progress = h('div', { 'aria-live': 'polite' });
+    input.addEventListener('change', async () => {
+      const f = input.files && input.files[0];
+      if (!f) return;
+      progress.replaceChildren(h('p', { class: 'small muted', text: 'Wgrywam…' }));
+      try {
+        if (f.size > 8 * 1024 * 1024) throw new Error('Plik jest za duży (maksymalnie 8 MB).');
+        const text = await f.text();
+        let options = [];
+        const m = /<script[^>]*id=["']logo-options["'][^>]*>([\s\S]*?)<\/script>/i.exec(text);
+        if (m) {
+          try {
+            const j = JSON.parse(m[1]);
+            if (j && Array.isArray(j.options)) options = j.options.map((o) => ({ name: String((o && o.name) || ''), taglines: Array.isArray(o && o.taglines) ? o.taglines.map(String) : [] }));
+          } catch {
+            options = [];
+          }
+        }
+        const res = await fetch(`/api/admin/leads/${lead.id}/logo?name=${encodeURIComponent(f.name)}&options=${encodeURIComponent(JSON.stringify(options))}`, { method: 'PUT', credentials: 'same-origin', headers: { 'X-Panel': '1', 'Content-Type': 'application/octet-stream', Accept: 'application/json' }, body: await f.arrayBuffer() });
+        const d = await res.json().catch(() => ({}));
+        if (!res.ok || !d.ok) throw new Error(d.message || `Nie wgrano pliku (${res.status}).`);
+        toast(options.length ? `Wgrano propozycje (${options.length} opcje z nazwami i hasłami).` : 'Wgrano propozycje. W pliku nie było bloku z nazwami opcji — klient wybierze „Opcja 1–4”.');
+        await route();
+        const t = $('#logo-zgloszenia');
+        if (t) t.scrollIntoView({ behavior: 'smooth' });
+      } catch (e) {
+        input.value = '';
+        progress.replaceChildren(h('div', { class: 'alert alert--error', text: errMsg(e) }));
+      }
+    });
+    const pick = h('button', { class: `btn btn--sm${logo ? '' : ' btn--primary'}`, type: 'button', 'data-logo-pick': '', text: logo ? 'Wgraj nową wersję (zastąpi obecną)' : 'Wgraj plik HTML z propozycjami…', onclick: () => input.click() });
+    const P = window.BRIEF_PROMPTS;
+    const a = brief && brief.answers;
+    const promptBtn = P && a
+      ? h('button', { class: 'btn btn--sm', type: 'button', text: 'Kopiuj polecenie dla AI (4 opcje + ZIP)', onclick: () => copyText(P.logoPage(a, { company_name: lead.company_name }), 'Skopiowano polecenie: strona z propozycjami logo i hasła.') })
+      : null;
+
+    if (!logo) {
+      box.append(
+        h('ol', { class: 'steps-list small' },
+          h('li', { text: a ? 'Skopiuj polecenie dla AI (przycisk poniżej) — AI przygotuje plik wybor-logo.html z 4 opcjami oraz ZIP z plikami logo.' : 'Gdy klient wypełni brief, pojawi się tu przycisk z gotowym poleceniem dla AI. Możesz też wgrać własny plik HTML z propozycjami.' }),
+          h('li', { text: 'Wgraj tutaj plik wybor-logo.html.' }),
+          h('li', { text: 'Wyślij klientowi link. Klient ogląda propozycje, zaznacza opcję i hasło, dopisuje uwagi — a jego wybór zapisuje się w tym zgłoszeniu.' })
+        ),
+        h('div', { class: 'actions' }, promptBtn, pick),
+        input,
+        progress
+      );
+      return box;
+    }
+
+    const opt = (logo.options || []).find((o) => o.nr === logo.choice_option);
+    box.append(
+      logo.chosen_at
+        ? h('div', { class: 'logo-choice' },
+            h('p', { class: 'logo-choice__head' }, h('span', { class: 'status status--zakonczone', text: 'Klient wybrał' }), ` ${fmtDate(logo.chosen_at)}`),
+            h('p', { class: 'logo-choice__main', text: `Opcja ${logo.choice_option}${logo.choice_name || (opt && opt.name) ? ` — ${logo.choice_name || opt.name}` : ''}` }),
+            h('dl', { class: 'dl' },
+              h('dt', { text: 'Hasło' }), h('dd', { text: logo.choice_tagline || '—' }),
+              h('dt', { text: 'Akceptacja kierunku' }), h('dd', { text: logo.choice_accepted ? 'Tak — zaakceptowano' : 'Nie zaznaczono' }),
+              h('dt', { text: 'Uwagi i poprawki' }), h('dd', { style: 'white-space:pre-wrap', text: logo.choice_notes || '—' })))
+        : h('p', { class: 'alert alert--info', text: logo.opened_at ? `Klient otworzył propozycje ${fmtDate(logo.opened_at)}, ale jeszcze nie zapisał wyboru.` : 'Klient jeszcze nie otworzył linku z propozycjami.' }),
+      h('p', { class: 'small muted', text: `Plik: ${logo.file_name} · ${fmtSize(logo.size_bytes || 0)} · wgrany ${fmtDate(logo.created_at)} · opcje: ${(logo.options || []).map((o) => o.name || `Opcja ${o.nr}`).join(', ')}` }),
+      h('p', { class: 'brief-link' }, h('span', { class: 'small muted', text: 'Link dla klienta: ' }), h('code', { text: link })),
+      h('div', { class: 'actions' },
+        h('button', { class: `btn${logo.chosen_at ? '' : ' btn--primary'}`, type: 'button', 'data-logo-mail': '', text: 'Wyślij link e-mailem', onclick: () => mailer.compose('logo', `Propozycje logo — ${lead.company_name}`, `Dzień dobry,\n\nprzygotowałem propozycje logo i hasła dla ${lead.company_name}. Proszę obejrzeć je pod poniższym linkiem i zaznaczyć opcję, która podoba się najbardziej — można też dopisać uwagi i poprawki:\n\n${link}\n\nWybór zapisze się u mnie automatycznie. Propozycje są wstępne: wybraną opcję dopracuję i przygotuję komplet plików.\n\n${SIGN}`) }),
+        h('button', { class: 'btn', type: 'button', text: 'Kopiuj link', onclick: () => copyText(link, 'Link skopiowany.') }),
+        h('a', { class: 'btn', href: `/logo/${logo.token}`, target: '_blank', rel: 'noopener noreferrer', text: 'Otwórz jak klient ↗' })),
+      h('div', { class: 'actions' }, promptBtn, pick,
+        h('button', { class: 'btn btn--sm btn--danger-outline', type: 'button', text: 'Usuń propozycje', onclick: async () => {
+          if (!(await confirmDialog({ title: 'Usunąć propozycje logo?', text: 'Plik z propozycjami i zapisany wybór klienta zostaną usunięte, a link przestanie działać.' }))) return;
+          const { error } = await q(api(`leads/${lead.id}/logo`, { method: 'DELETE' }));
+          if (error) return toast(errMsg(error), 'error');
+          toast('Propozycje usunięte.');
+          route();
+        } })),
+      input,
+      progress
+    );
+    return box;
+  }
+
+  function leadBriefSection(lead, b, mailer) {
     const box = h('section', { class: 'brief-attached', id: 'brief-zgloszenia' });
     if (!b) {
       const btn = h('button', {
@@ -651,7 +824,7 @@
       );
       return box;
     }
-    box.append(...briefBlocks({ ...b, company_name: b.company_name || lead.company_name, contact_email: b.contact_email || lead.email }, { inLead: true }));
+    box.append(...briefBlocks({ ...b, company_name: b.company_name || lead.company_name, contact_email: b.contact_email || lead.email }, { inLead: true, mailer }));
     return box;
   }
 
@@ -761,7 +934,9 @@
       h(
         'div',
         { class: 'actions' },
-        h('a', { class: `btn${filled ? '' : ' btn--primary'}`, href: briefMailto(b), text: 'Wyślij link e-mailem' }),
+        opts.mailer
+          ? h('button', { class: `btn${filled ? '' : ' btn--primary'}`, type: 'button', 'data-brief-mail': '', text: 'Wyślij link e-mailem', onclick: () => opts.mailer.compose('brief', `Brief strony internetowej — ${company}`, `Dzień dobry,\n\nzgodnie z rozmową przesyłam krótki formularz (brief), który pomoże mi przygotować stronę internetową dla ${company}:\n\n${briefLink(b.token)}\n\nWypełnienie zajmuje ok. 15–20 minut. Odpowiedzi zapisują się automatycznie, więc można przerwać i wrócić przez ten sam link. Jeśli czegoś nie wiesz — pomiń pytanie, omówimy to razem.\n\n${SIGN}`) })
+          : h('a', { class: `btn${filled ? '' : ' btn--primary'}`, href: briefMailto(b), text: 'Wyślij link e-mailem' }),
         h('button', { class: 'btn', type: 'button', text: 'Kopiuj link', onclick: () => copyText(briefLink(b.token), 'Link skopiowany.') }),
         h('a', { class: 'btn', href: `/brief/${b.token}`, target: '_blank', rel: 'noopener noreferrer', text: 'Otwórz jak klient ↗' })
       ),
@@ -1971,7 +2146,8 @@
             row('Baza danych Cloudflare D1 (DB)', st.db),
             row('Magazyn zdjęć Cloudflare KV (MEDIA)', st.media, st.media ? 'skonfigurowano' : 'brak — wgrywanie zdjęć nie zadziała'),
             row('Ochrona formularza Cloudflare Turnstile', st.turnstile, st.turnstile ? 'włączona' : 'wyłączona — ustaw klucze TURNSTILE_*'),
-            row('Powiadomienia e-mail (Resend)', st.email, st.email ? `na ${st.notifyTo}` : 'brak RESEND_API_KEY'),
+            row('Wysyłka z Gmaila (e-maile do klientów)', st.gmail, st.gmail ? `z ${st.gmailUser}` : 'brak GMAIL_USER / GMAIL_APP_PASSWORD — instrukcja w docs/EMAIL.md'),
+            row('Powiadomienia do Ciebie', st.email, st.email ? `na ${st.notifyTo} (${st.gmail ? 'przez Gmail' : 'przez Resend'})` : 'brak konfiguracji Gmaila i RESEND_API_KEY'),
             row('Sól do skracania adresów IP', st.ipSalt, st.ipSalt ? 'ustawiona' : 'brak IP_HASH_SALT'),
             row('Adres docelowy strony (SITE_URL)', !!st.siteUrl, st.siteUrl || 'nieustawiony — używany jest bieżący adres')
           ),

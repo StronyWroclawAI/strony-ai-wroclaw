@@ -4,7 +4,8 @@
 import { json, contactEmail, siteOrigin } from '../../_lib/http.js';
 import { guardAdmin, login, clearSessionCookie, hasValidSession, authConfigured, changePassword } from '../../_lib/auth.js';
 import { ensureSchema, hasDb, uuid, nowIso, all, first, run, mediaUrl } from '../../_lib/db.js';
-import { sendEmail, notifyAboutLead, emailConfigured } from '../../_lib/email.js';
+import { sendEmail, notifyAboutLead, emailConfigured, sendClientEmail } from '../../_lib/email.js';
+import { gmailConfigured, gmailAddress } from '../../_lib/smtp.js';
 import { normalizeUrl } from '../../_lib/validate.js';
 import { newToken, cleanAnswers } from '../../_lib/brief.js';
 import { SLUG_RE, VER_RE, PATH_RE, MAX_FILE, MAX_TOTAL, MAX_FILES, CARD_TYPES, extOf, isImagePath, sniffOk, slugify, deleteCardFiles, cardUrl } from '../../_lib/card.js';
@@ -96,6 +97,9 @@ export async function onRequest(context) {
           media: Boolean(env.MEDIA),
           turnstile: Boolean(env.TURNSTILE_SITE_KEY && env.TURNSTILE_SECRET_KEY),
           email: emailConfigured(env),
+          gmail: gmailConfigured(env),
+          gmailUser: gmailConfigured(env) ? gmailAddress(env) : null,
+          resend: Boolean(env.RESEND_API_KEY),
           notifyTo: contactEmail(env),
           notifyFrom: (env.NOTIFY_FROM || 'Strony AI Wrocław <onboarding@resend.dev>').trim(),
           siteUrl: (env.SITE_URL || '').trim() || null,
@@ -125,7 +129,8 @@ export async function onRequest(context) {
           items: await all(
             env,
             `SELECT l.id, l.created_at, l.company_name, l.industry, l.contact_name, l.email, l.status, l.notification_status, l.source,
-                    (SELECT b.status FROM briefs b WHERE b.lead_id = l.id ORDER BY b.created_at DESC LIMIT 1) AS brief_status
+                    (SELECT b.status FROM briefs b WHERE b.lead_id = l.id ORDER BY b.created_at DESC LIMIT 1) AS brief_status,
+                    (SELECT lp.status FROM logo_proposals lp WHERE lp.lead_id = l.id) AS logo_status
              FROM leads l ORDER BY l.created_at DESC LIMIT 1000`
           ),
         });
@@ -141,7 +146,16 @@ export async function onRequest(context) {
             brief.answers = {};
           }
         }
-        return json({ ok: true, lead, notes, brief: brief || null });
+        const logo = await first(env, `SELECT * FROM logo_proposals WHERE lead_id = ?`, lead.id);
+        if (logo) {
+          try {
+            logo.options = JSON.parse(logo.options || '[]');
+          } catch {
+            logo.options = [];
+          }
+        }
+        const emails = await all(env, `SELECT id, kind, to_email, subject, body, status, error, created_at FROM lead_emails WHERE lead_id = ? ORDER BY created_at DESC LIMIT 100`, lead.id);
+        return json({ ok: true, lead, notes, brief: brief || null, logo: logo || null, emails, mail: { gmail: gmailConfigured(env), from: gmailConfigured(env) ? gmailAddress(env) : null } });
       }
       case 'PATCH /leads/:id': {
         const b = await body(request);
@@ -152,11 +166,82 @@ export async function onRequest(context) {
       }
       case 'DELETE /leads/:id': {
         const id = checkId(seg[1]);
+        const oldLogo = await first(env, `SELECT kv_key FROM logo_proposals WHERE lead_id = ?`, id);
+        if (oldLogo && env.MEDIA) await env.MEDIA.delete(oldLogo.kv_key);
         await env.DB.batch([
           env.DB.prepare(`DELETE FROM lead_notes WHERE lead_id = ?`).bind(id),
           env.DB.prepare(`DELETE FROM briefs WHERE lead_id = ?`).bind(id),
+          env.DB.prepare(`DELETE FROM lead_emails WHERE lead_id = ?`).bind(id),
+          env.DB.prepare(`DELETE FROM logo_proposals WHERE lead_id = ?`).bind(id),
           env.DB.prepare(`DELETE FROM leads WHERE id = ?`).bind(id),
         ]);
+        return json({ ok: true });
+      }
+      // ----- E-mail do klienta (z konta Gmail) -----
+      case 'POST /leads/:id/email': {
+        if (!gmailConfigured(env)) throw new HttpError(503, 'Wysyłka z Gmaila nie jest skonfigurowana. Dodaj w Cloudflare zmienne GMAIL_USER i GMAIL_APP_PASSWORD (instrukcja: docs/EMAIL.md).');
+        const lead = await first(env, `SELECT id, email, company_name FROM leads WHERE id = ?`, checkId(seg[1]));
+        if (!lead) throw notFound();
+        const b = await body(request);
+        const subject = str(b.subject, [3, 200], 'Temat');
+        const text = typeof b.body === 'string' ? b.body.replace(/\r\n?/g, '\n').trim() : '';
+        if (text.length < 10) throw bad('Treść wiadomości jest za krótka.');
+        if (text.length > 10000) throw bad('Treść wiadomości może mieć maksymalnie 10 000 znaków.');
+        const kind = ['brief', 'logo', 'wlasna'].includes(b.kind) ? b.kind : 'wlasna';
+        const recent = await first(env, `SELECT COUNT(*) AS n FROM lead_emails WHERE created_at > ?`, new Date(Date.now() - 3600 * 1000).toISOString());
+        if (recent.n >= 40) throw new HttpError(429, 'Limit 40 wiadomości na godzinę (ochrona konta Gmail). Spróbuj później.');
+        const r = await sendClientEmail(env, { to: lead.email, subject, text });
+        const row = { id: uuid(), lead_id: lead.id, kind, to_email: lead.email, subject, body: text, status: r.ok ? 'sent' : 'failed', error: r.ok ? null : String(r.error || '').slice(0, 500), created_at: nowIso() };
+        await run(env, `INSERT INTO lead_emails (id, lead_id, kind, to_email, subject, body, status, error, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`, row.id, row.lead_id, row.kind, row.to_email, row.subject, row.body, row.status, row.error, row.created_at);
+        if (!r.ok) return json({ ok: false, message: `Nie wysłano: ${r.error}`, item: row }, 502);
+        return json({ ok: true, item: row, message: `Wysłano do ${lead.email}.` });
+      }
+
+      // ----- Propozycje logo i hasła (strona wyboru dla klienta) -----
+      case 'PUT /leads/:id/logo': {
+        if (!env.MEDIA) throw new HttpError(503, 'Brak powiązania magazynu KV o nazwie MEDIA (Settings → Bindings).');
+        const lead = await first(env, `SELECT id FROM leads WHERE id = ?`, checkId(seg[1]));
+        if (!lead) throw notFound();
+        const qs = new URL(request.url).searchParams;
+        const fileName = String(qs.get('name') || 'wybor-logo.html').replace(/[^A-Za-z0-9._-]/g, '_').slice(0, 100);
+        if (!/\.html?$/i.test(fileName)) throw bad('Wgraj plik HTML (np. wybor-logo.html).');
+        const buf = await request.arrayBuffer();
+        if (buf.byteLength < 200) throw bad('Plik jest pusty albo za krótki.');
+        if (buf.byteLength > 8 * 1024 * 1024) throw bad('Plik jest za duży (maksymalnie 8 MB). Zmniejsz osadzone grafiki.');
+        const head = new TextDecoder().decode(buf.slice(0, 2000)).toLowerCase();
+        if (!head.includes('<html') && !head.includes('<!doctype html')) throw bad('To nie wygląda na plik HTML.');
+        // Opcje do formularza wyboru (odczytane z pliku w panelu) — maks. 8 opcji, po 6 haseł
+        let options = [];
+        try {
+          const raw = JSON.parse(qs.get('options') || '[]');
+          if (Array.isArray(raw)) {
+            options = raw.slice(0, 8).map((o, i) => ({
+              nr: i + 1,
+              name: String((o && o.name) || '').replace(/\s+/g, ' ').trim().slice(0, 80),
+              taglines: Array.isArray(o && o.taglines) ? o.taglines.slice(0, 6).map((t) => String(t).replace(/\s+/g, ' ').trim().slice(0, 120)).filter(Boolean) : [],
+            }));
+          }
+        } catch {
+          options = [];
+        }
+        if (!options.length) options = [1, 2, 3, 4].map((nr) => ({ nr, name: '', taglines: [] }));
+        const old = await first(env, `SELECT id, kv_key FROM logo_proposals WHERE lead_id = ?`, lead.id);
+        const kvKey = `lp/${lead.id}/${newToken().slice(0, 16)}.html`;
+        await env.MEDIA.put(kvKey, buf, { metadata: { contentType: 'text/html; charset=utf-8' } });
+        const t = nowIso();
+        const token = newToken();
+        await env.DB.batch([
+          env.DB.prepare(`DELETE FROM logo_proposals WHERE lead_id = ?`).bind(lead.id),
+          env.DB.prepare(`INSERT INTO logo_proposals (id, lead_id, token, kv_key, file_name, size_bytes, options, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, 'nowa', ?, ?)`).bind(uuid(), lead.id, token, kvKey, fileName, buf.byteLength, JSON.stringify(options), t, t),
+        ]);
+        if (old) await env.MEDIA.delete(old.kv_key);
+        return json({ ok: true, token, options });
+      }
+      case 'DELETE /leads/:id/logo': {
+        const id = checkId(seg[1]);
+        const old = await first(env, `SELECT kv_key FROM logo_proposals WHERE lead_id = ?`, id);
+        if (old && env.MEDIA) await env.MEDIA.delete(old.kv_key);
+        await run(env, `DELETE FROM logo_proposals WHERE lead_id = ?`, id);
         return json({ ok: true });
       }
       case 'POST /leads': {

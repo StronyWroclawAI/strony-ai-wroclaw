@@ -15,6 +15,19 @@ Zmiany są widoczne na stronie **od razu** po zapisaniu. Sesja wygasa po 12 godz
   - **Brief projektowy** (na dole zgłoszenia): gdy klient zgodzi się na współpracę, kliknij **Utwórz brief dla tego zgłoszenia**, a potem **Wyślij link e-mailem**. Po wypełnieniu pełne odpowiedzi zobaczysz w tym samym miejscu.
   - **Usuń zgłoszenie** trwale kasuje dane, notatki i przypięty brief, np. na prośbę zgłaszającego. Panel zawsze prosi o potwierdzenie.
 
+## E-mail do klienta (w zgłoszeniu)
+- **Napisz e-mail** u góry zgłoszenia albo **Wyślij link e-mailem** przy briefie i przy propozycjach logo otwiera gotową wiadomość, którą możesz poprawić przed wysłaniem.
+- Po skonfigurowaniu Gmaila ([`EMAIL.md`](EMAIL.md)) przycisk **Wyślij z stronywroclawai@gmail.com** wysyła wiadomość prosto z Twojej skrzynki. Kopia jest w „Wysłanych”, a historia — w zgłoszeniu.
+- Bez konfiguracji działa przycisk **Otwórz w Gmailu** (gotowa wiadomość, klikasz „Wyślij”).
+
+## Logo i hasło — propozycje dla klienta (w zgłoszeniu)
+1. **Kopiuj polecenie dla AI (4 opcje + ZIP)** — wklej do AI. Dostaniesz plik `wybor-logo.html` i ZIP z plikami logo.
+2. **Wgraj plik HTML z propozycjami** — panel odczyta z niego nazwy opcji i hasła.
+3. **Wyślij link e-mailem** — klient otwiera stronę `twojastrona/logo/…`, ogląda propozycje i w formularzu pod nimi zaznacza opcję i hasło, dopisuje uwagi i akceptuje kierunek.
+4. Wybór zapisuje się w zgłoszeniu („Klient wybrał: Opcja 2 — …”), na liście zgłoszeń pojawia się odznaka „Logo: wybrane”, a Ty dostajesz e-mail.
+
+Klient może zmienić wybór, wysyłając formularz ponownie — w panelu widzisz ostatnią wersję. Wgranie nowego pliku zastępuje poprzedni i tworzy nowy link.
+
 ## Briefy klientów
 Zestawienie wszystkich briefów. Brief tworzysz w konkretnym zgłoszeniu i tam przeglądasz odpowiedzi, drukujesz je i kopiujesz jako tekst dla AI. Szczegóły w [`BRIEF.md`](BRIEF.md).
 

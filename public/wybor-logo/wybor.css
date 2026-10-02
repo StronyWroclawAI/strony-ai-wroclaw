@@ -1,0 +1,44 @@
+/* Strona wyboru logo — korzysta z kolorów i czcionek z /assets/css/style.css */
+.wl-body { background: #f5f7fa; min-height: 100vh; display: flex; flex-direction: column; }
+.wl-top { position: sticky; top: 0; z-index: 20; background: var(--navy-900); color: #fff; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px clamp(14px, 4vw, 32px); border-bottom: 4px solid transparent; border-image: var(--grad-brand) 1; }
+.wl-brand { display: flex; align-items: center; gap: 12px; color: #fff; text-decoration: none; }
+.wl-brand:hover { color: #fff; }
+.wl-brand strong { display: block; line-height: 1.2; }
+.wl-brand small { display: block; color: var(--sky-200); font-size: .8125rem; }
+.wl-main { flex: 1; width: 100%; max-width: 1240px; margin: 0 auto; padding: clamp(16px, 3vw, 32px) clamp(12px, 3vw, 28px) 56px; }
+.wl-state { text-align: center; padding: 70px 0; color: var(--muted); }
+.wl-state h1 { color: var(--navy-900); font-size: 1.6rem; }
+.wl-intro h1 { font-size: clamp(1.5rem, 3vw, 2.1rem); font-weight: 800; color: var(--navy-900); margin: 0 0 6px; }
+.wl-intro p { color: var(--muted); max-width: 70ch; margin: 0 0 16px; }
+.wl-frame { background: #fff; border: 1px solid var(--gray-200); border-radius: 16px; overflow: hidden; box-shadow: 0 24px 48px -34px rgba(20, 46, 80, .45); }
+.wl-frame iframe { display: block; width: 100%; height: min(78vh, 900px); min-height: 460px; border: 0; background: #fff; }
+.wl-open { text-align: right; font-size: .9375rem; margin: 8px 4px 0; }
+.wl-form-card { background: #fff; border: 1px solid var(--gray-200); border-radius: 16px; padding: clamp(20px, 4vw, 36px); margin-top: 24px; max-width: 860px; scroll-margin-top: 84px; position: relative; overflow: hidden; }
+.wl-form-card::before { content: ""; position: absolute; inset: 0 0 auto; height: 5px; background: var(--grad-brand); }
+.wl-form-card h2 { font-size: 1.5rem; font-weight: 800; color: var(--navy-900); margin: 0 0 14px; }
+.wl-form-card fieldset { border: 0; padding: 0; margin: 0 0 20px; min-width: 0; }
+.wl-form-card legend, .wl-form-card .field > label { font-weight: 700; color: var(--navy-900); margin-bottom: 8px; padding: 0; display: block; }
+.wl-opt { font-weight: 400; color: var(--muted); }
+.wl-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+.wl-taglines { display: grid; gap: 8px; }
+.wl-choice { position: relative; display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border: 2px solid var(--gray-200); border-radius: 12px; cursor: pointer; background: #fff; transition: border-color .2s, background-color .2s; }
+.wl-choice:hover { border-color: var(--navy-400); }
+.wl-choice input { margin-top: 3px; width: 18px; height: 18px; accent-color: var(--navy); flex: none; }
+.wl-choice:has(input:checked) { border-color: var(--navy); background: #f2f6fc; }
+.wl-choice strong { display: block; color: var(--navy-900); }
+.wl-choice small { color: var(--muted); }
+.wl-form-card input[type=text], .wl-form-card textarea { width: 100%; font: inherit; color: var(--text); border: 1.5px solid var(--gray-300); border-radius: 10px; padding: 12px 14px; background: #fff; }
+.wl-form-card input[type=text]:focus, .wl-form-card textarea:focus { outline: none; border-color: var(--navy); box-shadow: 0 0 0 4px rgba(31, 95, 191, .2); }
+.wl-form-card .field { margin-bottom: 18px; }
+.wl-check { display: flex; gap: 10px; align-items: flex-start; font-weight: 600; color: var(--navy-900); cursor: pointer; }
+.wl-check input { width: 20px; height: 20px; margin-top: 2px; accent-color: var(--navy); flex: none; }
+.wl-muted { color: var(--muted); font-size: .9375rem; margin: 10px 0 18px; }
+.wl-alert { background: var(--danger-bg); color: var(--danger); border: 1px solid #fecdca; border-radius: 10px; padding: 12px 14px; font-weight: 600; margin-bottom: 14px; }
+.wl-saved { background: #e9f8f4; color: #0b5d53; border: 1px solid #a9e3d8; border-radius: 12px; padding: 14px 16px; margin-bottom: 18px; font-weight: 600; }
+.wl-saved p { margin: 4px 0 0; font-weight: 400; white-space: pre-wrap; }
+.wl-footer { text-align: center; padding: 20px; font-size: .875rem; color: var(--muted); }
+.wl-footer p { margin: 0; }
+@media (max-width: 640px) {
+  .wl-brand small { display: none; }
+  .wl-frame iframe { height: 70vh; }
+}

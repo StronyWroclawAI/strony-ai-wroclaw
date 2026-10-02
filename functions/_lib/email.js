@@ -5,9 +5,28 @@
 
 import { esc } from './render.js';
 import { contactEmail } from './http.js';
+import { gmailConfigured, sendViaGmail } from './smtp.js';
 
+/** Powiadomienia do właściciela: przez Gmail (jeśli skonfigurowany) albo przez Resend. */
 export function emailConfigured(env) {
-  return Boolean(env.RESEND_API_KEY);
+  return Boolean(env.RESEND_API_KEY) || gmailConfigured(env);
+}
+
+/** Zamienia zwykły tekst wiadomości na prosty, estetyczny HTML (adresy stron stają się linkami). */
+export function textToHtml(text) {
+  const body = esc(String(text || ''))
+    .replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" style="color:#1f5fbf;word-break:break-all">$1</a>')
+    .split(/\n{2,}/)
+    .map((p) => `<p style="margin:0 0 14px">${p.replace(/\n/g, '<br>')}</p>`)
+    .join('');
+  return `<!doctype html><html lang="pl"><body style="margin:0;background:#f5f7fa;font-family:Arial,Helvetica,sans-serif;color:#14213a">
+<div style="max-width:620px;margin:0 auto;padding:24px"><div style="background:#fff;padding:26px;border-radius:12px;border:1px solid #dde3ec;border-top:5px solid #142e50;font-size:16px;line-height:1.6">${body}</div>
+<p style="font-size:12px;color:#6b7688;text-align:center;margin:14px 0 0">Strony AI Wrocław · Strony, które budują wizerunek</p></div></body></html>`;
+}
+
+/** Wiadomość do klienta — wyłącznie z konta Gmail (nadawca: GMAIL_USER). */
+export async function sendClientEmail(env, { to, subject, text }) {
+  return sendViaGmail(env, { to, subject, text, html: textToHtml(text) });
 }
 
 function fromAddress(env) {
@@ -16,7 +35,8 @@ function fromAddress(env) {
 
 /** Wysyła wiadomość przez API Resend. Zwraca { ok, error }. */
 export async function sendEmail(env, { subject, text, html, replyTo, idempotencyKey }) {
-  if (!emailConfigured(env)) return { ok: false, skipped: true, error: 'Brak zmiennej RESEND_API_KEY — powiadomienia e-mail są wyłączone.' };
+  if (gmailConfigured(env)) return sendViaGmail(env, { to: contactEmail(env), subject, text, html, replyTo, fromName: 'Strony AI Wrocław — panel' });
+  if (!emailConfigured(env)) return { ok: false, skipped: true, error: 'Powiadomienia e-mail są wyłączone (brak konfiguracji Gmaila albo RESEND_API_KEY).' };
   try {
     const headers = {
       Authorization: `Bearer ${env.RESEND_API_KEY}`,

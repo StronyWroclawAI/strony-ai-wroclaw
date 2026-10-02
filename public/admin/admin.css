@@ -233,3 +233,10 @@ code { background: var(--gray-100); padding: 1px 6px; border-radius: 4px; font-s
 .ai-box { background: linear-gradient(135deg, #f4f8ff, #f7f3ff); border: 1px solid #d9e2f2; border-radius: 12px; padding: 14px 16px; margin: 12px 0; }
 .ai-box h3 { margin: 0 0 4px; font-size: 1rem; }
 .ai-box p { margin: 0 0 8px; }
+/* Logo i e-mail w zgłoszeniu */
+.logo-choice { background: #e9f8f4; border: 1px solid #a9e3d8; border-radius: 12px; padding: 14px 16px; margin-bottom: 12px; }
+.logo-choice p { margin: 0 0 6px; }
+.logo-choice__main { font-size: 1.25rem; font-weight: 800; color: var(--navy-900, #0f2544); }
+#email-klienta h3 { margin: 22px 0 8px; font-size: 1rem; }
+#email-klienta details summary { cursor: pointer; font-weight: 700; }
+#email-klienta .note__body { white-space: pre-wrap; margin-top: 8px; }
