@@ -691,6 +691,7 @@
   function briefBlocks(b, opts = {}) {
     const S = window.BRIEF_SCHEMA;
     const H = S && S.helpers;
+    const P = window.BRIEF_PROMPTS;
     const a = b.answers || {};
     const company = a.company_name || b.company_name || 'firma';
     const meta = { company_name: company, submitted_at: b.submitted_at ? fmtDate(b.submitted_at) : '' };
@@ -713,7 +714,10 @@
           return h(
             'section',
             { class: `panel brief-sec${st.id === 'pomysly' ? ' brief-sec--ideas' : ''}` },
-            h('h3', { text: `${i + 1}. ${st.title}` }),
+            h('div', { class: 'brief-sec__head' },
+              h('h3', { text: `${i + 1}. ${st.title}` }),
+              h('a', { class: 'btn btn--sm no-print', href: `/brief/${b.token}?edycja=${i}&id=${b.id}`, text: 'Popraw', 'aria-label': `Popraw odpowiedzi w kroku: ${st.title}` })
+            ),
             rowsEl.length ? h('dl', { class: 'dl' }, rowsEl) : h('p', { class: 'muted small', text: 'Brak odpowiedzi.' })
           );
         })
@@ -746,11 +750,12 @@
         { class: 'small muted' },
         `Utworzono ${fmtDate(b.created_at)}`,
         b.opened_at ? ` · otwarty przez klienta ${fmtDate(b.opened_at)}` : '',
+        b.admin_edited_at ? ` · poprawiony przez Ciebie ${fmtDate(b.admin_edited_at)}` : '',
         b.submitted_at ? ` · wypełniony ${fmtDate(b.submitted_at)}` : ''
       ),
       stateText ? h('p', { class: 'alert alert--info', text: stateText }) : null,
       H && filled && (H.needsLogo(a) || H.needsTagline(a))
-        ? h('p', { class: 'alert alert--warn', text: `Klient prosi o: ${[H.needsLogo(a) ? (a.logo === 'odswiezenie' ? 'odświeżenie logo' : 'projekt logo') : '', H.needsTagline(a) ? 'propozycje hasła' : ''].filter(Boolean).join(' i ')}. Tekst dla AI zawiera to zadanie, a „Kopiuj tekst dla AI: logo” daje osobne polecenie tylko do logo.` })
+        ? h('p', { class: 'alert alert--warn', text: `Klient prosi o: ${[H.needsLogo(a) ? (a.logo === 'odswiezenie' ? 'odświeżenie logo' : 'projekt logo') : '', H.needsTagline(a) ? 'propozycje hasła' : ''].filter(Boolean).join(' i ')}. Zacznij od przycisku „Strona wyboru…” — AI przygotuje stronę z 4 opcjami do wysłania klientowi i ZIP z plikami.` })
         : null,
       h('p', { class: 'brief-link' }, h('span', { class: 'small muted', text: 'Link dla klienta: ' }), h('code', { text: briefLink(b.token) })),
       h(
@@ -760,12 +765,28 @@
         h('button', { class: 'btn', type: 'button', text: 'Kopiuj link', onclick: () => copyText(briefLink(b.token), 'Link skopiowany.') }),
         h('a', { class: 'btn', href: `/brief/${b.token}`, target: '_blank', rel: 'noopener noreferrer', text: 'Otwórz jak klient ↗' })
       ),
+      filled && H && P
+        ? h(
+            'div',
+            { class: 'ai-box' },
+            h('h3', { text: 'Teksty dla AI' }),
+            h('p', { class: 'small muted', text: 'Każdy przycisk kopiuje gotowe polecenie — wklej je do narzędzia AI (np. Claude). Zalecana kolejność od lewej.' }),
+            h(
+              'div',
+              { class: 'actions' },
+              H.needsLogo(a) || H.needsTagline(a)
+                ? h('button', { class: 'btn btn--primary', type: 'button', 'data-ai': 'logo', text: `1. Strona wyboru ${H.needsLogo(a) ? 'logo' : 'hasła'}${H.needsLogo(a) && H.needsTagline(a) ? ' i hasła' : ''} (4 opcje + ZIP)`, onclick: () => copyText(P.logoPage(a, meta), 'Skopiowano polecenie: strona wyboru dla klienta i ZIP z plikami.') })
+                : null,
+              h('button', { class: 'btn btn--primary', type: 'button', 'data-ai': 'site', text: `${H.needsLogo(a) || H.needsTagline(a) ? '2. ' : '1. '}Strona z panelem administracyjnym`, onclick: () => copyText(P.site(a, meta), 'Skopiowano polecenie: strona z panelem.') }),
+              h('button', { class: 'btn', type: 'button', 'data-ai': 'panel', text: 'Sam panel (do gotowej strony)', onclick: () => copyText(P.panel(a, meta), 'Skopiowano polecenie: panel administracyjny.') }),
+              h('button', { class: 'btn', type: 'button', 'data-ai': 'portfolio', text: 'Karta do portfolio (ZIP)', onclick: () => copyText(P.portfolio(a, meta), 'Skopiowano polecenie: karta do portfolio.') })
+            )
+          )
+        : null,
       filled && H
         ? h(
             'div',
             { class: 'actions' },
-            h('button', { class: 'btn btn--primary', type: 'button', text: 'Kopiuj tekst dla AI', onclick: () => copyText(H.toAiPrompt(a, meta), 'Skopiowano — wklej do narzędzia AI.') }),
-            H.needsLogo && H.needsLogo(a) ? h('button', { class: 'btn btn--primary', type: 'button', text: 'Kopiuj tekst dla AI: logo', onclick: () => copyText(H.toLogoPrompt(a, meta), 'Skopiowano polecenie do projektu logo.') }) : null,
             h('button', { class: 'btn', type: 'button', text: 'Kopiuj odpowiedzi', onclick: () => copyText(H.toMarkdown(a, meta), 'Odpowiedzi skopiowane.') }),
             h('button', { class: 'btn', type: 'button', text: 'Pobierz plik .md', onclick: download }),
             h('button', {
@@ -1830,6 +1851,57 @@
   // =========================================================
   // USTAWIENIA
   // =========================================================
+  function passwordPanel() {
+    const cur = h('input', { type: 'password', autocomplete: 'current-password', maxlength: '200', required: true });
+    const next = h('input', { type: 'password', autocomplete: 'new-password', maxlength: '200', minlength: '10', required: true });
+    const rep = h('input', { type: 'password', autocomplete: 'new-password', maxlength: '200', required: true });
+    const msg = h('div', { 'aria-live': 'polite' });
+    const btn = h('button', { class: 'btn btn--primary', type: 'submit', text: 'Zmień hasło' });
+    const show = h('input', { type: 'checkbox', onchange: () => [cur, next, rep].forEach((i) => (i.type = show.checked ? 'text' : 'password')) });
+    return h(
+      'section',
+      { class: 'panel' },
+      h('h2', { text: 'Zmiana hasła' }),
+      h(
+        'form',
+        {
+          'data-password-form': '',
+          novalidate: true,
+          onsubmit: async (e) => {
+            e.preventDefault();
+            msg.replaceChildren();
+            const err = (t, el) => { msg.replaceChildren(h('div', { class: 'alert alert--error', text: t })); if (el) el.focus(); };
+            if (!cur.value) return err('Wpisz obecne hasło.', cur);
+            if (next.value.length < 10) return err('Nowe hasło musi mieć co najmniej 10 znaków.', next);
+            if (next.value !== rep.value) return err('Nowe hasła nie są takie same.', rep);
+            busy(btn, true, 'Zmieniam…');
+            const { error } = await q(api('password', { method: 'POST', body: { current: cur.value, next: next.value } }));
+            busy(btn, false);
+            if (error) return err(errMsg(error), cur);
+            [cur, next, rep].forEach((i) => (i.value = ''));
+            msg.replaceChildren(h('div', { class: 'alert alert--ok', text: 'Hasło zmienione. Na innych urządzeniach trzeba zalogować się ponownie nowym hasłem.' }));
+            toast('Hasło zostało zmienione.');
+          },
+        },
+        h('div', { class: 'grid-2' }, field('Obecne hasło', cur), h('div')),
+        h('div', { class: 'grid-2' }, field('Nowe hasło', next, 'Co najmniej 10 znaków. Najlepiej kilka słów albo hasło z menedżera haseł.'), field('Powtórz nowe hasło', rep)),
+        h('label', { class: 'check' }, show, 'Pokaż hasła'),
+        msg,
+        h('div', { class: 'actions' }, btn)
+      ),
+      h(
+        'details',
+        { class: 'small', style: 'margin-top:14px' },
+        h('summary', { text: 'Nie pamiętasz obecnego hasła?' }),
+        h('ol', null,
+          h('li', null, 'Otwórz ', h('a', { href: '/admin/generator-hasla.html', target: '_blank', rel: 'noopener', text: 'generator hasła' }), ', wpisz nowe hasło i skopiuj wynik.'),
+          h('li', { text: 'W Cloudflare: projekt → Settings → Variables and Secrets → ADMIN_PASSWORD_HASH → Edit → wklej → Save.' }),
+          h('li', { text: 'Deployments → przy najnowszym wdrożeniu „⋯” → Retry deployment. Nowa wartość w Cloudflare zastępuje hasło ustawione w panelu.' })
+        )
+      )
+    );
+  }
+
   async function viewSettings(main) {
     const settings = (await api('settings')).settings || { recruitment_open: 1, contact_email: 'stronywroclawai@gmail.com' };
 
@@ -1922,17 +1994,7 @@
       ),
       h('section', { class: 'panel' }, h('h2', { text: 'Adres e-mail na stronie' }), field('Adres kontaktowy wyświetlany na stronie', email, 'Adres, na który przychodzą powiadomienia, ustawiasz w Cloudflare (zmienna NOTIFY_TO).'), emailBtn),
       h('section', { class: 'panel' }, h('h2', { text: 'Stan konfiguracji' }), cfgBox),
-      h(
-        'section',
-        { class: 'panel' },
-        h('h2', { text: 'Zmiana hasła' }),
-        h('ol', { class: 'small' },
-          h('li', null, 'Otwórz ', h('a', { href: '/admin/generator-hasla.html', target: '_blank', rel: 'noopener', text: 'generator hasła' }), ', wpisz nowe hasło i skopiuj wynik.'),
-          h('li', { text: 'W Cloudflare: projekt → Settings → Variables and Secrets → ADMIN_PASSWORD_HASH → Edit → wklej → Save.' }),
-          h('li', { text: 'Deployments → przy najnowszym wdrożeniu „⋯” → Retry deployment.' })
-        ),
-        h('p', { class: 'small muted', text: 'Po zmianie hasła wszystkie dotychczasowe sesje wygasają — zalogujesz się nowym hasłem.' })
-      )
+      passwordPanel()
     );
   }
 })();

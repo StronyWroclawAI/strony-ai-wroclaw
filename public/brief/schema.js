@@ -313,7 +313,7 @@
       options: O('formularz|Formularz zapytania z opisem projektu — odpowiadam z wyceną i terminem', 'ig|Wiadomość na Instagramie', 'booksy|Booksy / system rezerwacji', 'telefon|Telefonicznie', 'konsultacja|Konsultacja w studiu') },
     { id: 'tat_form_fields', type: 'checkbox', label: 'Co klient ma podać w zapytaniu?', other: true, showIf: { f: 'tat_contact', eq: 'formularz' },
       options: O('opis|Opis pomysłu', 'miejsce|Miejsce na ciele', 'rozmiar|Przybliżony rozmiar', 'styl|Styl', 'artysta|Preferowany artysta', 'kolor|Kolor czy czarno-szary', 'termin|Preferowany termin', 'budzet|Budżet', 'zdjecia|Zdjęcia inspiracji|Przesyłanie plików wymaga dodatkowej konfiguracji — alternatywnie link lub wiadomość e-mail.') },
-    { id: 'tat_pricing', type: 'radio', label: 'Jak informujesz o cenach?', other: true, showIf: { p: ['tatuaz'] },
+    { id: 'tat_pricing', legacy: true, type: 'radio', label: 'Jak informujesz o cenach?', other: true, showIf: { p: ['tatuaz'] },
       options: O('minimalna|Cena minimalna + wycena indywidualna', 'godzinowa|Stawka godzinowa / za sesję', 'cennik|Cennik (np. piercing, PMU)', 'indywidualnie|Tylko wycena indywidualna') },
     { id: 'tat_info', type: 'checkbox', label: 'Informacje dla klienta na stronie', other: true, showIf: { p: ['tatuaz'] },
       options: O('wiek|Zasady dotyczące wieku (18+ / zgoda rodzica)', 'zadatek|Zadatek i zasady przekładania terminów', 'przygotowanie|Jak przygotować się do sesji', 'gojenie|Pielęgnacja i gojenie', 'przeciwwskazania|Przeciwwskazania', 'higiena|Higiena i sterylizacja', 'vouchery|Vouchery podarunkowe', 'guest|Guest spoty / konwenty') },
@@ -359,7 +359,7 @@
       options: O('karnety|Karnety miesięczne', 'wejscia|Wejścia jednorazowe', 'karty|Karty sportowe (Multisport, Medicover Sport, FitProfit)', 'proba|Zajęcia próbne', 'znizki|Zniżki (studenckie, rodzinne)', 'online|Płatności online', 'firmy|Oferta dla firm') },
     { id: 'spo_levels', type: 'checkbox', label: 'Dla kogo są zajęcia?', other: true, showIf: { p: ['sport'] },
       options: O('poczatkujacy|Początkujący', 'zaawansowani|Zaawansowani', 'dzieci|Dzieci', 'mlodziez|Młodzież', 'kobiety|Kobiety', 'seniorzy|Seniorzy', 'zawodnicy|Zawodnicy') },
-    { id: 'spo_trainers', type: 'radio', label: 'Trenerzy / instruktorzy na stronie', showIf: { p: ['sport'] },
+    { id: 'spo_trainers', legacy: true, type: 'radio', label: 'Trenerzy / instruktorzy na stronie', showIf: { p: ['sport'] },
       options: O('profile|Profile z opisem i specjalizacją', 'lista|Krótka lista', 'nie|Nie pokazujemy') },
     { id: 'spo_extras', type: 'checkbox', label: 'Dodatkowo', other: true, showIf: { p: ['sport'] },
       options: O('obozy|Obozy / wyjazdy', 'zawody|Zawody i wyniki', 'sauna|Sauna / strefa relaksu', 'sklep|Sklep / suplementy', 'parking|Parking', 'szatnie|Szatnie i prysznice', 'online|Treningi online', 'plany|Plany treningowe / dietetyczne', 'wynajem|Wynajem sali / kortu') },
@@ -399,11 +399,11 @@
     { id: 'aut_fleet', type: 'textarea', label: 'Flota i warunki wynajmu', hint: 'Modele / klasy aut, kaucja, limit km, minimalny wiek kierowcy, wynajem długoterminowy, podstawienie auta.', showIf: { ind: ['wypozyczalnia_aut'] }, max: 2000 },
     { id: 'aut_roadside', type: 'radio', label: 'Dostępność pomocy drogowej', showIf: { ind: ['pomoc_drogowa'] },
       options: O('calodobowo|Całodobowo, 7 dni w tygodniu', 'godziny|W określonych godzinach', 'umowione|Tylko transport umówiony') },
-    { id: 'aut_area', type: 'text', label: 'Obszar działania', placeholder: 'np. Wrocław + 50 km, cała Polska, transport z zagranicy', showIf: { ind: ['pomoc_drogowa', 'wypozyczalnia_aut', 'myjnia'] }, max: 300 },
+    { id: 'aut_area', legacy: true, type: 'text', label: 'Obszar działania', placeholder: 'np. Wrocław + 50 km, cała Polska, transport z zagranicy', showIf: { ind: ['pomoc_drogowa', 'wypozyczalnia_aut', 'myjnia'] }, max: 300 },
 
     /* ----- Budownictwo i dom ----- */
     { id: 'bud_services', type: 'textarea', label: 'Zakres usług / specjalizacje', hint: 'np. stany surowe, wykończenia pod klucz, łazienki, instalacje elektryczne w domach jednorodzinnych.', showIf: { p: ['budowa'] }, max: 2500 },
-    { id: 'bud_area', type: 'text', label: 'Obszar działania', placeholder: 'np. Wrocław i powiat wrocławski, Dolny Śląsk', showIf: { p: ['budowa', 'uslugi'] }, max: 300 },
+    { id: 'bud_area', legacy: true, type: 'text', label: 'Obszar działania', placeholder: 'np. Wrocław i powiat wrocławski, Dolny Śląsk', showIf: { p: ['budowa', 'uslugi'] }, max: 300 },
     { id: 'bud_clients', type: 'checkbox', label: 'Dla kogo pracujesz?', other: true, showIf: { p: ['budowa'] },
       options: O('mieszkania|Właściciele mieszkań', 'domy|Właściciele domów', 'firmy|Firmy / lokale usługowe', 'deweloperzy|Deweloperzy', 'wspolnoty|Wspólnoty i spółdzielnie', 'instytucje|Instytucje (przetargi)') },
     { id: 'bud_quote', type: 'radio', label: 'Jak przygotowujesz wycenę?', other: true, showIf: { p: ['budowa'] },
@@ -416,7 +416,7 @@
       options: O('calodobowo|Tak, całodobowo', 'godziny|Tak, w godzinach pracy', 'nie|Nie') },
     { id: 'bud_architect', type: 'checkbox', label: 'Zakres usług projektowych', other: true, showIf: { ind: ['architekt'] },
       options: O('koncepcja|Projekt koncepcyjny', 'wykonawczy|Projekt wykonawczy', 'wizualizacje|Wizualizacje 3D', 'nadzor|Nadzór autorski', 'pod_klucz|Wykończenie pod klucz', 'online|Konsultacje / projekt online', 'budowlany|Projekt budowlany / pozwolenia') },
-    { id: 'bud_architect_price', type: 'radio', label: 'Jak wyceniasz projekty?', other: true, showIf: { ind: ['architekt'] },
+    { id: 'bud_architect_price', legacy: true, type: 'radio', label: 'Jak wyceniasz projekty?', other: true, showIf: { ind: ['architekt'] },
       options: O('m2|Stawka za m²', 'pakiety|Pakiety (np. podstawowy, pełny)', 'indywidualnie|Indywidualnie') },
     { id: 'bud_energy', type: 'checkbox', label: 'Oferta OZE / instalacji', other: true, showIf: { ind: ['fotowoltaika', 'klimatyzacja'] },
       options: O('pv|Fotowoltaika', 'pompy|Pompy ciepła', 'magazyny|Magazyny energii', 'klima|Klimatyzacja', 'rekuperacja|Rekuperacja', 'ladowarki|Ładowarki do aut elektrycznych', 'serwis|Serwis i przeglądy') },
@@ -427,7 +427,7 @@
 
     /* ----- Usługi dla domu i firm ----- */
     { id: 'usl_services', type: 'textarea', label: 'Zakres usług', hint: 'np. sprzątanie mieszkań, biur, po remoncie, mycie okien; przeprowadzki lokalne i międzymiastowe.', showIf: { p: ['uslugi'] }, max: 2000 },
-    { id: 'usl_pricing', type: 'radio', label: 'Jak wyceniasz usługi?', other: true, showIf: { p: ['uslugi'] },
+    { id: 'usl_pricing', legacy: true, type: 'radio', label: 'Jak wyceniasz usługi?', other: true, showIf: { p: ['uslugi'] },
       options: O('cennik|Stały cennik (np. za m², za godzinę, za sztukę)', 'pakiety|Pakiety', 'wycena|Wycena po oględzinach / zdjęciach', 'kalkulator|Chcę kalkulator ceny na stronie|Osobna funkcja — ustalimy zakres.') },
     { id: 'usl_clients', type: 'checkbox', label: 'Dla kogo pracujesz?', other: true, showIf: { p: ['uslugi'] },
       options: O('prywatni|Klienci prywatni', 'firmy|Firmy / biura', 'wspolnoty|Wspólnoty mieszkaniowe', 'najem|Właściciele mieszkań na wynajem', 'instytucje|Instytucje') },
@@ -468,7 +468,7 @@
       options: O('sluby|Śluby', 'rodzinne|Rodzinne / noworodkowe / ciążowe', 'portrety|Portretowe / wizerunkowe', 'biznes|Biznesowe / dla firm', 'produkty|Produktowe', 'eventy|Eventy i koncerty', 'nieruchomosci|Nieruchomości / wnętrza', 'reklama|Reklama / social media', 'dron|Ujęcia z drona', 'teledyski|Teledyski') },
     { id: 'kre_portfolio', type: 'radio', label: 'Jak pokazać portfolio?', other: true, showIf: { p: ['kreatywne'] },
       options: O('kategorie|Galerie według kategorii', 'projekty|Każdy projekt jako krótka historia (opis + zdjęcia)', 'wideo|Showreel / filmy z YouTube lub Vimeo', 'instagram|Wybrane prace + odnośnik do Instagrama / Behance') },
-    { id: 'kre_pricing', type: 'radio', label: 'Jak pokazać ceny?', other: true, showIf: { p: ['kreatywne'] },
+    { id: 'kre_pricing', legacy: true, type: 'radio', label: 'Jak pokazać ceny?', other: true, showIf: { p: ['kreatywne'] },
       options: O('pakiety|Pakiety z cenami', 'od|Ceny „od…”', 'indywidualnie|Wycena indywidualna') },
     { id: 'kre_client_area', type: 'radio', label: 'Galerie dla klientów do pobierania zdjęć / plików', showIf: { ind: ['fotograf', 'filmowiec'] },
       options: O('zewnetrzna|Używam zewnętrznej usługi — wystarczy odnośnik', 'strona|Chcę na stronie|Osobna funkcja — ustalimy zakres i koszty przechowywania.', 'nie|Nie potrzebuję') },
@@ -488,7 +488,7 @@
     { id: 'eve_types', type: 'checkbox', label: 'Rodzaje wydarzeń', other: true, showIf: { p: ['eventy'] },
       options: O('wesela|Wesela', 'komunie|Komunie / chrzciny', 'urodziny_dzieci|Urodziny dzieci', 'osiemnastki|Osiemnastki / urodziny dorosłych', 'firmowe|Imprezy firmowe / integracje', 'konferencje|Konferencje i szkolenia', 'okolicznosciowe|Inne przyjęcia okolicznościowe') },
     { id: 'eve_capacity', type: 'text', label: 'Pojemność / liczba uczestników', placeholder: 'np. sala do 150 osób; escape room 2–6 osób', showIf: { p: ['eventy'] }, max: 300 },
-    { id: 'eve_offer', type: 'radio', label: 'Jak pokazać ofertę i ceny?', other: true, showIf: { p: ['eventy'] },
+    { id: 'eve_offer', legacy: true, type: 'radio', label: 'Jak pokazać ofertę i ceny?', other: true, showIf: { p: ['eventy'] },
       options: O('pakiety|Pakiety z cenami „od…”', 'menu|Przykładowe menu i ceny za osobę', 'cennik|Cennik (np. za godzinę, za osobę)', 'indywidualnie|Wycena indywidualna') },
     { id: 'eve_extras', type: 'checkbox', label: 'Co jeszcze zapewniasz?', other: true, showIf: { p: ['eventy'] },
       options: O('noclegi|Noclegi dla gości', 'parking|Parking', 'dekoracje|Dekoracje', 'tort|Tort / słodki stół', 'muzyka|Muzyka (DJ / zespół)', 'fotobudka|Fotobudka', 'dzieci|Kącik / opieka dla dzieci', 'catering|Catering', 'transport|Transport gości') },
@@ -502,7 +502,7 @@
     { id: 'han_assortment', type: 'textarea', label: 'Asortyment i kategorie produktów', showIf: { p: ['handel'] }, max: 2500 },
     { id: 'han_show', type: 'radio', label: 'Jak pokazać produkty?', required: true, other: true, showIf: { p: ['handel'] },
       options: O('kategorie|Kategorie i przykładowe produkty — bez sprzedaży online', 'katalog|Katalog produktów edytowany w panelu (bez koszyka)', 'link|Odnośnik do mojego sklepu online / Allegro', 'sklep|Sklep internetowy z koszykiem i płatnościami|Większy projekt — osobne ustalenie zakresu i kosztów.') },
-    { id: 'han_count', type: 'radio', label: 'Ile produktów chcesz pokazać?', showIf: { p: ['handel'] },
+    { id: 'han_count', legacy: true, type: 'radio', label: 'Ile produktów chcesz pokazać?', showIf: { p: ['handel'] },
       options: O('do20|Do 20', 'do100|20–100', 'do500|100–500', 'ponad500|Ponad 500') },
     { id: 'han_platform', type: 'text', label: 'Na jakiej platformie jest Twój sklep?', placeholder: 'np. Shoper, WooCommerce, Shopify, Allegro', showIf: { f: 'han_show', in: ['link', 'sklep'] }, max: 200 },
     { id: 'han_delivery', type: 'checkbox', label: 'Odbiór i dostawa', other: true, showIf: { p: ['handel'] },
@@ -561,11 +561,11 @@
     { id: 'ind_faq', type: 'textarea', label: 'O co klienci najczęściej pytają?', hint: 'Wypisz pytania (i jeśli chcesz — odpowiedzi). Przygotuję z nich sekcję „Najczęstsze pytania”.', max: 3000 },
     { id: 'ind_season', type: 'radio', label: 'Czy Twoja działalność jest sezonowa?', other: true,
       options: O('caly_rok|Działam podobnie przez cały rok', 'lato|Najwięcej pracy latem', 'zima|Najwięcej pracy zimą', 'okresy|Są okresy wzmożonego ruchu (np. święta, sezon ślubny, wrzesień)') },
-    { id: 'ind_competition', type: 'textarea', label: 'Od kogo chcesz się odróżnić?', hint: 'Opcjonalnie: firmy lub strony konkurencji i co robisz inaczej.', max: 1500 },
+    { id: 'ind_competition', legacy: true, type: 'textarea', label: 'Od kogo chcesz się odróżnić?', hint: 'Opcjonalnie: firmy lub strony konkurencji i co robisz inaczej.', max: 1500 },
   ];
 
   var BRIEF = {
-    version: 3,
+    version: 5,
     title: 'Brief projektowy strony internetowej',
     steps: [
       /* ---------------------------------------------------- 1 */
@@ -581,9 +581,10 @@
           { id: 'industry_type', type: 'select', label: 'Branża', required: true, groups: INDUSTRY_GROUPS, placeholder: '— wybierz branżę z listy —', hint: 'Na tej podstawie w następnym kroku pokażę pytania dopasowane do Twojej branży. Jeśli nie ma jej na liście, wybierz „Inna branża” na końcu.' },
           { id: 'industry', type: 'text', label: 'Doprecyzuj branżę / specjalizację', placeholder: 'np. salon fryzjerski dla dzieci, warsztat specjalizujący się w autach japońskich', requiredIf: { ind: ['inna'] }, hint: 'Przy „Inna branża” to pole jest wymagane.', max: 150 },
           { id: 'description', type: 'textarea', label: 'Czym zajmuje się firma?', hint: 'Krótko, własnymi słowami: co robicie, dla kogo, od kiedy działacie.', required: true, max: 3000 },
-          { id: 'strengths', type: 'textarea', label: 'Co wyróżnia Twoją firmę na tle konkurencji?', hint: 'np. doświadczenie, specjalizacja, lokalizacja, podejście do klienta, marki, z którymi pracujecie.', max: 2000 },
+          { id: 'strengths', type: 'textarea', label: 'Dlaczego klienci wybierają właśnie Ciebie?', hint: 'Co wyróżnia firmę na tle konkurencji: doświadczenie, specjalizacja, lokalizacja, podejście do klienta, marki, z którymi pracujesz. To będzie podstawa sekcji „Dlaczego my”.', max: 2000 },
           {
-            id: 'audience', type: 'checkbox', label: 'Kim są Twoi klienci?', other: true,
+            id: 'audience', type: 'checkbox', label: 'Kim są Twoi klienci?', other: true, showIf: { notp: ['noclegi', 'zdrowie', 'budowa', 'uslugi', 'biuro', 'sport', 'edukacja'] },
+            hint: 'W części branż zapytam o to dokładniej w następnym kroku.',
             options: [
               { v: 'indywidualni', l: 'Klienci indywidualni' },
               { v: 'firmy', l: 'Firmy (B2B)' },
@@ -606,12 +607,12 @@
               { v: 'online', l: 'Głównie online' },
             ],
           },
+          { id: 'area_details', type: 'text', label: 'Doprecyzuj obszar działania', placeholder: 'np. Wrocław + 30 km, Dolny Śląsk, dojazd do klienta', max: 300 },
           { id: 'location', type: 'text', label: 'Miasto / adres działalności', hint: 'Podaj, jeśli klienci przychodzą do Ciebie na miejscu.', max: 300 },
           {
-            id: 'show_address', type: 'radio', label: 'Czy adres ma być widoczny na stronie?',
+            id: 'show_address', type: 'radio', label: 'Czy adres ma być widoczny na stronie?', hint: 'Mapę dojazdu wybierzesz w kroku „Sekcje strony”.',
             options: [
-              { v: 'tak', l: 'Tak, z mapą dojazdu' },
-              { v: 'tak_bez_mapy', l: 'Tak, ale bez mapy' },
+              { v: 'tak', l: 'Tak, pełny adres' },
               { v: 'tylko_miasto', l: 'Tylko miasto / obszar działania' },
               { v: 'nie', l: 'Nie' },
             ],
@@ -791,10 +792,10 @@
               {
                 l: 'Informacje praktyczne',
                 items: [
-                  { v: 'przed_wizyta', l: 'Jak przygotować się do wizyty' },
-                  { v: 'parking', l: 'Parking i dojazd komunikacją' },
-                  { v: 'dostepnosc', l: 'Dostępność dla osób z niepełnosprawnościami' },
-                  { v: 'platnosci', l: 'Metody płatności' },
+                  { v: 'przed_wizyta', l: 'Jak przygotować się do wizyty', notp: ['zdrowie', 'noclegi', 'tatuaz'] },
+                  { v: 'parking', l: 'Parking i dojazd komunikacją', notp: ['zdrowie', 'noclegi', 'tatuaz'] },
+                  { v: 'dostepnosc', l: 'Dostępność dla osób z niepełnosprawnościami', notp: ['zdrowie', 'noclegi', 'tatuaz'] },
+                  { v: 'platnosci', l: 'Metody płatności', notp: ['zdrowie', 'noclegi', 'tatuaz'] },
                 ],
               },
             ],
@@ -809,8 +810,9 @@
         title: 'Oferta i cennik',
         intro: 'Jak pokazać Twoje usługi, żeby klient szybko znalazł to, czego szuka.',
         fields: [
+          { id: 'services_list', type: 'textarea', label: 'Wypisz najważniejsze usługi / produkty', hint: 'Wystarczą nazwy — w kolejności od najważniejszych. Pełny cennik prześlesz osobno.', showIf: { notp: ['gastro', 'noclegi', 'budowa', 'uslugi', 'biuro', 'zwierzeta', 'uroda', 'sport', 'edukacja', 'handel', 'turystyka', 'ngo'] }, max: 3000 },
           {
-            id: 'services_count', type: 'radio', label: 'Ile mniej więcej usług / produktów chcesz pokazać?',
+            id: 'services_count', type: 'radio', label: 'Ile mniej więcej usług / produktów chcesz pokazać?', showIf: { notp: ['gastro', 'noclegi'] },
             options: [
               { v: 'do10', l: 'Do 10' },
               { v: '10_30', l: '10–30' },
@@ -819,7 +821,7 @@
             ],
           },
           {
-            id: 'services_view', type: 'radio', label: 'Jak prezentować usługi?', other: true,
+            id: 'services_view', type: 'radio', label: 'Jak prezentować usługi?', other: true, showIf: { notp: ['gastro', 'noclegi'] },
             options: [
               { v: 'lista', l: 'Prosta lista z krótkimi opisami' },
               { v: 'kategorie', l: 'Podzielone na kategorie' },
@@ -828,18 +830,20 @@
             ],
           },
           {
-            id: 'pricing', type: 'radio', label: 'Jak ma wyglądać cennik?', required: true, other: true,
+            id: 'pricing', type: 'radio', label: 'Jak pokazać ceny?', required: true, other: true, showIf: { notp: ['gastro', 'noclegi'] },
             options: [
               { v: 'pelny', l: 'Pełny cennik z cenami' },
               { v: 'od', l: 'Ceny orientacyjne „od…”' },
               { v: 'widelki', l: 'Przedziały cenowe (od–do)' },
+              { v: 'pakiety', l: 'Pakiety z cenami' },
+              { v: 'stawka', l: 'Stawka (za godzinę, za m², za osobę)' },
               { v: 'bez_cen', l: 'Tylko lista usług, bez cen' },
               { v: 'indywidualnie', l: 'Informacja „wycena indywidualna”' },
               { v: 'brak', l: 'Bez cennika' },
             ],
           },
           {
-            id: 'pricing_details', type: 'checkbox', label: 'Co pokazać przy usługach?',
+            id: 'pricing_details', type: 'checkbox', label: 'Co pokazać przy usługach?', showIf: { notp: ['gastro', 'noclegi'] },
             options: [
               { v: 'czas', l: 'Czas trwania' },
               { v: 'opis', l: 'Krótki opis usługi' },
@@ -850,7 +854,7 @@
             ],
           },
           {
-            id: 'pricing_source', type: 'radio', label: 'Skąd wziąć aktualny cennik?', other: true,
+            id: 'pricing_source', type: 'radio', label: 'Skąd wziąć aktualny cennik / menu?', other: true,
             options: [
               { v: 'plik', l: 'Prześlę plik / zdjęcie cennika' },
               { v: 'booksy', l: 'Z mojego profilu w Booksy (wskażę link)' },
@@ -869,7 +873,7 @@
         fields: [
           {
             id: 'booking', type: 'radio', label: 'Jak mają odbywać się rezerwacje / umawianie wizyt?', required: true, other: true,
-            showIf: { notp: ['noclegi', 'gastro', 'tatuaz', 'handel'] },
+            showIf: { notp: ['noclegi', 'gastro', 'tatuaz', 'handel', 'turystyka'] },
             options: [
               { v: 'booksy', l: 'Przez Booksy (przycisk / link do mojego profilu)' },
               { v: 'inny_system', l: 'Przez inny istniejący system rezerwacji' },
@@ -941,8 +945,8 @@
         fields: [
           { id: 'brand_idea', type: 'textarea', label: 'Myśl przewodnia firmy', hint: 'Jednym–dwoma zdaniami: po co istnieje Twoja firma i co klient ma czuć po kontakcie z Tobą. np. „Fryzjer, u którego masz czas tylko dla siebie”, „Naprawiamy auta tak, jakby były nasze”.', max: 1000 },
           {
-            id: 'brand_values', type: 'checkbox', label: 'Z czym firma ma się kojarzyć? (wybierz 3–5)', other: true,
-            options: O('jakosc|Jakość i staranność', 'zaufanie|Zaufanie i uczciwość', 'szybkosc|Szybkość i wygoda', 'doswiadczenie|Doświadczenie i fachowość', 'indywidualnie|Indywidualne podejście', 'rodzinnosc|Rodzinna atmosfera', 'tradycja|Tradycja', 'nowoczesnosc|Nowoczesność', 'luksus|Luksus / premium', 'cena|Przystępna cena', 'lokalnosc|Lokalność', 'eko|Ekologia / natura', 'pasja|Pasja', 'bezpieczenstwo|Bezpieczeństwo', 'radosc|Radość i luz', 'kreatywnosc|Kreatywność'),
+            id: 'brand_values', type: 'checkbox', label: 'Jakie wartości mają się kojarzyć z firmą? (wybierz 3–5)', other: true,
+            options: O('jakosc|Jakość i staranność', 'zaufanie|Zaufanie i uczciwość', 'szybkosc|Szybkość i wygoda', 'doswiadczenie|Doświadczenie i fachowość', 'indywidualnie|Indywidualne podejście', 'rodzinnosc|Rodzinna atmosfera', 'tradycja|Tradycja', 'cena|Przystępna cena', 'lokalnosc|Lokalność', 'eko|Ekologia / natura', 'pasja|Pasja', 'bezpieczenstwo|Bezpieczeństwo', 'radosc|Radość i luz', 'kreatywnosc|Kreatywność'),
           },
           {
             id: 'brand_tone', type: 'radio', label: 'Jak zwracać się do klientów na stronie?',
@@ -1004,7 +1008,7 @@
           },
           { id: 'colors_list', type: 'text', label: 'Jakie kolory?', placeholder: 'np. granat, złoty, #1a2b3c', showIf: { f: 'colors', eq: 'mam' }, max: 300 },
           {
-            id: 'style', type: 'checkbox', label: 'Jaki ma być charakter strony? (wybierz maksymalnie 3–4)', other: true,
+            id: 'style', type: 'checkbox', label: 'Jak ma wyglądać strona? (charakter wizualny, maksymalnie 3–4)', other: true,
             options: [
               { v: 'nowoczesny', l: 'Nowoczesny' },
               { v: 'elegancki', l: 'Elegancki' },
@@ -1051,13 +1055,11 @@
           {
             id: 'materials', type: 'checkbox', label: 'Jakie materiały możesz przekazać?', other: true,
             options: [
-              { v: 'logo', l: 'Logo' },
               { v: 'zdj_wnetrze', l: 'Zdjęcia wnętrza / lokalu' },
               { v: 'zdj_zespol', l: 'Zdjęcia zespołu' },
               { v: 'zdj_prace', l: 'Zdjęcia prac / realizacji' },
               { v: 'zdj_produkty', l: 'Zdjęcia produktów' },
               { v: 'opisy', l: 'Opisy usług' },
-              { v: 'cennik', l: 'Cennik' },
               { v: 'certyfikaty', l: 'Certyfikaty / dyplomy' },
               { v: 'wideo', l: 'Filmy' },
               { v: 'regulamin', l: 'Regulamin' },
@@ -1073,7 +1075,7 @@
               { v: 'sesja', l: 'Planuję sesję zdjęciową' },
             ],
           },
-          { id: 'sources', type: 'textarea', label: 'Skąd mogę wziąć materiały?', hint: 'Wskaż konkretne źródła: linki do profili, folderów, obecnej strony.', max: 2000 },
+          { id: 'sources', type: 'textarea', label: 'Skąd mogę wziąć materiały?', hint: 'Wskaż konkretne miejsca: folder na dysku (link), obecna strona, konkretne albumy. Linki do social mediów podałeś już w kroku „Kontakt i rezerwacje”.', max: 2000 },
           { id: 'excluded', type: 'textarea', label: 'Materiały, których NIE chcesz używać', hint: 'np. „zdjęcia od fotografa X”, „stare zdjęcia lokalu sprzed remontu”, „opinie z Facebooka”.', max: 1500 },
           {
             id: 'rights', type: 'checkbox', label: 'Prawa do materiałów',
@@ -1114,11 +1116,10 @@
           {
             id: 'integrations', type: 'checkbox', label: 'Integracje i dodatki', other: true,
             options: [
-              { v: 'mapa', l: 'Mapa Google z lokalizacją' },
               { v: 'opinie_google', l: 'Link / odnośnik do opinii w Google' },
               { v: 'instagram_feed', l: 'Najnowsze zdjęcia z Instagrama na stronie', h: 'Wymaga zgody na pliki cookies od odwiedzających.' },
               { v: 'youtube', l: 'Filmy z YouTube' },
-              { v: 'whatsapp', l: 'Pływający przycisk WhatsApp / telefon' },
+              { v: 'whatsapp', l: 'Pływający przycisk szybkiego kontaktu (telefon / WhatsApp)' },
               { v: 'newsletter', l: 'Zapis do newslettera' },
               { v: 'statystyki', l: 'Statystyki odwiedzin', h: 'Możliwe rozwiązania bez plików cookies.' },
               { v: 'czat', l: 'Czat na stronie' },
@@ -1203,14 +1204,14 @@
       {
         id: 'pomysly',
         title: 'Twoje pomysły i uwagi',
-        intro: 'Miejsce na wszystko, czego nie było w formularzu. Każdy pomysł, wskazówka czy obawa pomoże mi przygotować stronę dopasowaną do Ciebie.',
+        intro: 'Miejsce na wszystko, czego nie było w formularzu.',
         fields: [
           { id: 'must_have', type: 'textarea', label: 'Trzy najważniejsze rzeczy, które musi mieć Twoja strona', placeholder: '1. …\n2. …\n3. …', max: 1500 },
-          { id: 'ideas', type: 'textarea', label: 'Co jeszcze chciałbyś mieć na stronie?', hint: 'Pomysły, funkcje, sekcje, teksty, zdjęcia, efekty — wszystko, czego nie było w poprzednich pytaniach. Nie ma złych pomysłów.', max: 5000 },
-          { id: 'tips', type: 'textarea', label: 'Wskazówki dla mnie', hint: 'np. „klienci często pytają o parking”, „ważne, żeby było widać, że mamy dyżury w soboty”, „nasz styl to luz i humor”.', max: 3000 },
+          { id: 'ideas', type: 'textarea', label: 'Twoje pomysły, wskazówki i uwagi', hint: 'Wszystko, czego nie było w poprzednich pytaniach: pomysły na sekcje i funkcje, wskazówki („nasz styl to luz i humor”), rzeczy ważne dla Twoich klientów. Nie ma złych pomysłów.', max: 5000 },
+          { id: 'tips', legacy: true, type: 'textarea', label: 'Wskazówki dla mnie', hint: 'np. „klienci często pytają o parking”, „ważne, żeby było widać, że mamy dyżury w soboty”, „nasz styl to luz i humor”.', max: 3000 },
           { id: 'concerns', type: 'textarea', label: 'Czy coś Cię niepokoi albo czego chcesz uniknąć we współpracy?', max: 2000 },
           { id: 'questions', type: 'textarea', label: 'Pytania do mnie', max: 2000 },
-          { id: 'notes', type: 'textarea', label: 'Inne uwagi', max: 3000 },
+          { id: 'notes', legacy: true, type: 'textarea', label: 'Inne uwagi', max: 3000 },
         ],
       },
     ],
@@ -1257,6 +1258,9 @@
   function guessIndustry(text) {
     var t = ' ' + norm(text).replace(/[^a-z0-9]+/g, ' ') + ' ';
     if (!t.trim()) return '';
+    var exact = '';
+    Object.keys(INDUSTRY_INDEX).forEach(function (id) { if (norm(INDUSTRY_INDEX[id].l) === norm(text).trim()) exact = id; });
+    if (exact) return exact;
     var best = '', bestLen = 0;
     Object.keys(INDUSTRY_INDEX).forEach(function (id) {
       INDUSTRY_INDEX[id].k.forEach(function (kw) {
@@ -1302,8 +1306,9 @@
 
   /** Czy opcja (np. sekcja branżowa) ma być widoczna? Bez wybranej branży — pokazujemy wszystkie. */
   function optionVisible(o, answers) {
-    if (!o.p) return true;
     var prof = profileOf(answers);
+    if (o.notp && o.notp.indexOf(prof) !== -1) return false;
+    if (!o.p) return true;
     if (!prof || prof === '_brak') return true;
     return o.p.indexOf(prof) !== -1;
   }
@@ -1395,75 +1400,8 @@
   function needsLogo(a) { return a.logo === 'zrobic' || a.logo === 'odswiezenie'; }
   function needsTagline(a) { return a.tagline === 'propozycja' || a.tagline === 'zmiana'; }
 
-  function companyName(a, meta) { return a.company_name || (meta && meta.company_name) || 'firma'; }
-
-  function logoTask(a, meta) {
-    var name = companyName(a, meta);
-    var text = a.logo_text ? String(a.logo_text).trim() : name;
-    var lines = [
-      'ZADANIE: PROJEKT LOGO',
-      (a.logo === 'odswiezenie'
-        ? 'Klient ma logo i chce je odświeżyć — zachowaj to, co wskazał do zachowania, i popraw to, co chce zmienić. '
-        : 'Klient nie ma logo. ') +
-        'Zaproponuj 3 wyraźnie różne, oryginalne koncepcje logo dla firmy „' + name + '” (napis w logo: „' + text + '”). ' +
-        'Każda koncepcja ma wynikać z całego briefu: branży, myśli przewodniej, wartości, grupy klientów, charakteru strony, kolorów i tego, czego klient chce unikać.',
-      'Dla każdej koncepcji podaj:',
-      '1. Nazwę i ideę — co znak symbolizuje i jak łączy się z myślą przewodnią, wartościami i branżą.',
-      '2. Rodzaj logo i kompozycję (znak, układ napisu, proporcje).',
-      '3. Typografię — rodzaj kroju i 1–2 konkretne kroje z licencją pozwalającą na użycie komercyjne (np. z Google Fonts).',
-      '4. Paletę 2–4 kolorów z kodami HEX i uzasadnieniem; sprawdź czytelność i kontrast na jasnym i ciemnym tle.',
-      '5. Warianty: poziomy, pionowy, sam znak (ikona), wersja jednokolorowa i odwrócona (na ciemnym tle)' + (a.tagline_text || needsTagline(a) ? ', wersja z hasłem firmowym' : '') + '.',
-      '6. Czytelność w małym rozmiarze (ikona 32 px, zdjęcie profilowe w social mediach) oraz w zastosowaniach z briefu.',
-      '7. Gotowy prompt po angielsku do generatora grafiki AI: płaskie, wektorowe logo na białym tle, prosty kształt, bez zbędnych detali. Generatory słabo radzą sobie z tekstem — opisz sam znak, a napis zaplanuj do złożenia w edytorze wybranym krojem.',
-      '8. Prosty kod SVG wersji roboczej (znak + napis), który da się otworzyć w przeglądarce.',
-      'Zasady: logo ma być oryginalne — nie kopiuj i nie naśladuj znanych logo ani znaków towarowych; unikaj najbardziej ogranych symboli branży, chyba że klient o nie prosi; uwzględnij skojarzenia, których klient chce unikać. Na końcu wskaż, którą koncepcję polecasz i dlaczego.',
-    ];
-    return lines.join('\n');
-  }
-
-  function taglineTask(a, meta) {
-    return [
-      'ZADANIE: HASŁO FIRMOWE',
-      (a.tagline === 'zmiana' && a.tagline_text ? 'Obecne hasło klienta: „' + String(a.tagline_text).trim() + '” — klient chce nowe. ' : '') +
-        'Zaproponuj 10 haseł po polsku dla firmy „' + companyName(a, meta) + '” (maksymalnie ok. 6 słów każde), opartych na myśli przewodniej, wartościach, branży i tonie komunikacji z briefu. ' +
-        'Pogrupuj je według charakteru (np. rzeczowe, emocjonalne, z humorem), przy każdym dodaj jedno zdanie uzasadnienia. ' +
-        'Uwzględnij oczekiwania klienta co do stylu hasła oraz słowa, których chce lub nie chce użyć. Nie powielaj znanych sloganów innych marek. Wskaż 3 najlepsze.',
-    ].join('\n');
-  }
-
-  /** Prompt dla narzędzia AI do zaprojektowania strony na podstawie briefu. */
-  function toAiPrompt(answers, meta) {
-    var tasks = [];
-    if (needsLogo(answers)) tasks.push(logoTask(answers, meta));
-    if (needsTagline(answers)) tasks.push(taglineTask(answers, meta));
-    return (
-      'Jesteś doświadczonym projektantem stron internetowych, UX/UI designerem i copywriterem. ' +
-      'Na podstawie poniższego briefu zaproponuj strukturę strony, treści wszystkich sekcji (po polsku) oraz styl wizualny. ' +
-      'Nie wymyślaj faktów, opinii klientów, liczb ani certyfikatów, których nie ma w briefie — oznacz brakujące informacje jako [DO UZUPEŁNIENIA]. ' +
-      'Dopasuj strukturę, słownictwo, zdjęcia i wezwania do działania do branży klienta oraz tego, czego szukają jego klienci. ' +
-      'Treści pisz zgodnie z myślą przewodnią, wartościami i sposobem zwracania się do klientów wskazanymi w briefie. ' +
-      'Uwzględnij dostępność, wygląd na telefonie i szybkość działania.\n\n' +
-      (tasks.length
-        ? 'Zanim zaprojektujesz stronę, wykonaj zadania dodatkowe poniżej. Następnie oprzyj projekt strony na polecanej koncepcji (kolory, typografia, charakter), tak aby logo, hasło i strona tworzyły spójną całość.\n\n' +
-          tasks.join('\n\n') + '\n\n'
-        : '') +
-      'ZADANIE: PROJEKT STRONY\n\n' +
-      toMarkdown(answers, meta)
-    );
-  }
-
-  /** Osobny prompt tylko do projektu logo (wraz z hasłem, jeśli klient o nie prosi). */
-  function toLogoPrompt(answers, meta) {
-    var tasks = [logoTask(answers, meta)];
-    if (needsTagline(answers)) tasks.push(taglineTask(answers, meta));
-    return (
-      'Jesteś doświadczonym projektantem identyfikacji wizualnej i copywriterem marek. ' +
-      'Na podstawie poniższego briefu klienta przygotuj propozycje dopasowane do jego firmy, branży i oczekiwań. ' +
-      'Nie wymyślaj faktów o firmie, których nie ma w briefie.\n\n' +
-      tasks.join('\n\n') + '\n\n' +
-      toMarkdown(answers, meta)
-    );
-  }
+  BRIEF.industries = INDUSTRY_GROUPS;
+  BRIEF.profiles = PROFILES;
 
   BRIEF.helpers = {
     allOptions: allOptions,
@@ -1481,8 +1419,6 @@
     missingRequired: missingRequired,
     formatValue: formatValue,
     toMarkdown: toMarkdown,
-    toAiPrompt: toAiPrompt,
-    toLogoPrompt: toLogoPrompt,
     needsLogo: needsLogo,
     needsTagline: needsTagline,
   };

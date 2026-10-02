@@ -4,7 +4,7 @@
 
 import { SEED } from './seed.js';
 
-export const SCHEMA_VERSION = '4';
+export const SCHEMA_VERSION = '5';
 
 // Każda instrukcja w osobnym elemencie (D1 wykonuje je w jednej transakcji przez batch()).
 export const SCHEMA = [
@@ -105,6 +105,8 @@ export const MIGRATIONS = [
   `ALTER TABLE portfolio_projects ADD COLUMN card_size INTEGER NOT NULL DEFAULT 0`,
   `ALTER TABLE portfolio_projects ADD COLUMN card_at TEXT`,
   `CREATE UNIQUE INDEX IF NOT EXISTS portfolio_slug_idx ON portfolio_projects (slug)`,
+  // v5: poprawki administratora w briefie
+  `ALTER TABLE briefs ADD COLUMN admin_edited_at TEXT`,
 ];
 
 export const uuid = () => crypto.randomUUID();

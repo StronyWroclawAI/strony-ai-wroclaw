@@ -5,7 +5,8 @@
 //    wygenerowany narzędziem /admin/generator-hasla.html.
 //  - Po zalogowaniu przeglądarka dostaje podpisane ciasteczko sesji (HttpOnly, Secure,
 //    SameSite=Strict), ważne 12 godzin. Podpis: HMAC-SHA256 z tajnym SESSION_SECRET.
-//  - Zmiana hasła (nowy ADMIN_PASSWORD_HASH) automatycznie unieważnia stare sesje.
+//  - Hasło można zmienić w panelu (Ustawienia → Zmiana hasła); nowy skrót trafia do bazy.
+//  - Zmiana hasła automatycznie unieważnia stare sesje.
 //  - Limit: 5 nieudanych prób logowania na 15 minut z jednego adresu IP.
 
 import { json } from './http.js';
@@ -49,8 +50,50 @@ async function hmac(secret, data) {
   return b64url(await crypto.subtle.sign('HMAC', key, enc.encode(data)));
 }
 
+/**
+ * Aktualny skrót hasła. Domyślnie ze zmiennej ADMIN_PASSWORD_HASH. Jeśli hasło zmieniono w panelu,
+ * nowy skrót jest w bazie (tabela meta) i ma pierwszeństwo — dopóki zmienna w Cloudflare się nie zmieni.
+ * Zmiana ADMIN_PASSWORD_HASH w Cloudflare zawsze wygrywa (to sposób na odzyskanie dostępu po zapomnieniu hasła).
+ */
+export async function activeHash(env) {
+  const envHash = String(env.ADMIN_PASSWORD_HASH || '').trim();
+  if (!hasDb(env)) return envHash;
+  try {
+    const r = await env.DB.prepare(`SELECT key, value FROM meta WHERE key IN ('admin_hash', 'admin_hash_env')`).all();
+    const m = {};
+    for (const row of r.results || []) m[row.key] = row.value;
+    if (m.admin_hash && m.admin_hash_env === (await sha256Hex(envHash))) return m.admin_hash;
+  } catch {
+    /* baza jeszcze nie gotowa — używamy zmiennej */
+  }
+  return envHash;
+}
+
+export async function hashPassword(password) {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const key = await crypto.subtle.importKey('raw', enc.encode(String(password)), 'PBKDF2', false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt, iterations: PBKDF2_ITERATIONS }, key, 256);
+  return `pbkdf2-sha256$${PBKDF2_ITERATIONS}$${b64url(salt)}$${b64url(bits)}`;
+}
+
+/** Zmiana hasła z panelu. Zwraca { ok, message, cookie }. */
+export async function changePassword(env, current, next) {
+  if (typeof current !== 'string' || !(await verifyPassword(current, await activeHash(env)))) return { ok: false, status: 403, message: 'Obecne hasło jest nieprawidłowe.' };
+  if (typeof next !== 'string' || next.length < 10) return { ok: false, status: 400, message: 'Nowe hasło musi mieć co najmniej 10 znaków.' };
+  if (next.length > 200) return { ok: false, status: 400, message: 'Nowe hasło może mieć maksymalnie 200 znaków.' };
+  if (next === current) return { ok: false, status: 400, message: 'Nowe hasło musi być inne niż obecne.' };
+  const hash = await hashPassword(next);
+  const envSnap = await sha256Hex(String(env.ADMIN_PASSWORD_HASH || '').trim());
+  await env.DB.batch([
+    env.DB.prepare(`INSERT OR REPLACE INTO meta (key, value) VALUES ('admin_hash', ?)`).bind(hash),
+    env.DB.prepare(`INSERT OR REPLACE INTO meta (key, value) VALUES ('admin_hash_env', ?)`).bind(envSnap),
+    env.DB.prepare(`INSERT OR REPLACE INTO meta (key, value) VALUES ('admin_hash_at', ?)`).bind(new Date().toISOString()),
+  ]);
+  return { ok: true, cookie: await createSessionCookie(env) };
+}
+
 async function sessionVersion(env) {
-  return (await sha256Hex(String(env.ADMIN_PASSWORD_HASH).trim())).slice(0, 16);
+  return (await sha256Hex(await activeHash(env))).slice(0, 16);
 }
 
 export async function createSessionCookie(env) {
@@ -113,7 +156,7 @@ export async function login(context, password) {
   if (row && row.n >= MAX_FAILS) {
     return json({ ok: false, message: 'Zbyt wiele nieudanych prób. Odczekaj 15 minut i spróbuj ponownie.' }, 429);
   }
-  const ok = typeof password === 'string' && password.length > 0 && password.length <= 200 && (await verifyPassword(password, env.ADMIN_PASSWORD_HASH));
+  const ok = typeof password === 'string' && password.length > 0 && password.length <= 200 && (await verifyPassword(password, await activeHash(env)));
   if (!ok) {
     await env.DB.batch([
       env.DB.prepare(`INSERT INTO login_attempts (ip_hash, created_at) VALUES (?, ?)`).bind(ip, Date.now()),

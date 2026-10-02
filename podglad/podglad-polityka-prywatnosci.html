@@ -1207,7 +1207,9 @@ button { font: inherit; }
       ['website_url', 'facebook_url', 'instagram_url'].forEach(function (k) {
         if (d[k] && !looksLikeUrl(d[k])) e[k] = MSG.url;
       });
-      if (!d.message) e.message = MSG.required;
+      var tpl = form.elements.message && form.elements.message.defaultValue;
+      if (d.message && tpl && d.message.replace(/\s+/g, ' ').trim() === tpl.replace(/\s+/g, ' ').trim()) e.message = 'Uzupełnij szkic wiadomości — dopisz choć kilka słów o swojej firmie.';
+      else if (!d.message) e.message = MSG.required;
       else if (d.message.length < 20) e.message = MSG.messageShort;
       else if (d.message.length > 5000) e.message = MSG.tooLong;
       if (d.turnstile_present && !d.turnstile_token) e.turnstile = MSG.turnstile;

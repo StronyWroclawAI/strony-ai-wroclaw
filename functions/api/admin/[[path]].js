@@ -2,11 +2,11 @@
 // Każde żądanie (poza logowaniem) wymaga ważnej sesji — sprawdzanej TUTAJ, po stronie serwera.
 
 import { json, contactEmail, siteOrigin } from '../../_lib/http.js';
-import { guardAdmin, login, clearSessionCookie, hasValidSession, authConfigured } from '../../_lib/auth.js';
+import { guardAdmin, login, clearSessionCookie, hasValidSession, authConfigured, changePassword } from '../../_lib/auth.js';
 import { ensureSchema, hasDb, uuid, nowIso, all, first, run, mediaUrl } from '../../_lib/db.js';
 import { sendEmail, notifyAboutLead, emailConfigured } from '../../_lib/email.js';
 import { normalizeUrl } from '../../_lib/validate.js';
-import { newToken } from '../../_lib/brief.js';
+import { newToken, cleanAnswers } from '../../_lib/brief.js';
 import { SLUG_RE, VER_RE, PATH_RE, MAX_FILE, MAX_TOTAL, MAX_FILES, CARD_TYPES, extOf, isImagePath, sniffOk, slugify, deleteCardFiles, cardUrl } from '../../_lib/card.js';
 
 const STATUSES = ['nowe', 'kontakt', 'w_realizacji', 'zakonczone', 'odrzucone'];
@@ -101,6 +101,12 @@ export async function onRequest(context) {
           siteUrl: (env.SITE_URL || '').trim() || null,
           ipSalt: Boolean(env.IP_HASH_SALT),
         });
+      case 'POST /password': {
+        const b = await body(request);
+        const r = await changePassword(env, b.current, b.next);
+        if (!r.ok) return json({ ok: false, message: r.message }, r.status);
+        return json({ ok: true, message: 'Hasło zostało zmienione.' }, 200, { 'Set-Cookie': r.cookie });
+      }
       case 'POST /test-email': {
         const r = await sendEmail(env, {
           subject: 'Test powiadomień — Strony AI Wrocław',
@@ -351,6 +357,17 @@ export async function onRequest(context) {
         if (typeof b.admin_note === 'string') {
           sets.push('admin_note = ?');
           vals.push(str(b.admin_note, [0, 5000], 'Notatka'));
+        }
+        if (b.answers !== undefined) {
+          // Poprawki administratora w odpowiedziach klienta (status briefu się nie zmienia)
+          const c = cleanAnswers(b.answers);
+          if (!c.ok) throw bad(c.message);
+          sets.push('answers = ?', 'admin_edited_at = ?');
+          vals.push(JSON.stringify(c.answers), nowIso());
+          if (c.answers.company_name) {
+            sets.push('company_name = ?');
+            vals.push(String(c.answers.company_name).slice(0, 150));
+          }
         }
         if (!sets.length) throw bad('Brak zmian.');
         const r = await run(env, `UPDATE briefs SET ${sets.join(', ')}, updated_at = ? WHERE id = ?`, ...vals, nowIso(), id);

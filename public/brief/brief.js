@@ -4,6 +4,7 @@
 
   var S, H;
   var DEMO = Boolean(window.BRIEF_DEMO);
+  var ADMIN = null; // { id } — administrator poprawia odpowiedzi klienta
   var token = '';
   var answers = {};
   var visited = {};
@@ -77,6 +78,9 @@
 
     if (!/^[A-Za-z0-9_-]{32,64}$/.test(token)) return fail('Ten adres wymaga indywidualnego linku do briefu.');
 
+    var qs = new URLSearchParams(location.search);
+    if (qs.get('edycja') !== null && /^[0-9a-f-]{36}$/i.test(qs.get('id') || '')) return initAdmin(qs.get('id'), Number(qs.get('edycja')) || 0);
+
     fetch('/api/brief/' + token, { headers: { Accept: 'application/json' } })
       .then(function (r) { return r.json(); })
       .then(function (d) {
@@ -99,6 +103,29 @@
           setSaveStatus('Wczytano zapisane odpowiedzi');
         }
         show('welcome');
+      })
+      .catch(function () { fail('Brak połączenia z serwerem. Sprawdź internet i odśwież stronę.'); });
+  }
+
+  /** Tryb administratora: te same pytania, zapis przez API panelu, bez blokady i bez zmiany statusu. */
+  function initAdmin(id, step) {
+    ADMIN = { id: id };
+    fetch('/api/admin/briefs/' + id, { headers: { Accept: 'application/json' }, credentials: 'same-origin' })
+      .then(function (r) { return r.json().then(function (d) { return { status: r.status, d: d }; }); })
+      .then(function (x) {
+        if (x.status === 401) return fail('Zaloguj się do panelu administratora, a potem otwórz ten link ponownie.');
+        if (!x.d.ok || !x.d.brief || x.d.brief.token !== token) return fail('Nie znaleziono briefu do edycji.');
+        answers = x.d.brief.answers || {};
+        applyDefaults();
+        var name = answers.company_name || x.d.brief.company_name || '';
+        document.title = 'Edycja briefu — ' + name;
+        document.body.insertBefore(el('div', { class: 'bf-demo-bar bf-admin-bar', role: 'note' },
+          'Tryb administratora — poprawiasz odpowiedzi klienta' + (name ? ' (' + name + ')' : '') + '. Zmiany zapisują się automatycznie, klient nie dostaje powiadomienia. ',
+          el('a', { href: '/admin/#brief/' + id, text: 'Wróć do panelu' })), document.body.firstChild);
+        setSaveStatus('Tryb administratora');
+        S.steps.forEach(function (_, i) { visited[i] = true; });
+        buildStepsNav();
+        goTo(Math.max(0, Math.min(S.steps.length - 1, step)));
       })
       .catch(function () { fail('Brak połączenia z serwerem. Sprawdź internet i odśwież stronę.'); });
   }
@@ -228,7 +255,7 @@
     $('[data-step-alert]').hidden = true;
     var form = $('[data-step-form]');
     form.replaceChildren();
-    st.fields.forEach(function (f) { form.appendChild(renderField(f)); });
+    st.fields.forEach(function (f) { if (!f.legacy) form.appendChild(renderField(f)); });
     updateVisibility();
     $('[data-prev]').textContent = current === 0 ? '← Wprowadzenie' : '← Wstecz';
     $('[data-next]').textContent = current === S.steps.length - 1 ? 'Podsumowanie →' : 'Dalej →';
@@ -389,7 +416,7 @@
   function validateStep(i) {
     var errs = [];
     S.steps[i].fields.forEach(function (f) {
-      if (f.type === 'info' || !H.isVisible(f, answers)) return;
+      if (f.type === 'info' || f.legacy || !H.isVisible(f, answers)) return;
       var msg = '';
       var v = answers[f.id];
       if (H.isRequired(f, answers) && H.isEmpty(f, answers)) msg = f.type === 'checkbox' ? 'Zaznacz przynajmniej jedną odpowiedź.' : f.type === 'radio' ? 'Wybierz jedną odpowiedź.' : f.type === 'select' ? 'Wybierz pozycję z listy.' : 'To pole jest wymagane.';
@@ -443,16 +470,18 @@
     clearTimeout(saveTimer);
     saving = true;
     pending = false;
-    return fetch('/api/brief/' + token, {
-      method: 'PUT',
+    return fetch(ADMIN ? '/api/admin/briefs/' + ADMIN.id : '/api/brief/' + token, {
+      method: ADMIN ? 'PATCH' : 'PUT',
       keepalive: Boolean(keepalive),
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-Brief': '1' },
+      credentials: 'same-origin',
+      headers: ADMIN ? { 'Content-Type': 'application/json', Accept: 'application/json', 'X-Panel': '1' } : { 'Content-Type': 'application/json', Accept: 'application/json', 'X-Brief': '1' },
       body: JSON.stringify({ answers: answers }),
     })
       .then(function (r) { return r.json().then(function (d) { return { status: r.status, d: d }; }); })
       .then(function (x) {
         saving = false;
         if (x.d.ok) setSaveStatus('Zapisano automatycznie ' + time());
+        else if (x.status === 401 && ADMIN) { pending = true; setSaveStatus('Sesja panelu wygasła — zaloguj się w panelu i wróć tutaj', true); }
         else if (x.status === 409) { locked = true; setSaveStatus(x.d.message, true); }
         else { pending = true; setSaveStatus('Nie zapisano — ' + (x.d.message || 'spróbuję ponownie'), true); saveTimer = setTimeout(flushSave, 5000); }
         if (pending && x.d.ok) scheduleSave();
@@ -497,7 +526,12 @@
       alert.textContent = 'Uzupełnij wymagane odpowiedzi (' + missing.length + ') — są oznaczone na czerwono poniżej.';
       alert.hidden = false;
     } else alert.hidden = true;
-    $('[data-send-box]').hidden = locked;
+    $('[data-send-box]').hidden = locked || Boolean(ADMIN);
+    if (ADMIN) {
+      body.appendChild(el('div', { class: 'bf-nav' },
+        el('button', { class: 'btn bf-btn-ghost', type: 'button', text: '← Wróć do edycji', onclick: function () { goTo(current); } }),
+        el('a', { class: 'btn btn--primary', href: '/admin/#brief/' + ADMIN.id, text: 'Gotowe — wróć do panelu' })));
+    }
     $('[data-summary-title]').textContent = locked ? 'Twoje odpowiedzi' : 'Sprawdź i wyślij';
     $('[data-summary-lead]').textContent = locked ? 'Brief został wysłany. Jeśli chcesz coś zmienić, napisz do mnie — odblokuję formularz.' : 'Przejrzyj odpowiedzi. Każdą sekcję możesz jeszcze poprawić.';
     if (DEMO) addDemoExport(body);
@@ -560,12 +594,12 @@
 
   /* ---------- Podgląd: eksport tekstu (tylko w trybie demo) ---------- */
   function addDemoExport(body) {
-    var ta = el('textarea', { rows: '10', readonly: true, 'aria-label': 'Brief jako tekst dla AI', style: 'width:100%;font:13px/1.5 ui-monospace,monospace;border:1.5px solid #c5cedb;border-radius:10px;padding:12px' });
-    ta.value = H.toAiPrompt(answers, {});
+    var ta = el('textarea', { rows: '10', readonly: true, 'aria-label': 'Odpowiedzi jako tekst', style: 'width:100%;font:13px/1.5 ui-monospace,monospace;border:1.5px solid #c5cedb;border-radius:10px;padding:12px' });
+    ta.value = H.toMarkdown(answers, {});
     body.appendChild(
       el('section', { class: 'bf-sum-step' },
-        el('div', { class: 'bf-sum-step__head' }, el('h2', { text: 'Podgląd: tekst dla AI (tak samo w panelu)' })),
-        el('p', { class: 'bf-muted', text: 'W panelu administratora ten tekst skopiujesz jednym przyciskiem i wkleisz do narzędzia AI, żeby przygotować projekt strony.' }),
+        el('div', { class: 'bf-sum-step__head' }, el('h2', { text: 'Podgląd: odpowiedzi jako tekst' })),
+        el('p', { class: 'bf-muted', text: 'W panelu administratora z tych odpowiedzi powstają gotowe polecenia dla AI: strona z panelem, strona wyboru logo i hasła, karta do portfolio.' }),
         ta
       )
     );

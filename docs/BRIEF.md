@@ -66,19 +66,33 @@ Listę branż i pytań możesz rozbudować w pliku `public/brief/schema.js` (sek
    - na końcu klient widzi podsumowanie i klika **Wyślij brief**.
 5. **Dostajesz e-mail** „Brief wypełniony: …” z przyciskiem prowadzącym prosto do zgłoszenia. Na liście zgłoszeń pojawia się odznaka „Brief: wypełniony”.
 6. **W zgłoszeniu, pod danymi klienta, masz pełny podgląd briefu:**
-   - wszystkie odpowiedzi pogrupowane w 14 sekcji, z nazwą branży u góry (sekcja z pomysłami klienta jest wyróżniona);
-   - jeśli klient prosi o logo lub hasło, na górze briefu widzisz informację „Klient prosi o: …”;
-   - **Kopiuj tekst dla AI:** gotowe polecenie z wszystkimi odpowiedziami do wklejenia w narzędzie AI, którym projektujesz stronę. Polecenie każe nie wymyślać brakujących faktów i oznaczać je jako [DO UZUPEŁNIENIA];
-   - gdy klient prosi o logo lub hasło, ten tekst zaczyna się od zadań: **3 koncepcje logo** (idea, typografia, kolory HEX, warianty, czytelność w małym rozmiarze, prompt do generatora grafiki, roboczy SVG) i **10 propozycji hasła** — wszystko wynikające z całego briefu. Potem AI ma zaprojektować stronę spójną z wybraną koncepcją;
-   - **Kopiuj tekst dla AI: logo:** osobne polecenie tylko do logo (i hasła), gdy chcesz najpierw zająć się samą identyfikacją;
-   - **Kopiuj odpowiedzi** albo **Pobierz plik .md:** odpowiedzi jako uporządkowany tekst;
-   - **Drukuj / PDF:** drukuje sam brief, bez reszty zgłoszenia (w oknie drukowania wybierz „Zapisz jako PDF”);
-   - **Odblokuj do edycji:** klient może poprawić i wysłać brief ponownie;
-   - **Notatki do briefu (prywatne)** i **Usuń brief** (zgłoszenie zostaje, możesz utworzyć nowy brief).
+   - wszystkie odpowiedzi pogrupowane w 14 sekcji, z nazwą branży u góry;
+   - **Popraw** (przy każdej sekcji): otwiera ten krok briefu w trybie administratora. Poprawiasz odpowiedzi klienta tak samo, jak on je wypełniał. Zmiany zapisują się automatycznie, status briefu się nie zmienia, klient nie dostaje powiadomienia, a w zgłoszeniu pojawia się adnotacja „poprawiony przez Ciebie”;
+   - **Teksty dla AI** — cztery przyciski, każdy kopiuje gotowe polecenie:
+     1. **Strona wyboru logo i hasła (4 opcje + ZIP)** — widoczny, gdy klient prosi o logo lub hasło. AI przygotuje stronę `wybor-logo.html` z 4 opcjami, którą wysyłasz klientowi (klient wybiera opcję i hasło, akceptuje i odsyła wybór e-mailem), oraz ZIP, w którym każde logo jest osobnym plikiem (SVG i PNG, wersje pozioma, pionowa, znak, czarna, biała, ikona);
+     2. **Strona z panelem administracyjnym** — pełny brief + specyfikacja panelu (logowanie, zmiana hasła, pulpit, listy, promocje i aktualności z terminami, godziny otwarcia, kopia zapasowa). Jeśli klient wybrał już logo, dołącz je do wiadomości;
+     3. **Sam panel (do gotowej strony)** — sama specyfikacja panelu, gdy strona już istnieje;
+     4. **Karta do portfolio (ZIP)** — polecenie przygotowania karty projektu, wypełnione nazwą, branżą, miastem i zakresem z briefu (wgrywasz ją potem w Portfolio);
+   - **Kopiuj odpowiedzi**, **Pobierz plik .md**, **Drukuj / PDF** (drukuje sam brief);
+   - **Odblokuj do edycji:** klient może sam poprawić i wysłać brief ponownie;
+   - **Notatki do briefu (prywatne)** i **Usuń brief** (zgłoszenie zostaje).
 
 Zakładka **Briefy klientów** to zestawienie wszystkich briefów — kliknięcie otwiera zgłoszenie, do którego brief jest przypięty. Usunięcie zgłoszenia usuwa też jego brief.
 
 Podgląd tego, co widzi klient: **Panel → Briefy klientów → „Jak to widzi klient?”** albo plik `podglad/podglad-brief.html` (dwuklik). W trybie podglądu nic nie jest wysyłane ani zapisywane.
+
+## Co zmieniło się w pytaniach (wersja 5)
+Pytania nie powtarzają się między krokami:
+- „Kim są Twoi klienci” pojawia się raz: w kroku 1 albo w pytaniach branżowych (tam, gdzie branża ma dokładniejszą listę).
+- Obszar działania jest tylko w kroku 1 (z polem na doprecyzowanie).
+- Sposób pokazania cen jest tylko w kroku „Oferta i cennik” (z nowymi opcjami „pakiety” i „stawka”). Gastronomia i noclegi mają zamiast tego własne pytania o menu i ceny pokoi.
+- Rezerwacje: branże z własnym pytaniem (gastronomia, noclegi, tatuaż, handel, turystyka) nie widzą ogólnego pytania o Booksy.
+- Mapa jest tylko w „Sekcjach strony”; informacje praktyczne (parking, płatności, dostępność) nie dublują się z listami branżowymi.
+- Logo i cennik zniknęły z listy materiałów (są osobne pytania).
+- Krok „Twoje pomysły i uwagi” ma 4 pola zamiast 6.
+- Nowe pole „Wypisz najważniejsze usługi / produkty” dla branż, które nie miały takiego pytania.
+
+Odpowiedzi z wcześniej wypełnionych briefów na usunięte pytania nadal są widoczne w panelu.
 
 ## Bezpieczeństwo i prywatność
 - Każdy link zawiera losowy, niemożliwy do odgadnięcia klucz. Bez linku nie da się otworzyć briefu.

@@ -29,7 +29,7 @@ Zestawienie wszystkich briefów. Brief tworzysz w konkretnym zgłoszeniu i tam p
 - Strzałki **↑ ↓** zmieniają kolejność.
 - Odznacz **Widoczne na stronie**, aby ukryć element bez usuwania.
 - **Usuń** kasuje element na stałe, po potwierdzeniu.
-- Opublikowane branże pojawiają się też w polu „Branża” formularza. Opcja „Inna” dodaje się sama.
+- Lista „Branże” w panelu steruje kafelkami w sekcji „Dla kogo” na stronie. Pole „Branża” w formularzu ma stałą listę 130 branż — tę samą co brief, więc brief sam rozpoznaje branżę ze zgłoszenia.
 - Pierwsza możliwość na liście jest wyróżniona granatowym tłem. „Szeroka” zajmuje dwie kolumny.
 
 ## Zdjęcia
@@ -51,10 +51,13 @@ Zestawienie wszystkich briefów. Brief tworzysz w konkretnym zgłoszeniu i tam p
 - **Stan konfiguracji:** pokazuje, czy działają baza D1, magazyn zdjęć KV, Turnstile i Resend. Przycisk **Wyślij e-mail testowy** sprawdza powiadomienia.
 - **Zmiana hasła:** opis kroków poniżej.
 
-## Zmiana hasła i „nie pamiętam hasła”
-Hasło nie jest nigdzie zapisane, a Cloudflare przechowuje tylko jego skrót. Żeby ustawić nowe hasło (także gdy zapomnisz starego):
+## Zmiana hasła
+**Ustawienia → Zmiana hasła:** wpisz obecne hasło i dwa razy nowe (co najmniej 10 znaków). Zmiana działa od razu, a na innych urządzeniach trzeba zalogować się ponownie.
+W bazie zapisuje się tylko skrót hasła.
+
+**Nie pamiętasz hasła?**
 1. Otwórz `/admin/generator-hasla.html` (na stronie albo z dysku: `public/admin/generator-hasla.html`), wpisz nowe hasło i skopiuj wartość **ADMIN_PASSWORD_HASH**.
 2. Cloudflare → projekt Pages → **Settings → Variables and Secrets** → `ADMIN_PASSWORD_HASH` → **Edit** → wklej → **Save**.
 3. **Deployments** → **⋯** → **Retry deployment**.
 
-Wszystkie dotychczasowe sesje wygasną, a zalogujesz się nowym hasłem. `SESSION_SECRET` i `IP_HASH_SALT` zostaw bez zmian.
+Nowa wartość w Cloudflare zastępuje hasło ustawione w panelu. `SESSION_SECRET` i `IP_HASH_SALT` zostaw bez zmian.
