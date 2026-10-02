@@ -28,6 +28,22 @@
   };
   const colors = (a) => (a.colors === 'mam' && a.colors_list ? `kolory firmowe klienta: ${a.colors_list}` : 'kolory dobrane w projekcie strony (kolor główny, kolor akcentu, tło — podaj ich kody HEX w komentarzu w kodzie)');
 
+  /* ---------- Układ strony ---------- */
+  function layoutTask(a) {
+    const recs = H.recommendedLayouts(a).map((v) => H.layoutById(v)).filter(Boolean);
+    const recText = recs.length ? `Dla tej branży zwykle polecam: ${recs.map((l) => l.l).join(' lub ')}.` : '';
+    const L = a.layout && a.layout !== 'auto' ? H.layoutById(a.layout) : null;
+    if (L) {
+      return `UKŁAD STRONY (wybór klienta): ${L.l}
+- Jak ma wyglądać: ${L.how}
+- Zastosuj ten układ konsekwentnie na komputerze; na telefonie elementy układają się jedna pod drugą w logicznej kolejności.${a.layout !== 'onepage' && a.site_type ? `\n- Podział na strony: ${val('site_type', a)}.` : ''}${recs.length && !recs.some((l) => l.v === L.v) ? `\n- Uwaga dla mnie: ${recText} Jeśli wybrany układ wyraźnie utrudni pokazanie treści z briefu, napisz to na końcu i zaproponuj poprawkę — ale stronę wykonaj w układzie wybranym przez klienta.` : ''}`;
+    }
+    return `UKŁAD STRONY: klient nie ma preferencji — dobierz układ najlepiej pasujący do branży, ilości treści i dostępnych materiałów.
+- Do wyboru: ${S.layouts.filter((l) => l.how).map((l) => l.l).join('; ')}.
+- ${recText || 'Wybierz na podstawie briefu.'}
+- Zanim zaczniesz kodować, napisz w 2–3 zdaniach, który układ wybierasz i dlaczego (to uzasadnienie przekażę klientowi).${a.site_type ? `\n- Podział na strony: ${val('site_type', a)}.` : ''}`;
+  }
+
   /* ---------- Panel administracyjny (specyfikacja) ---------- */
   function panelSpec(a, standalone) {
     const scope = val('panel_scope', a);
@@ -149,6 +165,8 @@ Klient prosi o: ${what}. Powstają w osobnym kroku (strona wyboru z 4 opcjami, k
 - Jeśli do tej wiadomości dołączam wybrane ${what} — użyj ich i dopasuj do nich kolory oraz typografię strony.
 - Jeśli nie dołączam — użyj tymczasowego logotypu z nazwy firmy i oznacz miejsca [LOGO DO PODMIANY] / [HASŁO DO PODMIANY].
 ` : ''}
+${layoutTask(a)}
+
 ZADANIE 1: STRONA
 - Jeden plik HTML (czysty HTML/CSS/JS, bez frameworków i bez serwera), gotowy do wgrania na hosting statyczny (np. Cloudflare Pages).
 - Zanim zaczniesz kodować, wypisz krótko: mapę sekcji, główny przekaz pierwszego ekranu i kolory z kodami HEX.
@@ -259,7 +277,7 @@ ${H.toMarkdown(a, meta)}`;
     const done = [
       H.needsLogo(a) ? 'logo' : '',
       H.needsTagline(a) ? 'hasło' : '',
-      a.site_type === 'podstrony' ? 'strona z podstronami' : a.site_type === 'onepage' ? 'strona one-page' : 'strona internetowa',
+      a.layout === 'onepage' || a.site_type === 'onepage' ? 'strona one-page' : a.site_type === 'podstrony' ? 'strona z podstronami' : 'strona internetowa',
       'panel do edycji',
       'wersja na telefon',
       Array.isArray(a.languages) && a.languages.length > 1 ? 'wersje językowe' : '',

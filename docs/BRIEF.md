@@ -9,7 +9,7 @@ Brief to szczegółowy kwestionariusz, który klient wypełnia online przed rozp
 2. **Pytania branżowe:** zestaw pytań dopasowany do wybranej branży (szczegóły niżej).
 3. **Cel strony:** do czego ma służyć i co odwiedzający ma zrobić.
 4. **Wersje językowe:** polski, angielski, niemiecki, ukraiński i inne; zakres tłumaczeń i kto je przygotuje.
-5. **Sekcje strony:** układ (one-page lub podstrony) i ponad 30 sekcji do zaznaczenia w 5 grupach, plus własne propozycje.
+5. **Sekcje strony:** **wybór układu strony** (Grid, litera F, Z-pattern, One Page, Immersive, Split Screen, Bento albo „nie mam preferencji — proszę dobrać”). Każdy układ ma miniaturę i przycisk „i”, który otwiera okienko ze schematem, opisem i informacją, dla kogo jest najlepszy. Układy polecane dla branży klienta mają etykietę „Polecane”. Dalej: jedna strona czy podstrony oraz ponad 30 sekcji do zaznaczenia w 5 grupach, plus własne propozycje.
 6. **Oferta i cennik:**
    - cennik: z cenami, „od…”, przedziały, bez cen, „wycena indywidualna” albo brak;
    - co pokazać przy usługach i skąd wziąć cennik.
@@ -80,6 +80,9 @@ Listę branż i pytań możesz rozbudować w pliku `public/brief/schema.js` (sek
 Zakładka **Briefy klientów** to zestawienie wszystkich briefów — kliknięcie otwiera zgłoszenie, do którego brief jest przypięty. Usunięcie zgłoszenia usuwa też jego brief.
 
 Podgląd tego, co widzi klient: **Panel → Briefy klientów → „Jak to widzi klient?”** albo plik `podglad/podglad-brief.html` (dwuklik). W trybie podglądu nic nie jest wysyłane ani zapisywane.
+
+## Układ strony w poleceniu dla AI
+Wybrany układ trafia do polecenia „Strona z panelem” razem z opisem, jak ma wyglądać. Przy „nie mam preferencji” AI dostaje listę układów, podpowiedź dla branży i ma uzasadnić wybór w 2–3 zdaniach (do przekazania klientowi). Polecane układy dla branż ustawisz w `public/brief/schema.js` (`LAYOUT_BY_PROFILE`, `LAYOUT_BY_INDUSTRY`).
 
 ## Co zmieniło się w pytaniach (wersja 5)
 Pytania nie powtarzają się między krokami:

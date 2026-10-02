@@ -948,7 +948,7 @@
         const input =
           row.kind === 'text'
             ? h('input', { type: 'text', maxlength: String(max), value: row.value })
-            : h('textarea', { rows: row.kind === 'lines' ? '6' : '3', maxlength: String(max) }, row.value);
+            : h('textarea', { rows: row.kind === 'lines' ? '6' : String(row.value || '').includes('\n') ? '12' : '3', maxlength: String(max) }, row.value);
         if (input.tagName === 'TEXTAREA') input.value = row.value;
         input.dataset.key = row.key;
         input.addEventListener('input', () => {

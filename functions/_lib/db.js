@@ -4,7 +4,7 @@
 
 import { SEED } from './seed.js';
 
-export const SCHEMA_VERSION = '5';
+export const SCHEMA_VERSION = '6';
 
 // Każda instrukcja w osobnym elemencie (D1 wykonuje je w jednej transakcji przez batch()).
 export const SCHEMA = [

@@ -313,8 +313,13 @@
         var items = g.items.filter(function (o) { return !H.optionVisible || H.optionVisible(o, answers); });
         if (!items.length) return;
         if (g.l) box.appendChild(el('p', { class: 'bf-group-title', text: g.l }));
-        items.forEach(function (o) { box.appendChild(renderOption(f, o)); });
+        items.forEach(function (o) { box.appendChild(f.layouts ? renderLayoutOption(f, o) : renderOption(f, o)); });
       });
+      if (f.layouts) {
+        box.classList.add('bf-options--layouts');
+        var recs = H.recommendedLayouts(answers).map(function (v) { var l = H.layoutById(v); return l ? l.l : ''; }).filter(Boolean);
+        if (recs.length) wrap.appendChild(el('p', { class: 'bf-layout-rec' }, el('strong', { text: 'Dla branży „' + H.industryLabel(answers) + '” polecam: ' }), recs.join(' lub ') + '.'));
+      }
       if (f.other) {
         if (f.type === 'radio') {
           box.appendChild(renderOption(f, { v: '__other', l: 'Inne' }));
@@ -395,6 +400,88 @@
         el('span', { class: 'bf-opt__l', text: o.l }, H.isRecommended && H.isRecommended(f, o, answers) ? el('span', { class: 'bf-rec', text: 'Polecane' }) : null),
         o.h ? el('span', { class: 'bf-opt__h', text: o.h }) : null)
     );
+  }
+
+  /* ---------- Układy strony: miniatury i okienko z opisem ---------- */
+  var WIRES = {
+    // [x, y, szer., wys., rodzaj] — rodzaj: n=pasek menu, i=zdjęcie, b=blok, t=linia tekstu, c=przycisk
+    grid: [[8, 8, 144, 10, 'n'], [8, 26, 44, 34, 'i'], [58, 26, 44, 34, 'i'], [108, 26, 44, 34, 'i'], [8, 66, 44, 34, 'i'], [58, 66, 44, 34, 'i'], [108, 66, 44, 34, 'i']],
+    f: [[8, 8, 144, 10, 'n'], [8, 26, 144, 9, 'b'], [8, 42, 96, 5, 't'], [8, 51, 84, 5, 't'], [8, 64, 70, 7, 'b'], [8, 76, 64, 5, 't'], [8, 85, 52, 5, 't'], [8, 94, 40, 5, 't'], [116, 42, 36, 58, 'i']],
+    z: [[8, 8, 30, 10, 'b'], [122, 8, 30, 10, 'c'], [8, 28, 62, 6, 't'], [8, 38, 50, 5, 't'], [84, 26, 68, 30, 'i'], [8, 64, 68, 30, 'i'], [90, 66, 62, 6, 't'], [90, 76, 48, 5, 't'], [118, 88, 34, 10, 'c']],
+    onepage: [[52, 4, 56, 102, 'p'], [56, 8, 48, 6, 'n'], [56, 18, 48, 20, 'i'], [56, 42, 48, 14, 'b'], [56, 60, 48, 14, 'b'], [56, 78, 48, 12, 'i'], [56, 94, 48, 8, 'b'], [116, 20, 4, 70, 's']],
+    immersive: [[8, 8, 144, 94, 'i'], [14, 14, 132, 7, 'n'], [38, 46, 84, 9, 'w'], [50, 60, 60, 5, 'w'], [62, 74, 36, 11, 'c']],
+    split: [[8, 8, 70, 94, 'p'], [82, 8, 70, 94, 'i'], [16, 30, 50, 8, 'b'], [16, 44, 54, 5, 't'], [16, 53, 44, 5, 't'], [16, 68, 32, 11, 'c']],
+    bento: [[8, 8, 84, 56, 'i'], [98, 8, 54, 25, 'b'], [98, 39, 54, 25, 'c2'], [8, 70, 40, 32, 'b'], [54, 70, 98, 32, 'i2']],
+    auto: [[8, 8, 44, 30, 'i'], [58, 8, 44, 30, 'b'], [108, 8, 44, 30, 'i2'], [8, 72, 44, 30, 'b'], [58, 72, 44, 30, 'i'], [108, 72, 44, 30, 'b']],
+  };
+  var WIRE_FILL = { n: '#142e50', i: '#8fb3e8', i2: '#c9bdfb', b: '#dfe6f0', t: '#c5cedb', c: '#ff6b5a', c2: '#ffd98a', p: '#ffffff', w: '#ffffff', s: '#c5cedb' };
+
+  function wire(v, label) {
+    var NS = 'http://www.w3.org/2000/svg';
+    var svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 160 110');
+    svg.setAttribute('class', 'bf-wire');
+    if (label) { svg.setAttribute('role', 'img'); svg.setAttribute('aria-label', label); } else svg.setAttribute('aria-hidden', 'true');
+    var bg = document.createElementNS(NS, 'rect');
+    bg.setAttribute('width', '160'); bg.setAttribute('height', '110'); bg.setAttribute('rx', '8'); bg.setAttribute('fill', '#f2f5fa');
+    svg.appendChild(bg);
+    (WIRES[v] || []).forEach(function (r) {
+      var e = document.createElementNS(NS, 'rect');
+      e.setAttribute('x', r[0]); e.setAttribute('y', r[1]); e.setAttribute('width', r[2]); e.setAttribute('height', r[3]);
+      e.setAttribute('rx', r[4] === 't' || r[4] === 'w' || r[4] === 's' ? 2.5 : 3.5);
+      e.setAttribute('fill', WIRE_FILL[r[4]] || '#dfe6f0');
+      if (r[4] === 'p') { e.setAttribute('stroke', '#c5cedb'); e.setAttribute('stroke-width', '1'); }
+      svg.appendChild(e);
+    });
+    if (v === 'auto') {
+      var t = document.createElementNS(NS, 'text');
+      t.setAttribute('x', '80'); t.setAttribute('y', '63'); t.setAttribute('text-anchor', 'middle'); t.setAttribute('font-size', '22'); t.setAttribute('font-weight', '800'); t.setAttribute('fill', '#142e50');
+      t.textContent = '✓ dobiorę';
+      svg.appendChild(t);
+    }
+    if (v === 'z') {
+      var pth = document.createElementNS(NS, 'path');
+      pth.setAttribute('d', 'M24 22 H136 L24 60 H136'); pth.setAttribute('fill', 'none'); pth.setAttribute('stroke', '#ff6b5a'); pth.setAttribute('stroke-width', '1.6'); pth.setAttribute('stroke-dasharray', '4 3'); pth.setAttribute('opacity', '.8');
+      svg.appendChild(pth);
+    }
+    return svg;
+  }
+
+  function renderLayoutOption(f, o) {
+    var opt = renderOption(f, o);
+    opt.classList.add('bf-opt--layout');
+    opt.insertBefore(wire(o.v), opt.querySelector('.bf-opt__text'));
+    var box = el('div', { class: 'bf-layout' }, opt);
+    if (o.how) box.appendChild(el('button', { type: 'button', class: 'bf-info-btn', 'aria-label': 'Jak wygląda: ' + o.l, title: 'Zobacz, jak wygląda ten układ', text: 'i', onclick: function (e) { openLayoutInfo(f, o, e.currentTarget); } }));
+    return box;
+  }
+
+  function openLayoutInfo(f, o, opener) {
+    var old = document.querySelector('.bf-dialog');
+    if (old) old.remove();
+    var rec = H.isRecommended(f, o, answers);
+    var d = el('dialog', { class: 'bf-dialog', 'aria-labelledby': 'bf-dialog-title' },
+      el('button', { type: 'button', class: 'bf-dialog__x', 'aria-label': 'Zamknij', text: '×', onclick: function () { d.close(); } }),
+      wire(o.v, 'Schemat układu: ' + o.l),
+      el('h2', { id: 'bf-dialog-title', text: o.l }),
+      rec ? el('p', { class: 'bf-dialog__rec', text: 'Polecany dla branży: ' + H.industryLabel(answers) }) : null,
+      el('h3', { text: 'Jak wygląda i działa?' }),
+      el('p', { text: o.how }),
+      el('h3', { text: 'Dla jakich firm sprawdzi się najlepiej?' }),
+      el('p', { text: o.best }),
+      el('div', { class: 'bf-dialog__actions' },
+        el('button', { type: 'button', class: 'btn bf-btn-ghost', text: 'Zamknij', onclick: function () { d.close(); } }),
+        locked ? null : el('button', { type: 'button', class: 'btn btn--primary', text: 'Wybieram ten układ', onclick: function () {
+          var inp = document.querySelector('input[name="' + f.id + '"][value="' + o.v + '"]');
+          if (inp) { inp.checked = true; inp.dispatchEvent(new Event('change', { bubbles: true })); }
+          d.close();
+        } })
+      )
+    );
+    d.addEventListener('close', function () { d.remove(); if (opener) opener.focus(); });
+    d.addEventListener('click', function (e) { if (e.target === d) d.close(); });
+    document.body.appendChild(d);
+    if (d.showModal) d.showModal(); else d.setAttribute('open', '');
   }
 
   function updateVisibility() {

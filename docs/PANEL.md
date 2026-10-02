@@ -23,6 +23,7 @@ Zestawienie wszystkich briefów. Brief tworzysz w konkretnym zgłoszeniu i tam p
 - **Puste pole** = na stronie zostaje tekst domyślny. **Pojedynczy myślnik „-”** ukrywa dany element.
 - Pola „punkty (jedna linia = jeden punkt)” tworzą listy: każda linia to osobny punkt.
 - Grupa **Polityka prywatności** zawiera dane do uzupełnienia przed publikacją.
+- Grupa **Kontakt i formularz** zawiera m.in. **Formularz: szkic wiadomości** — tekst, który odwiedzający widzi wpisany w polu wiadomości — oraz podpowiedź nad tym polem. Wpisz „-”, jeśli pole wiadomości ma być puste.
 
 ## FAQ, Branże, Możliwości
 - **Dodaj…** tworzy nowy element na końcu listy. Wypełnij pola i kliknij **Dodaj**.

@@ -564,8 +564,49 @@
     { id: 'ind_competition', legacy: true, type: 'textarea', label: 'Od kogo chcesz się odróżnić?', hint: 'Opcjonalnie: firmy lub strony konkurencji i co robisz inaczej.', max: 1500 },
   ];
 
+  /* =========================================================
+     UKŁADY STRONY
+     ========================================================= */
+  var LAYOUTS = [
+    { v: 'grid', l: 'Układ siatki (Grid)', h: 'Uporządkowane kolumny i wiersze — dla rozbudowanej oferty.',
+      how: 'Treści są rozmieszczone w uporządkowanych kolumnach i wierszach. Produkty, usługi lub artykuły mają podobną formę, dzięki czemu łatwo je przeglądać i porównywać.',
+      best: 'Sklepy internetowe, hurtownie, firmy z rozbudowaną ofertą, szkoły i firmy szkoleniowe, portale informacyjne. Szczególnie przydatny, gdy trzeba zaprezentować wiele równorzędnych pozycji.' },
+    { v: 'f', l: 'Układ w kształcie litery F', h: 'Nagłówki i tekst wyrównane do lewej — dla stron z dużą ilością treści.',
+      how: 'Najważniejsze informacje znajdują się na górze, a kolejne nagłówki i fragmenty treści są wyrównane do lewej. Ułatwia szybkie skanowanie strony zawierającej dużo tekstu.',
+      best: 'Kancelarie, biura rachunkowe, firmy doradcze, placówki edukacyjne, blogi i bazy wiedzy. Dobry do szczegółowych opisów usług, poradników i informacji.' },
+    { v: 'z', l: 'Układ zygzakowy (Z-pattern)', h: 'Tekst i zdjęcie na przemian — prosty przekaz i wyraźny przycisk.',
+      how: 'Elementy prowadzą wzrok od lewego górnego rogu do prawego, następnie po przekątnej w dół i ponownie w prawo. Nazwa lub logo, hasło, zdjęcie i przycisk tworzą prostą kolejność zapoznawania się z ofertą.',
+      best: 'Małe firmy usługowe, kampanie reklamowe, pojedyncze usługi, kursy i premiery produktów. Najlepiej działa w prostych sekcjach z krótkim przekazem i wyraźnym przyciskiem działania.' },
+    { v: 'onepage', l: 'One Page — jedna przewijana strona', h: 'Wszystko na jednej stronie, menu przewija do sekcji.',
+      how: 'Wszystkie najważniejsze informacje znajdują się na jednej stronie: prezentacja firmy, oferta, cennik, realizacje i kontakt. Menu przenosi użytkownika do odpowiedniej sekcji.',
+      best: 'Salony beauty i fryzjerskie, gabinety masażu, warsztaty samochodowe, restauracje, freelancerzy i małe firmy lokalne. Dobry wybór przy niewielkiej liczbie usług i zwięzłej treści.' },
+    { v: 'immersive', l: 'Układ pełnoekranowy (Immersive)', h: 'Duże zdjęcie lub film na pierwszym ekranie — liczy się klimat.',
+      how: 'Pierwszy ekran wypełnia duże zdjęcie, grafika lub film, uzupełnione krótkim hasłem i przyciskiem. Strona mocno eksponuje obraz i atmosferę marki.',
+      best: 'Fotografowie, architekci, projektanci wnętrz, hotele, obiekty turystyczne, restauracje i marki premium. Najlepiej sprawdza się przy dobrych materiałach wizualnych.' },
+    { v: 'split', l: 'Podział ekranu (Split Screen)', h: 'Połowa ekranu to tekst i przyciski, połowa — zdjęcie.',
+      how: 'Ekran jest podzielony na dwie części: jedna przedstawia tekst i przyciski, druga zdjęcie lub grafikę. Można też w ten sposób pokazać dwie główne gałęzie oferty. Na telefonie części układają się jedna pod drugą.',
+      best: 'Gabinety, salony beauty, kancelarie, doradcy, trenerzy i firmy usługowe. Dobry, gdy równie ważne są jasny opis oferty i jej wizualna prezentacja.' },
+    { v: 'bento', l: 'Układ Bento — kafelki o różnych rozmiarach', h: 'Większe i mniejsze bloki wyróżniają najważniejsze elementy oferty.',
+      how: 'Treści tworzą uporządkowaną kompozycję mniejszych i większych bloków. Największe kafelki wyróżniają główną ofertę, a pozostałe pokazują usługi, zdjęcia i dodatkowe informacje.',
+      best: 'Firmy technologiczne, agencje marketingowe, studia projektowe, marki kreatywne i firmy oferujące produkty cyfrowe. Sprawdza się, gdy trzeba wyróżnić kilka różnych elementów oferty.' },
+    { v: 'auto', l: 'Nie mam preferencji — proszę dobrać układ najlepszy dla mojej branży', h: 'Dobiorę układ do branży, ilości treści i materiałów, a wybór uzasadnię.' },
+  ];
+  /* Polecane układy: według profilu branży, z wyjątkami dla konkretnych branż. */
+  var LAYOUT_BY_PROFILE = {
+    gastro: ['onepage', 'immersive'], noclegi: ['immersive', 'grid'], uroda: ['onepage', 'split'], tatuaz: ['immersive', 'grid'],
+    zdrowie: ['split', 'f'], sport: ['onepage', 'z'], edukacja: ['grid', 'f'], auto: ['onepage', 'z'], budowa: ['z', 'grid'],
+    uslugi: ['z', 'onepage'], biuro: ['f', 'split'], kreatywne: ['immersive', 'bento'], eventy: ['immersive', 'onepage'],
+    handel: ['grid', 'split'], zwierzeta: ['onepage', 'split'], turystyka: ['immersive', 'grid'], ngo: ['f', 'grid'],
+  };
+  var LAYOUT_BY_INDUSTRY = {
+    sklep_online: ['grid'], hurtownia: ['grid'], producent: ['grid', 'bento'], it: ['bento', 'z'], marketing: ['bento', 'z'], grafik: ['bento', 'immersive'],
+    fotograf: ['immersive', 'grid'], architekt: ['immersive', 'bento'], prawnik: ['f', 'split'], ksiegowosc: ['f', 'split'], doradztwo: ['split', 'f'],
+    kursy: ['grid', 'f'], szkola_jezykowa: ['grid', 'f'], trener: ['split', 'z'], komis: ['grid'], nieruchomosci: ['grid', 'split'],
+    hotel: ['immersive', 'grid'], restauracja: ['immersive', 'onepage'], drukarnia: ['grid', 'bento'], psycholog: ['split', 'onepage'],
+  };
+
   var BRIEF = {
-    version: 5,
+    version: 6,
     title: 'Brief projektowy strony internetowej',
     steps: [
       /* ---------------------------------------------------- 1 */
@@ -708,7 +749,11 @@
         intro: 'Zaznacz wszystko, co chcesz mieć na stronie. Jeśli nie masz pewności — zaznacz i dopisz w uwagach, przedyskutujemy to.',
         fields: [
           {
-            id: 'site_type', type: 'radio', label: 'Jaki układ strony preferujesz?', required: true,
+            id: 'layout', type: 'radio', label: 'Jaki układ strony wybierasz?', required: true, layouts: true, options: LAYOUTS,
+            hint: 'Kliknij „i” przy układzie, aby zobaczyć, jak wygląda i dla kogo jest najlepszy. Oznaczenie „Polecane” to układy, które najczęściej sprawdzają się w Twojej branży.',
+          },
+          {
+            id: 'site_type', type: 'radio', label: 'Jedna strona czy kilka podstron?', required: true, showIf: { f: 'layout', neq: 'onepage' },
             options: [
               { v: 'onepage', l: 'Jedna długa strona (one-page)', h: 'Wszystko na jednej stronie, przewijane sekcjami. Dobre dla mniejszych firm.' },
               { v: 'podstrony', l: 'Kilka podstron', h: 'Osobne strony np. dla oferty, cennika, galerii. Dobre przy rozbudowanej ofercie.' },
@@ -1288,6 +1333,7 @@
       if (parent && !isVisible(parent, answers)) return false;
       var v = answers[c.f];
       if (c.eq !== undefined && v !== c.eq) return false;
+      if (c.neq !== undefined && v === c.neq) return false;
       if (c.in && c.in.indexOf(v) === -1) return false;
       if (c.has && !(Array.isArray(v) && v.indexOf(c.has) !== -1)) return false;
       if (c.not && !((Array.isArray(v) && v.some(function (x) { return c.not.indexOf(x) === -1; })) || Boolean(answers[c.f + '__other']))) return false;
@@ -1313,7 +1359,17 @@
     return o.p.indexOf(prof) !== -1;
   }
 
+  /** Polecane układy dla wybranej branży (lista identyfikatorów). */
+  function recommendedLayouts(answers) {
+    return LAYOUT_BY_INDUSTRY[answers.industry_type] || LAYOUT_BY_PROFILE[profileOf(answers)] || [];
+  }
+  function layoutById(v) {
+    for (var i = 0; i < LAYOUTS.length; i++) if (LAYOUTS[i].v === v) return LAYOUTS[i];
+    return null;
+  }
+
   function isRecommended(field, o, answers) {
+    if (field.layouts) return recommendedLayouts(answers).indexOf(o.v) !== -1;
     if (!field.recommend) return false;
     var prof = PROFILES[profileOf(answers)];
     return Boolean(prof && prof.rec.indexOf(o.v) !== -1);
@@ -1401,6 +1457,7 @@
   function needsTagline(a) { return a.tagline === 'propozycja' || a.tagline === 'zmiana'; }
 
   BRIEF.industries = INDUSTRY_GROUPS;
+  BRIEF.layouts = LAYOUTS;
   BRIEF.profiles = PROFILES;
 
   BRIEF.helpers = {
@@ -1410,6 +1467,8 @@
     isRequired: isRequired,
     optionVisible: optionVisible,
     isRecommended: isRecommended,
+    recommendedLayouts: recommendedLayouts,
+    layoutById: layoutById,
     stepIntro: stepIntro,
     industryOf: industryOf,
     industryLabel: industryLabel,

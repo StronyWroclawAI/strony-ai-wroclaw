@@ -763,12 +763,28 @@ export const SEED = {
    "sort_order": 11094
   },
   {
+   "key": "contact.message_hint",
+   "section": "Kontakt i formularz",
+   "label": "Formularz: podpowiedź nad wiadomością",
+   "kind": "long",
+   "value": "Poniżej jest gotowy szkic — uzupełnij go lub napisz po swojemu. Wystarczy kilka zdań: resztę ustalimy w krótkim briefie, który wyślę po pierwszym kontakcie.",
+   "sort_order": 11095
+  },
+  {
+   "key": "contact.message_template",
+   "section": "Kontakt i formularz",
+   "label": "Formularz: szkic wiadomości (wpisz „-”, aby pole było puste)",
+   "kind": "long",
+   "value": "Dzień dobry,\nchcę nawiązać współpracę przy stworzeniu strony internetowej dla mojej firmy.\n\nCzym się zajmujemy: \nCo chcę pokazać na stronie (np. oferta, cennik, galeria, zespół, rezerwacje): \nCzy mam logo i zdjęcia: \nStrony, które mi się podobają: \nNa kiedy strona byłaby potrzebna: \n\nProszę o kontakt w sprawie dalszych kroków.",
+   "sort_order": 11096
+  },
+  {
    "key": "contact.success_title",
    "section": "Kontakt i formularz",
    "label": "Po wysłaniu – nagłówek",
    "kind": "text",
    "value": "Dziękuję — zgłoszenie zostało zapisane",
-   "sort_order": 11095
+   "sort_order": 11097
   },
   {
    "key": "contact.success_text",
@@ -776,7 +792,7 @@ export const SEED = {
    "label": "Po wysłaniu – treść",
    "kind": "long",
    "value": "Przeczytam je i odpiszę na podany adres e-mail. Jeśli chcesz coś dodać, napisz bezpośrednio na stronywroclawai@gmail.com.",
-   "sort_order": 11096
+   "sort_order": 11098
   },
   {
    "key": "contact.closed_title",
@@ -784,7 +800,7 @@ export const SEED = {
    "label": "Nabór wyłączony – nagłówek",
    "kind": "text",
    "value": "Nabór jest chwilowo wstrzymany",
-   "sort_order": 11097
+   "sort_order": 11099
   },
   {
    "key": "contact.closed_text",
@@ -792,7 +808,7 @@ export const SEED = {
    "label": "Nabór wyłączony – treść",
    "kind": "text",
    "value": "Obecnie realizuję przyjęte projekty. Możesz napisać do mnie, aby zapytać o kolejny termin.",
-   "sort_order": 11098
+   "sort_order": 11100
   },
   {
    "key": "footer.location",
@@ -800,7 +816,7 @@ export const SEED = {
    "label": "Stopka – lokalizacja",
    "kind": "text",
    "value": "Z Wrocławia — dla firm z całej Polski",
-   "sort_order": 12099
+   "sort_order": 12101
   },
   {
    "key": "footer.author",
@@ -808,7 +824,7 @@ export const SEED = {
    "label": "Stopka – informacja o autorze",
    "kind": "text",
    "value": "Strony AI Wrocław to projekt Grzegorza — twórcy stron internetowych z Wrocławia.",
-   "sort_order": 12100
+   "sort_order": 12102
   },
   {
    "key": "privacy.updated",

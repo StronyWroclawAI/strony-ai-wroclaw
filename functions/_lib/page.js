@@ -116,8 +116,12 @@ export async function renderPage(context) {
           const v = c[el.getAttribute('data-cms')];
           if (v === undefined || v === null) return;
           const t = String(v).trim();
-          if (t === '-') el.remove();
-          else if (t) el.setInnerContent(t);
+          if (t === '-') {
+            // pole formularza zostaje, tylko bez treści (np. pusty szkic wiadomości)
+            if (el.tagName === 'textarea') el.setInnerContent('');
+            else el.remove();
+          }
+          else if (t) el.setInnerContent(el.tagName === 'textarea' ? String(v).replace(/^\n+|\s+$/g, '') : t);
         },
       })
       .on('[data-cms-lines]', {
