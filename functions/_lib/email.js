@@ -26,7 +26,8 @@ export function textToHtml(text) {
 
 /** Wiadomość do klienta — wyłącznie z konta Gmail (nadawca: GMAIL_USER). */
 export async function sendClientEmail(env, { to, subject, text }) {
-  return sendViaGmail(env, { to, subject, text, html: textToHtml(text) });
+  // Zwykły tekst, bez szablonu HTML — taka wiadomość wygląda jak pisana ręcznie i rzadziej trafia do spamu.
+  return sendViaGmail(env, { to, subject, text, fromName: 'Grzegorz — Strony AI Wrocław' });
 }
 
 function fromAddress(env) {

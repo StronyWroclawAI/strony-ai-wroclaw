@@ -107,7 +107,7 @@ export async function sendViaGmail(env, { to, subject, text, html, replyTo, from
     };
 
     await cmd(null, [220], 'Powitanie serwera');
-    await cmd('EHLO strony-ai-wroclaw', [250], 'EHLO');
+    await cmd('EHLO stronyaiwroclaw.localhost', [250], 'EHLO');
     await cmd('AUTH LOGIN', [334], 'Logowanie');
     await cmd(b64utf8(from), [334], 'Logowanie (użytkownik)');
     await cmd(b64utf8(pass), [235], 'Logowanie (hasło)');
