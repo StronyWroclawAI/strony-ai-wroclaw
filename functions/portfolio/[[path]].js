@@ -3,6 +3,7 @@
 import { ensureSchema, hasDb } from '../_lib/db.js';
 import { hasValidSession } from '../_lib/auth.js';
 import { SLUG_RE, PATH_RE, cardHeaders } from '../_lib/card.js';
+import { recordVisit } from '../_lib/stats.js';
 
 const notFound = () =>
   new Response('<!doctype html><meta charset="utf-8"><title>Nie znaleziono</title><p style="font-family:sans-serif">Nie znaleziono tej karty projektu. <a href="/#portfolio">Wróć do portfolio</a></p>', {
@@ -10,7 +11,7 @@ const notFound = () =>
     headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' },
   });
 
-export async function onRequestGet({ request, env, params }) {
+export async function onRequestGet({ request, env, params, waitUntil }) {
   const url = new URL(request.url);
   const seg = Array.isArray(params.path) ? params.path : params.path ? [params.path] : [];
   if (!seg.length) return Response.redirect(`${url.origin}/#portfolio`, 302);
@@ -35,5 +36,7 @@ export async function onRequestGet({ request, env, params }) {
   if (!f) return notFound();
   const obj = await env.MEDIA.get(f.kv_key, { type: 'stream' });
   if (!obj) return notFound();
-  return new Response(obj, { headers: cardHeaders(f.content_type, { html: f.content_type.startsWith('text/html'), preview }) });
+  const isHtml = f.content_type.startsWith('text/html');
+  if (isHtml && !preview) waitUntil(recordVisit(env, request, `/portfolio/${slug}`));
+  return new Response(obj, { headers: cardHeaders(f.content_type, { html: isHtml, preview }) });
 }

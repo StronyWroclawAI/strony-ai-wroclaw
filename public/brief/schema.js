@@ -34,8 +34,8 @@
     gastro: { l: 'Gastronomia', rec: ['menu', 'godziny', 'mapa', 'galeria', 'zamowienia', 'opinie', 'o_nas', 'kontakt'] },
     noclegi: { l: 'Noclegi', rec: ['pokoje', 'udogodnienia', 'galeria', 'cennik', 'okolica', 'mapa', 'opinie', 'faq', 'regulamin', 'kontakt'] },
     uroda: { l: 'Uroda', rec: ['oferta', 'cennik', 'zespol', 'realizacje', 'opinie', 'vouchery', 'regulamin', 'przed_wizyta', 'pielegnacja'] },
-    tatuaz: { l: 'Tatuaż i piercing', rec: ['zespol', 'realizacje', 'flash', 'pielegnacja', 'faq', 'regulamin', 'wycena', 'opinie'] },
-    zdrowie: { l: 'Zdrowie', rec: ['zespol', 'oferta', 'cennik', 'przed_wizyta', 'faq', 'dostepnosc', 'mapa', 'certyfikaty'] },
+    tatuaz: { l: 'Tatuaż i piercing', rec: ['artysci', 'realizacje', 'flash', 'pielegnacja', 'faq', 'regulamin', 'wycena', 'opinie'] },
+    zdrowie: { l: 'Zdrowie', rec: ['zespol', 'oferta', 'cennik', 'pierwsza_wizyta', 'kwalifikacje', 'faq', 'mapa', 'certyfikaty'] },
     sport: { l: 'Sport i rekreacja', rec: ['grafik', 'cennik', 'pakiety', 'zespol', 'galeria', 'faq', 'opinie'] },
     edukacja: { l: 'Edukacja', rec: ['kursy', 'cennik', 'zespol', 'grafik', 'faq', 'opinie'] },
     auto: { l: 'Motoryzacja', rec: ['oferta', 'cennik', 'realizacje', 'godziny', 'mapa', 'wycena', 'opinie'] },
@@ -565,6 +565,160 @@
   ];
 
   /* =========================================================
+     SEKCJE STRONY I MATERIAŁY DOPASOWANE DO BRANŻY
+     Katalog: identyfikator → etykieta. Mapy: profil branży → lista identyfikatorów (kolejność = kolejność na liście).
+     Klucz „_” to lista ogólna (gdy branża nie jest wybrana albo jest „inna”).
+     ========================================================= */
+  var SEC_LABELS = {
+    zespol: 'Zespół / specjaliści', galeria: 'Galeria zdjęć', realizacje: 'Realizacje / efekty „przed i po”', wideo: 'Film / wideo', historia: 'Historia firmy',
+    marki: 'Marki / produkty, z którymi pracujemy', certyfikaty: 'Certyfikaty, dyplomy, uprawnienia', nagrody: 'Nagrody i wyróżnienia', partnerzy: 'Partnerzy / klienci biznesowi',
+    menu: 'Menu / karta', pokoje: 'Pokoje / apartamenty z opisami i galeriami', udogodnienia: 'Udogodnienia', okolica: 'Okolica i atrakcje w pobliżu', flash: 'Wolne wzory (flash)',
+    grafik: 'Grafik zajęć', kursy: 'Kursy / programy / poziomy', flota: 'Flota / sprzęt', oferty: 'Aktualne oferty (auta / nieruchomości / produkty)', proces: 'Jak pracujemy — etapy współpracy',
+    wnetrze: 'Wnętrze lokalu / salonu', szef_kuchni: 'Nasza kuchnia / szef kuchni', artysci: 'Artyści i ich portfolio', sprzet: 'Sprzęt i technologie', specjalizacje: 'Specjalizacje / obszary działania',
+    spacer: 'Wirtualny spacer po obiekcie', produkty_wyr: 'Polecane produkty / nowości', proces_prod: 'Jak powstają nasze produkty', misja: 'Misja i wartości', projekty: 'Nasze projekty i działania',
+    opinie: 'Opinie klientów', faq: 'Najczęstsze pytania (FAQ)', gwarancja: 'Gwarancja / zasady współpracy', regulamin: 'Regulamin', higiena: 'Higiena i bezpieczeństwo zabiegów',
+    kwalifikacje: 'Kwalifikacje i uprawnienia zespołu', ubezpieczenie: 'Ubezpieczenie OC', alergeny: 'Alergeny i składniki', anulacja: 'Zasady rezerwacji i anulacji', pierwsza_wizyta: 'Jak wygląda pierwsza wizyta',
+    poufnosc: 'Poufność i ochrona danych', sprawozdania: 'Sprawozdania i dokumenty', media: 'Media o nas', wyniki: 'Wyniki / zdawalność (prawdziwe dane)', bezpieczenstwo: 'Bezpieczeństwo uczestników',
+    zwroty: 'Zwroty i reklamacje', pielegnacja: 'Pielęgnacja po zabiegu / gojenie',
+    aktualnosci: 'Aktualności / blog', promocje: 'Promocje i oferty specjalne', vouchery: 'Bony / vouchery podarunkowe', pakiety: 'Pakiety / karnety', wycena: 'Formularz zapytania / wyceny',
+    do_pobrania: 'Pliki do pobrania (PDF, cenniki, formularze)', dla_firm: 'Oferta dla firm', kariera: 'Praca / kariera', sklep: 'Sklep internetowy', zamowienia: 'Zamówienia / dostawa',
+    rezerwacja_stolika: 'Rezerwacja stolika', imprezy: 'Imprezy okolicznościowe / catering', rezerwacja_online: 'Rezerwacja online', lekcja_probna: 'Zapis na zajęcia próbne', zapisy: 'Zapisy / rekrutacja',
+    kalendarz: 'Kalendarz wydarzeń / wolnych terminów', newsletter: 'Newsletter', wsparcie: 'Jak nas wesprzeć', wolontariat: 'Wolontariat', konsultacja: 'Umów konsultację',
+    awaria: 'Pilny kontakt / zgłoszenie awarii', gdzie_kupic: 'Gdzie kupić / punkty sprzedaży',
+    przed_wizyta: 'Jak przygotować się do wizyty', parking: 'Parking i dojazd komunikacją', dostepnosc: 'Dostępność dla osób z niepełnosprawnościami', platnosci: 'Metody płatności',
+    strefa_rodzica: 'Informacje dla rodziców', zwierzeta_mile: 'Przyjazne zwierzętom', dzieci_mile: 'Udogodnienia dla dzieci', zameldowanie: 'Zameldowanie i wymeldowanie', co_zabrac: 'Co zabrać ze sobą',
+    dostawa_info: 'Dostawa i odbiór', finansowanie: 'Raty / dofinansowania', godziny_spec: 'Dni wolne i zmiany godzin', jezyki: 'Obsługa w językach obcych', dokumenty: 'Potrzebne dokumenty',
+    obszar: 'Obszar działania / dojazd do klienta', czas_realizacji: 'Terminy i czas realizacji',
+  };
+  var SEC_HINTS = { opinie: 'Tylko prawdziwe opinie, za zgodą autorów lub jako link do Google / Booksy.', sklep: 'Większy projekt — wymaga osobnego ustalenia.', rezerwacja_online: 'Przez zewnętrzny system albo jako osobna funkcja.' };
+  var SEC_GROUPS = [
+    { l: 'Prezentacja firmy', map: {
+      _: ['zespol', 'galeria', 'realizacje', 'wideo', 'historia', 'marki', 'certyfikaty', 'nagrody', 'partnerzy'],
+      gastro: ['menu', 'wnetrze', 'galeria', 'szef_kuchni', 'wideo', 'historia', 'nagrody'],
+      noclegi: ['pokoje', 'udogodnienia', 'galeria', 'okolica', 'spacer', 'wideo', 'historia', 'nagrody'],
+      uroda: ['zespol', 'realizacje', 'galeria', 'wnetrze', 'marki', 'certyfikaty', 'wideo'],
+      tatuaz: ['artysci', 'realizacje', 'flash', 'wnetrze', 'wideo', 'nagrody'],
+      zdrowie: ['zespol', 'specjalizacje', 'sprzet', 'galeria', 'certyfikaty', 'wideo'],
+      sport: ['grafik', 'zespol', 'kursy', 'galeria', 'wideo', 'sprzet', 'nagrody'],
+      edukacja: ['kursy', 'zespol', 'grafik', 'galeria', 'wideo', 'certyfikaty', 'historia'],
+      auto: ['realizacje', 'zespol', 'sprzet', 'marki', 'flota', 'oferty', 'galeria', 'certyfikaty'],
+      budowa: ['realizacje', 'proces', 'zespol', 'sprzet', 'marki', 'certyfikaty', 'wideo', 'partnerzy'],
+      uslugi: ['realizacje', 'proces', 'zespol', 'sprzet', 'flota', 'galeria'],
+      biuro: ['zespol', 'specjalizacje', 'proces', 'historia', 'partnerzy', 'oferty', 'certyfikaty'],
+      kreatywne: ['realizacje', 'proces', 'wideo', 'zespol', 'sprzet', 'nagrody', 'partnerzy'],
+      eventy: ['galeria', 'spacer', 'wideo', 'menu', 'realizacje', 'zespol', 'udogodnienia'],
+      handel: ['oferty', 'marki', 'produkty_wyr', 'proces_prod', 'galeria', 'historia', 'certyfikaty'],
+      zwierzeta: ['zespol', 'galeria', 'sprzet', 'realizacje', 'wideo', 'certyfikaty'],
+      turystyka: ['flota', 'galeria', 'okolica', 'wideo', 'zespol', 'realizacje'],
+      ngo: ['misja', 'projekty', 'zespol', 'historia', 'galeria', 'wideo', 'partnerzy', 'nagrody'],
+    } },
+    { l: 'Budowanie zaufania', map: {
+      _: ['opinie', 'faq', 'gwarancja', 'regulamin'],
+      gastro: ['opinie', 'alergeny', 'faq', 'media'],
+      noclegi: ['opinie', 'anulacja', 'regulamin', 'faq'],
+      uroda: ['opinie', 'higiena', 'pielegnacja', 'faq', 'regulamin'],
+      tatuaz: ['opinie', 'higiena', 'pielegnacja', 'faq', 'regulamin'],
+      zdrowie: ['opinie', 'kwalifikacje', 'pierwsza_wizyta', 'faq', 'poufnosc', 'regulamin'],
+      sport: ['opinie', 'kwalifikacje', 'bezpieczenstwo', 'faq', 'regulamin'],
+      edukacja: ['opinie', 'wyniki', 'kwalifikacje', 'bezpieczenstwo', 'faq', 'regulamin'],
+      auto: ['opinie', 'gwarancja', 'ubezpieczenie', 'faq'],
+      budowa: ['opinie', 'gwarancja', 'kwalifikacje', 'ubezpieczenie', 'faq'],
+      uslugi: ['opinie', 'gwarancja', 'ubezpieczenie', 'faq', 'regulamin'],
+      biuro: ['opinie', 'kwalifikacje', 'poufnosc', 'ubezpieczenie', 'faq', 'media'],
+      kreatywne: ['opinie', 'faq', 'gwarancja', 'media'],
+      eventy: ['opinie', 'anulacja', 'bezpieczenstwo', 'regulamin', 'faq'],
+      handel: ['opinie', 'zwroty', 'gwarancja', 'faq', 'regulamin'],
+      zwierzeta: ['opinie', 'kwalifikacje', 'bezpieczenstwo', 'faq', 'regulamin'],
+      turystyka: ['opinie', 'anulacja', 'ubezpieczenie', 'kwalifikacje', 'regulamin', 'faq'],
+      ngo: ['sprawozdania', 'media', 'opinie', 'faq'],
+    } },
+    { l: 'Komunikacja i sprzedaż', map: {
+      _: ['aktualnosci', 'promocje', 'vouchery', 'pakiety', 'wycena', 'do_pobrania', 'dla_firm', 'kariera', 'sklep'],
+      gastro: ['zamowienia', 'rezerwacja_stolika', 'imprezy', 'promocje', 'vouchery', 'aktualnosci', 'dla_firm', 'kariera'],
+      noclegi: ['rezerwacja_online', 'pakiety', 'promocje', 'vouchery', 'imprezy', 'dla_firm', 'aktualnosci', 'kariera'],
+      uroda: ['promocje', 'vouchery', 'pakiety', 'aktualnosci', 'kariera'],
+      tatuaz: ['wycena', 'vouchery', 'kalendarz', 'aktualnosci', 'promocje'],
+      zdrowie: ['aktualnosci', 'pakiety', 'dla_firm', 'do_pobrania', 'kariera'],
+      sport: ['lekcja_probna', 'pakiety', 'promocje', 'kalendarz', 'aktualnosci', 'dla_firm', 'vouchery'],
+      edukacja: ['zapisy', 'lekcja_probna', 'kalendarz', 'aktualnosci', 'do_pobrania', 'dla_firm', 'promocje'],
+      auto: ['wycena', 'promocje', 'dla_firm', 'aktualnosci', 'awaria', 'kariera'],
+      budowa: ['wycena', 'dla_firm', 'aktualnosci', 'do_pobrania', 'awaria', 'kariera'],
+      uslugi: ['wycena', 'pakiety', 'dla_firm', 'promocje', 'awaria', 'kariera'],
+      biuro: ['konsultacja', 'wycena', 'aktualnosci', 'do_pobrania', 'newsletter', 'dla_firm', 'kariera'],
+      kreatywne: ['wycena', 'pakiety', 'kalendarz', 'vouchery', 'aktualnosci', 'dla_firm'],
+      eventy: ['wycena', 'pakiety', 'kalendarz', 'rezerwacja_online', 'vouchery', 'dla_firm', 'promocje', 'aktualnosci'],
+      handel: ['promocje', 'zamowienia', 'gdzie_kupic', 'dla_firm', 'sklep', 'aktualnosci', 'newsletter', 'vouchery', 'do_pobrania'],
+      zwierzeta: ['promocje', 'pakiety', 'aktualnosci', 'vouchery', 'awaria'],
+      turystyka: ['kalendarz', 'rezerwacja_online', 'wycena', 'promocje', 'dla_firm', 'vouchery', 'aktualnosci'],
+      ngo: ['aktualnosci', 'wsparcie', 'wolontariat', 'kalendarz', 'newsletter', 'do_pobrania'],
+    } },
+    { l: 'Informacje praktyczne', map: {
+      _: ['przed_wizyta', 'parking', 'dostepnosc', 'platnosci'],
+      gastro: ['parking', 'platnosci', 'dostepnosc', 'dzieci_mile', 'zwierzeta_mile', 'godziny_spec'],
+      noclegi: ['zameldowanie', 'parking', 'zwierzeta_mile', 'dzieci_mile', 'dostepnosc', 'platnosci', 'jezyki'],
+      uroda: ['przed_wizyta', 'parking', 'platnosci', 'dostepnosc', 'godziny_spec'],
+      tatuaz: ['co_zabrac', 'platnosci', 'parking', 'godziny_spec'],
+      zdrowie: ['jezyki', 'finansowanie', 'godziny_spec'],
+      sport: ['co_zabrac', 'strefa_rodzica', 'parking', 'platnosci', 'dostepnosc'],
+      edukacja: ['strefa_rodzica', 'dokumenty', 'finansowanie', 'parking', 'dostepnosc', 'platnosci'],
+      auto: ['przed_wizyta', 'parking', 'platnosci', 'finansowanie', 'obszar'],
+      budowa: ['obszar', 'czas_realizacji', 'finansowanie', 'platnosci'],
+      uslugi: ['obszar', 'czas_realizacji', 'platnosci', 'przed_wizyta'],
+      biuro: ['dokumenty', 'jezyki', 'platnosci', 'parking', 'dostepnosc'],
+      kreatywne: ['przed_wizyta', 'obszar', 'czas_realizacji', 'platnosci'],
+      eventy: ['parking', 'dzieci_mile', 'dostepnosc', 'platnosci', 'co_zabrac'],
+      handel: ['dostawa_info', 'platnosci', 'parking', 'dostepnosc', 'godziny_spec'],
+      zwierzeta: ['przed_wizyta', 'dokumenty', 'obszar', 'parking', 'platnosci'],
+      turystyka: ['co_zabrac', 'dokumenty', 'jezyki', 'platnosci', 'obszar'],
+      ngo: ['dostepnosc', 'parking', 'dokumenty', 'jezyki'],
+    } },
+  ];
+
+  var MAT_LABELS = {
+    zdj_wnetrze: 'Zdjęcia wnętrza / lokalu', zdj_zespol: 'Zdjęcia zespołu', zdj_prace: 'Zdjęcia prac / realizacji', zdj_produkty: 'Zdjęcia produktów', opisy: 'Opisy usług',
+    certyfikaty: 'Certyfikaty / dyplomy', wideo: 'Filmy', regulamin: 'Regulamin', zdj_dan: 'Zdjęcia dań i napojów', zdj_pokoi: 'Zdjęcia pokoi i obiektu', zdj_okolicy: 'Zdjęcia okolicy',
+    zdj_przed_po: 'Zdjęcia „przed i po” (ze zgodami klientów)', portfolio_ig: 'Portfolio na Instagramie / Behance', wzory: 'Wolne wzory / projekty', grafik_plik: 'Grafik zajęć',
+    zdj_zajec: 'Zdjęcia z zajęć / wydarzeń (ze zgodami)', program: 'Programy / opisy kursów lub wyjazdów', zdj_floty: 'Zdjęcia sprzętu / floty', katalog: 'Katalog / lista produktów',
+    logotypy: 'Logotypy partnerów / marek', dokumenty: 'Statut, sprawozdania, dokumenty', opinie_zgody: 'Opinie klientów (za ich zgodą)', bio: 'Biogramy / opisy osób z zespołu',
+    zdj_zwierzat: 'Zdjęcia podopiecznych (za zgodą właścicieli)', spacer: 'Wirtualny spacer / film z obiektu', projekty_tech: 'Projekty / wizualizacje',
+  };
+  var MAT_MAP = {
+    _: ['zdj_wnetrze', 'zdj_zespol', 'zdj_prace', 'zdj_produkty', 'opisy', 'certyfikaty', 'wideo', 'regulamin'],
+    gastro: ['zdj_dan', 'zdj_wnetrze', 'zdj_zespol', 'wideo', 'opinie_zgody', 'logotypy'],
+    noclegi: ['zdj_pokoi', 'zdj_okolicy', 'spacer', 'wideo', 'regulamin', 'opinie_zgody', 'certyfikaty'],
+    uroda: ['zdj_przed_po', 'zdj_wnetrze', 'zdj_zespol', 'opisy', 'certyfikaty', 'logotypy', 'regulamin', 'wideo'],
+    tatuaz: ['zdj_prace', 'portfolio_ig', 'wzory', 'zdj_wnetrze', 'bio', 'regulamin', 'wideo'],
+    zdrowie: ['zdj_wnetrze', 'zdj_zespol', 'bio', 'opisy', 'certyfikaty', 'zdj_floty', 'regulamin', 'wideo'],
+    sport: ['zdj_zajec', 'zdj_wnetrze', 'bio', 'grafik_plik', 'program', 'certyfikaty', 'regulamin', 'wideo'],
+    edukacja: ['program', 'zdj_zajec', 'zdj_wnetrze', 'bio', 'grafik_plik', 'certyfikaty', 'regulamin', 'opinie_zgody', 'wideo'],
+    auto: ['zdj_prace', 'zdj_wnetrze', 'zdj_zespol', 'zdj_floty', 'opisy', 'certyfikaty', 'logotypy', 'wideo'],
+    budowa: ['zdj_prace', 'projekty_tech', 'zdj_zespol', 'zdj_floty', 'opisy', 'certyfikaty', 'logotypy', 'opinie_zgody', 'wideo'],
+    uslugi: ['zdj_prace', 'zdj_zespol', 'zdj_floty', 'opisy', 'certyfikaty', 'opinie_zgody', 'regulamin'],
+    biuro: ['zdj_zespol', 'bio', 'zdj_wnetrze', 'opisy', 'certyfikaty', 'logotypy', 'opinie_zgody'],
+    kreatywne: ['zdj_prace', 'portfolio_ig', 'wideo', 'bio', 'opisy', 'logotypy', 'opinie_zgody'],
+    eventy: ['zdj_wnetrze', 'zdj_prace', 'spacer', 'wideo', 'opisy', 'regulamin', 'opinie_zgody'],
+    handel: ['zdj_produkty', 'katalog', 'zdj_wnetrze', 'logotypy', 'opisy', 'certyfikaty', 'regulamin', 'wideo'],
+    zwierzeta: ['zdj_zwierzat', 'zdj_wnetrze', 'zdj_zespol', 'bio', 'opisy', 'certyfikaty', 'regulamin'],
+    turystyka: ['zdj_floty', 'zdj_okolicy', 'wideo', 'program', 'regulamin', 'certyfikaty', 'opinie_zgody'],
+    ngo: ['zdj_zajec', 'dokumenty', 'logotypy', 'bio', 'wideo', 'opisy'],
+  };
+
+  /** Buduje listę opcji z katalogu i mapy: każda opcja wie, w których profilach ma się pokazać (p) i czy jest na liście ogólnej (d). */
+  function tailored(labels, map, hints) {
+    var order = [];
+    Object.keys(map).forEach(function (k) { map[k].forEach(function (id) { if (order.indexOf(id) === -1) order.push(id); }); });
+    return order.map(function (id) {
+      var o = { v: id, l: labels[id] || id, p: Object.keys(map).filter(function (k) { return k !== '_' && map[k].indexOf(id) !== -1; }), d: map._.indexOf(id) !== -1 };
+      if (hints && hints[id]) o.h = hints[id];
+      return o;
+    });
+  }
+  var SECTION_GROUPS = [{
+    l: 'Podstawowe',
+    items: [{ v: 'o_nas', l: 'O nas / o firmie' }, { v: 'oferta', l: 'Oferta / usługi' }, { v: 'cennik', l: 'Cennik' }, { v: 'kontakt', l: 'Kontakt' }, { v: 'mapa', l: 'Mapa i dojazd' }, { v: 'godziny', l: 'Godziny otwarcia' }],
+  }].concat(SEC_GROUPS.map(function (g) { return { l: g.l, items: tailored(SEC_LABELS, g.map, SEC_HINTS) }; }));
+
+  /* =========================================================
      UKŁADY STRONY
      ========================================================= */
   var LAYOUTS = [
@@ -606,7 +760,7 @@
   };
 
   var BRIEF = {
-    version: 6,
+    version: 7,
     title: 'Brief projektowy strony internetowej',
     steps: [
       /* ---------------------------------------------------- 1 */
@@ -690,7 +844,8 @@
             ],
           },
           {
-            id: 'main_action', type: 'radio', label: 'Co odwiedzający ma przede wszystkim zrobić na stronie?', required: true, other: true,
+            id: 'main_action', type: 'checkbox', label: 'Co odwiedzający ma przede wszystkim zrobić po wizycie na Twojej stronie?', required: true, other: true,
+            hint: 'Możesz zaznaczyć kilka odpowiedzi — najlepiej 1–3 najważniejsze.',
             options: [
               { v: 'zadzwonic', l: 'Zadzwonić' },
               { v: 'zarezerwowac', l: 'Zarezerwować wizytę online' },
@@ -762,88 +917,8 @@
           },
           {
             id: 'sections', type: 'checkbox', label: 'Jakie sekcje mają się znaleźć na stronie?', required: true, other: true, recommend: true,
-            hint: 'Oznaczenie „Polecane” wskazuje sekcje, które zwykle sprawdzają się w Twojej branży — to tylko podpowiedź.',
-            groups: [
-              {
-                l: 'Typowe dla Twojej branży',
-                items: [
-                  { v: 'menu', l: 'Menu / karta', p: ['gastro'] },
-                  { v: 'zamowienia', l: 'Zamówienia / dostawa', p: ['gastro', 'handel'] },
-                  { v: 'pokoje', l: 'Pokoje / apartamenty z opisami i galeriami', p: ['noclegi'] },
-                  { v: 'udogodnienia', l: 'Udogodnienia', p: ['noclegi'] },
-                  { v: 'okolica', l: 'Okolica i atrakcje w pobliżu', p: ['noclegi', 'turystyka'] },
-                  { v: 'flash', l: 'Wolne wzory (flash)', p: ['tatuaz'] },
-                  { v: 'pielegnacja', l: 'Pielęgnacja po zabiegu / gojenie', p: ['tatuaz', 'uroda'] },
-                  { v: 'grafik', l: 'Grafik zajęć', p: ['sport', 'edukacja'] },
-                  { v: 'kursy', l: 'Kursy / programy / poziomy', p: ['edukacja', 'sport'] },
-                  { v: 'strefa_rodzica', l: 'Informacje dla rodziców', p: ['edukacja', 'sport'] },
-                  { v: 'flota', l: 'Flota / sprzęt', p: ['auto', 'turystyka', 'uslugi'] },
-                  { v: 'oferty', l: 'Aktualne oferty (auta / nieruchomości / produkty)', p: ['auto', 'biuro', 'handel'] },
-                  { v: 'proces', l: 'Jak pracujemy — etapy współpracy', p: ['budowa', 'uslugi', 'biuro', 'kreatywne'] },
-                  { v: 'obszar', l: 'Obszar działania', p: ['budowa', 'uslugi', 'zwierzeta', 'turystyka', 'auto'] },
-                  { v: 'kalendarz', l: 'Kalendarz wydarzeń / wolnych terminów', p: ['eventy', 'kreatywne', 'ngo', 'turystyka', 'edukacja'] },
-                  { v: 'wsparcie', l: 'Jak nas wesprzeć', p: ['ngo'] },
-                  { v: 'sprawozdania', l: 'Sprawozdania i dokumenty', p: ['ngo'] },
-                ],
-              },
-              {
-                l: 'Podstawowe',
-                items: [
-                  { v: 'o_nas', l: 'O nas / o firmie' },
-                  { v: 'oferta', l: 'Oferta / usługi' },
-                  { v: 'cennik', l: 'Cennik' },
-                  { v: 'kontakt', l: 'Kontakt' },
-                  { v: 'mapa', l: 'Mapa i dojazd' },
-                  { v: 'godziny', l: 'Godziny otwarcia' },
-                ],
-              },
-              {
-                l: 'Prezentacja firmy',
-                items: [
-                  { v: 'zespol', l: 'Zespół / specjaliści' },
-                  { v: 'galeria', l: 'Galeria zdjęć' },
-                  { v: 'realizacje', l: 'Realizacje / efekty „przed i po”' },
-                  { v: 'wideo', l: 'Film / wideo' },
-                  { v: 'historia', l: 'Historia firmy' },
-                  { v: 'marki', l: 'Marki / produkty, z którymi pracujemy' },
-                  { v: 'certyfikaty', l: 'Certyfikaty, dyplomy, uprawnienia' },
-                  { v: 'nagrody', l: 'Nagrody i wyróżnienia' },
-                  { v: 'partnerzy', l: 'Partnerzy / klienci biznesowi' },
-                ],
-              },
-              {
-                l: 'Budowanie zaufania',
-                items: [
-                  { v: 'opinie', l: 'Opinie klientów', h: 'Tylko prawdziwe opinie, za zgodą autorów lub jako link do Google / Booksy.' },
-                  { v: 'faq', l: 'Najczęstsze pytania (FAQ)' },
-                  { v: 'gwarancja', l: 'Gwarancja / zasady współpracy' },
-                  { v: 'regulamin', l: 'Regulamin (np. odwoływania wizyt)' },
-                ],
-              },
-              {
-                l: 'Komunikacja i sprzedaż',
-                items: [
-                  { v: 'aktualnosci', l: 'Aktualności / blog' },
-                  { v: 'promocje', l: 'Promocje i oferty specjalne' },
-                  { v: 'vouchery', l: 'Bony / vouchery podarunkowe' },
-                  { v: 'pakiety', l: 'Pakiety / karnety' },
-                  { v: 'wycena', l: 'Formularz zapytania / wyceny' },
-                  { v: 'do_pobrania', l: 'Pliki do pobrania (PDF, cenniki, formularze)' },
-                  { v: 'dla_firm', l: 'Oferta dla firm' },
-                  { v: 'kariera', l: 'Praca / kariera' },
-                  { v: 'sklep', l: 'Sklep internetowy', h: 'Większy projekt — wymaga osobnego ustalenia.' },
-                ],
-              },
-              {
-                l: 'Informacje praktyczne',
-                items: [
-                  { v: 'przed_wizyta', l: 'Jak przygotować się do wizyty', notp: ['zdrowie', 'noclegi', 'tatuaz'] },
-                  { v: 'parking', l: 'Parking i dojazd komunikacją', notp: ['zdrowie', 'noclegi', 'tatuaz'] },
-                  { v: 'dostepnosc', l: 'Dostępność dla osób z niepełnosprawnościami', notp: ['zdrowie', 'noclegi', 'tatuaz'] },
-                  { v: 'platnosci', l: 'Metody płatności', notp: ['zdrowie', 'noclegi', 'tatuaz'] },
-                ],
-              },
-            ],
+            hint: 'Lista jest dopasowana do Twojej branży. Oznaczenie „Polecane” wskazuje sekcje, które zwykle sprawdzają się najlepiej — to tylko podpowiedź. Czego nie ma na liście, dopisz w polu „Inne”.',
+            groups: SECTION_GROUPS,
           },
           { id: 'sections_notes', type: 'textarea', label: 'Uwagi do sekcji', hint: 'np. „galeria podzielona na fryzury damskie i męskie”, „zespół z krótkim opisem każdej osoby”.', max: 2000 },
         ],
@@ -976,6 +1051,7 @@
               { v: 'linkedin', l: 'LinkedIn' },
               { v: 'google', l: 'Wizytówka Google (Google Maps)' },
               { v: 'booksy', l: 'Booksy' },
+              { v: 'pyszne', l: 'Pyszne.pl' },
             ],
           },
           { id: 'social_links', type: 'textarea', label: 'Linki do profili', placeholder: 'https://facebook.com/…\nhttps://instagram.com/…', max: 2000 },
@@ -1021,7 +1097,7 @@
           { id: 'logo_keep', type: 'textarea', label: 'Co zachować z obecnego logo, a co zmienić?', hint: 'np. „zostawić kolor i liść, zmienić krój pisma na nowocześniejszy”.', showIf: { f: 'logo', eq: 'odswiezenie' }, max: 1500 },
           { id: 'logo_text', type: 'text', label: 'Jaki napis ma być w logo?', placeholder: 'np. pełna nazwa „Salon Ola”, skrót „SO”, nazwa + „Wrocław”', showIf: { f: 'logo', in: ['odswiezenie', 'zrobic'] }, max: 150 },
           {
-            id: 'logo_type', type: 'radio', label: 'Jaki rodzaj logo?', showIf: { f: 'logo', in: ['odswiezenie', 'zrobic'] },
+            id: 'logo_type', type: 'radio', label: 'Jaki rodzaj logo?', examples: 'logo', showIf: { f: 'logo', in: ['odswiezenie', 'zrobic'] },
             options: O('znak_napis|Znak graficzny + napis', 'napis|Sam napis (stylizowana nazwa)', 'monogram|Monogram / inicjały', 'emblemat|Emblemat / odznaka (napis w kształcie, np. w kole)', 'nie_wiem|Nie wiem — proszę o propozycje'),
           },
           {
@@ -1070,11 +1146,12 @@
             ],
           },
           {
-            id: 'theme', type: 'radio', label: 'Jasna czy ciemna kolorystyka?',
+            id: 'theme', type: 'radio', label: 'Jaka ma być kolorystyka strony?',
             options: [
               { v: 'jasna', l: 'Jasna' },
               { v: 'ciemna', l: 'Ciemna' },
               { v: 'mieszana', l: 'Mieszana (np. ciemny nagłówek, jasne sekcje)' },
+              { v: 'kolorowa', l: 'Różnorodność kolorystyczna', h: 'Kilka wyraźnych kolorów — różne barwy sekcji, ikon i akcentów.' },
               { v: 'nie_wiem', l: 'Bez znaczenia / proszę o propozycję' },
             ],
           },
@@ -1099,16 +1176,8 @@
           },
           {
             id: 'materials', type: 'checkbox', label: 'Jakie materiały możesz przekazać?', other: true,
-            options: [
-              { v: 'zdj_wnetrze', l: 'Zdjęcia wnętrza / lokalu' },
-              { v: 'zdj_zespol', l: 'Zdjęcia zespołu' },
-              { v: 'zdj_prace', l: 'Zdjęcia prac / realizacji' },
-              { v: 'zdj_produkty', l: 'Zdjęcia produktów' },
-              { v: 'opisy', l: 'Opisy usług' },
-              { v: 'certyfikaty', l: 'Certyfikaty / dyplomy' },
-              { v: 'wideo', l: 'Filmy' },
-              { v: 'regulamin', l: 'Regulamin' },
-            ],
+            hint: 'Lista jest dopasowana do Twojej branży. Zaznacz to, co już masz albo możesz przygotować.',
+            groups: [{ items: tailored(MAT_LABELS, MAT_MAP) }],
           },
           {
             id: 'photos', type: 'radio', label: 'Zdjęcia na stronie', required: true, other: true,
@@ -1186,14 +1255,17 @@
         fields: [
           {
             id: 'domain', type: 'radio', label: 'Czy masz już domenę?', required: true,
+            hint: 'Domena to adres Twojej strony w internecie, np. twojafirma.pl — to, co klient wpisuje w przeglądarce. Wynajmuje się ją u zewnętrznego dostawcy (rejestratora) i opłaca co roku. Zwykle da się w niej założyć także adresy e-mail, np. kontakt@twojafirma.pl.',
             options: [
-              { v: 'tak', l: 'Tak' },
-              { v: 'nie', l: 'Nie — proszę o pomoc w wyborze' },
+              { v: 'tak', l: 'Tak, mam domenę' },
+              { v: 'nie', l: 'Nie — kupię ją samodzielnie, proszę tylko o pomoc w wyborze nazwy' },
+              { v: 'oferta', l: 'Nie — proszę o przygotowanie oferty zakupu domeny', h: 'Porównam oferty dostawców i podpowiem najlepszą. Sama domena jest płatna i kupowana u zewnętrznego dostawcy — opłatę ponosi firma.' },
               { v: 'nie_wiem', l: 'Nie wiem' },
             ],
           },
+          { id: 'domain_price_info', type: 'info', showIf: { f: 'domain', in: ['nie', 'oferta'] }, text: 'Orientacyjne koszty domeny (opłata dla zewnętrznego dostawcy, nie dla mnie): pierwszy rok to zwykle od kilku do kilkudziesięciu złotych, bo dostawcy dają promocje na start. Ważniejsza jest cena odnowienia w kolejnych latach — dla domen .pl najczęściej ok. 70–200 zł brutto rocznie, zależnie od dostawcy. Ceny się zmieniają, dlatego w ofercie podam aktualne kwoty za pierwszy rok i za odnowienie.' },
           { id: 'domain_name', type: 'text', label: 'Jaka to domena i gdzie jest kupiona?', placeholder: 'np. salonola.pl — OVH', showIf: { f: 'domain', eq: 'tak' }, max: 300 },
-          { id: 'domain_ideas', type: 'text', label: 'Propozycje nazwy domeny', placeholder: 'np. salonola.pl, ola-fryzjer.pl', showIf: { f: 'domain', eq: 'nie' }, max: 300 },
+          { id: 'domain_ideas', type: 'text', label: 'Propozycje nazwy domeny', placeholder: 'np. salonola.pl, ola-fryzjer.pl', showIf: { f: 'domain', in: ['nie', 'oferta'] }, max: 300 },
           {
             id: 'domain_email', type: 'radio', label: 'Czy chcesz adres e-mail w domenie (np. kontakt@twojafirma.pl)?',
             options: [
@@ -1251,10 +1323,10 @@
         title: 'Twoje pomysły i uwagi',
         intro: 'Miejsce na wszystko, czego nie było w formularzu.',
         fields: [
-          { id: 'must_have', type: 'textarea', label: 'Trzy najważniejsze rzeczy, które musi mieć Twoja strona', placeholder: '1. …\n2. …\n3. …', max: 1500 },
+          { id: 'must_have', legacy: true, type: 'textarea', label: 'Trzy najważniejsze rzeczy, które musi mieć Twoja strona', placeholder: '1. …\n2. …\n3. …', max: 1500 },
           { id: 'ideas', type: 'textarea', label: 'Twoje pomysły, wskazówki i uwagi', hint: 'Wszystko, czego nie było w poprzednich pytaniach: pomysły na sekcje i funkcje, wskazówki („nasz styl to luz i humor”), rzeczy ważne dla Twoich klientów. Nie ma złych pomysłów.', max: 5000 },
           { id: 'tips', legacy: true, type: 'textarea', label: 'Wskazówki dla mnie', hint: 'np. „klienci często pytają o parking”, „ważne, żeby było widać, że mamy dyżury w soboty”, „nasz styl to luz i humor”.', max: 3000 },
-          { id: 'concerns', type: 'textarea', label: 'Czy coś Cię niepokoi albo czego chcesz uniknąć we współpracy?', max: 2000 },
+          { id: 'concerns', legacy: true, type: 'textarea', label: 'Czy coś Cię niepokoi albo czego chcesz uniknąć we współpracy?', max: 2000 },
           { id: 'questions', type: 'textarea', label: 'Pytania do mnie', max: 2000 },
           { id: 'notes', legacy: true, type: 'textarea', label: 'Inne uwagi', max: 3000 },
         ],
@@ -1355,7 +1427,7 @@
     var prof = profileOf(answers);
     if (o.notp && o.notp.indexOf(prof) !== -1) return false;
     if (!o.p) return true;
-    if (!prof || prof === '_brak') return true;
+    if (!prof || prof === '_brak') return o.d !== false;
     return o.p.indexOf(prof) !== -1;
   }
 
@@ -1387,7 +1459,7 @@
   function isEmpty(field, answers) {
     var v = answers[field.id];
     var other = answers[field.id + '__other'];
-    if (field.type === 'checkbox') return !(Array.isArray(v) && v.length) && !(other && String(other).trim());
+    if (field.type === 'checkbox') return !(Array.isArray(v) ? v.length : v && v !== '__other') && !(other && String(other).trim());
     if (field.type === 'radio' || field.type === 'select') return !v || (v === '__other' && !(other && String(other).trim()));
     return !(v && String(v).trim());
   }
@@ -1414,7 +1486,7 @@
       return val;
     };
     if (field.type === 'checkbox') {
-      var parts = (Array.isArray(v) ? v : []).map(label);
+      var parts = (Array.isArray(v) ? v : v && v !== '__other' ? [v] : []).map(label);
       if (other && String(other).trim()) parts.push('Inne: ' + String(other).trim());
       return parts.join('; ');
     }

@@ -855,6 +855,31 @@ button { font: inherit; }
   .work__frame img { height: auto; }
 }
 
+/* ===== Portfolio v3: najnowsza realizacja duża na górze, kolejne w mniejszych kafelkach po dwie obok siebie ===== */
+.work-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.work { grid-column: auto; display: flex; flex-direction: column; }
+.work--featured { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); align-items: stretch; }
+.work .work__cover { display: block; padding: 22px 22px 0; }
+.work .work__frame { display: block; }
+.work .work__frame img { height: auto; aspect-ratio: 16 / 10; }
+.work .work__body { justify-content: flex-start; padding: 24px 26px 28px; flex: 1; }
+.work .work__title { font-size: 1.375rem; }
+.work .work__actions { margin-top: auto; padding-top: 10px; }
+.work--featured .work__cover { display: flex; align-items: stretch; padding: 28px 28px 0; }
+.work--featured .work__frame { display: flex; flex-direction: column; }
+.work--featured .work__frame img { flex: 1 1 auto; min-height: 0; height: 100%; aspect-ratio: auto; }
+.work--featured .work__body { justify-content: center; padding: clamp(24px, 3.4vw, 40px); }
+.work--featured .work__title { font-size: clamp(1.5rem, 2.4vw, 2rem); }
+.work--featured .work__actions { margin-top: 8px; padding-top: 0; }
+@media (max-width: 900px) {
+  .work--featured { grid-template-columns: 1fr; }
+  .work--featured .work__cover { padding: 20px 20px 0; }
+  .work--featured .work__frame img { height: auto; aspect-ratio: 16 / 10; }
+}
+@media (max-width: 700px) {
+  .work-list { grid-template-columns: 1fr; }
+}
+
 
 .preview-bar{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:90;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;max-width:calc(100vw - 24px);padding:10px 12px 10px 16px;border-radius:14px;background:#fff;color:#0b1d36;font-size:.875rem;box-shadow:0 20px 50px -18px rgba(0,0,0,.55);border:2px solid transparent;background-image:linear-gradient(#fff,#fff),linear-gradient(90deg,#ff6b5a,#ffb547,#19c2b0,#8b7cf6);background-origin:border-box;background-clip:padding-box,border-box}
 .preview-bar span{color:#4d5a70}

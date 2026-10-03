@@ -60,7 +60,7 @@ Zgodność sprawdzona w dokumentacji (październik 2026):
   - dostępność z klawiatury, widoczny fokus, etykiety pól, ograniczenie ruchu;
   - wygląd na telefonie bez przewijania poziomego;
   - SEO, Open Graph, `sitemap.xml`, `robots.txt`, strona 404;
-  - brak analityki i cookies marketingowych.
+  - własny licznik odwiedzin bez cookies i bez usług zewnętrznych (statystyki w panelu); brak cookies marketingowych.
 
 ### 🔌 Do zrobienia przez Ciebie (instrukcja krok po kroku)
 GitHub → baza D1 i KV → Turnstile → Resend → hasło z generatora → Cloudflare Pages z powiązaniami i zmiennymi → test.

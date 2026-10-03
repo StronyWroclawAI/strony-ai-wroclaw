@@ -4,7 +4,7 @@
 
 import { SEED } from './seed.js';
 
-export const SCHEMA_VERSION = '8';
+export const SCHEMA_VERSION = '9';
 
 // Każda instrukcja w osobnym elemencie (D1 wykonuje je w jednej transakcji przez batch()).
 export const SCHEMA = [
@@ -54,6 +54,9 @@ export const SCHEMA = [
     project_id TEXT NOT NULL, ver TEXT NOT NULL, path TEXT NOT NULL,
     kv_key TEXT NOT NULL, content_type TEXT NOT NULL, size_bytes INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL, PRIMARY KEY (project_id, ver, path))`,
+  `CREATE TABLE IF NOT EXISTS visit_days (day TEXT NOT NULL, path TEXT NOT NULL, views INTEGER NOT NULL DEFAULT 0, uniques INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (day, path))`,
+  `CREATE TABLE IF NOT EXISTS visit_seen (day TEXT NOT NULL, vh TEXT NOT NULL, path TEXT NOT NULL, PRIMARY KEY (day, vh, path))`,
+  `CREATE TABLE IF NOT EXISTS visit_meta (day TEXT NOT NULL, kind TEXT NOT NULL, key TEXT NOT NULL, n INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (day, kind, key))`,
   `CREATE TABLE IF NOT EXISTS lead_emails (
     id TEXT PRIMARY KEY, lead_id TEXT NOT NULL, kind TEXT NOT NULL DEFAULT 'wlasna',
     to_email TEXT NOT NULL, subject TEXT NOT NULL, body TEXT NOT NULL,

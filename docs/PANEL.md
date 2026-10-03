@@ -31,6 +31,13 @@ W zgłoszeniu widzisz też **wygląd wybranego logo** (na jasnym i ciemnym tle) 
 
 Klient może zmienić wybór, wysyłając formularz ponownie — w panelu widzisz ostatnią wersję. Wgranie nowego pliku zastępuje poprzedni i tworzy nowy link.
 
+## Statystyki
+- Licznik odwiedzin bez plików cookies i bez usług zewnętrznych. W menu obok „Statystyki” widać liczbę dzisiejszych wejść.
+- Kafelki: dzisiaj, odwiedzający dzisiaj, 7 dni, wybrany okres, od początku. Wykres wejść dziennie (7 / 30 / 90 dni / rok) z tabelą danych.
+- Listy: najczęściej oglądane podstrony (w tym karty portfolio), skąd przychodzą odwiedzający, urządzenia.
+- Nie są liczone: Twoje wejścia, gdy jesteś zalogowany do panelu, oraz roboty wyszukiwarek.
+- „Odwiedzający” to przybliżona liczba unikalnych osób w danym dniu (skrót zmieniany codziennie, usuwany po dwóch dniach). Opis jest w polityce prywatności, punkt 8.
+
 ## Briefy klientów
 Zestawienie wszystkich briefów. Brief tworzysz w konkretnym zgłoszeniu i tam przeglądasz odpowiedzi, drukujesz je i kopiujesz jako tekst dla AI. Szczegóły w [`BRIEF.md`](BRIEF.md).
 
@@ -59,7 +66,7 @@ Zestawienie wszystkich briefów. Brief tworzysz w konkretnym zgłoszeniu i tam p
 - **Dodaj realizację:** nazwa, branża/podtytuł, opis, tagi, adres strony, status, oznaczenie „Projekt demonstracyjny”, zdjęcia.
 - **Karta projektu:** wgraj paczkę ZIP (`index.html` + `img/` + `opis-do-portfolio.txt`). Panel sam uzupełni pola z opisu i pozwoli wybrać okładkę kafelka. Pełna instrukcja i gotowe polecenie dla AI: [`PORTFOLIO.md`](PORTFOLIO.md).
 - **Szkic** widzisz tylko Ty (także podgląd karty). **Opublikowana** jest widoczna na stronie. Przed publikacją panel przypomni o zgodzie firmy, a przy projekcie demonstracyjnym — o fikcyjnych danych.
-- Pierwsza realizacja na liście jest wyróżniona dużym kafelkiem. Kolejność zmieniasz strzałkami.
+- Pierwsza realizacja na liście (domyślnie najnowsza) jest pokazana dużym kafelkiem na górze, a kolejne w mniejszych kafelkach po dwie obok siebie. Kolejność zmieniasz strzałkami.
 - Sekcja „Portfolio” i link w menu pojawiają się automatycznie po opublikowaniu pierwszej realizacji.
 
 ## Ustawienia

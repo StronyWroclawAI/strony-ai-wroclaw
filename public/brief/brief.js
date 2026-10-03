@@ -161,6 +161,11 @@
     S.steps.forEach(function (st) {
       st.fields.forEach(function (f) {
         if (f.default && answers[f.id] === undefined) answers[f.id] = f.default.slice ? f.default.slice() : f.default;
+        // pytanie zmienione z jednej odpowiedzi na kilka — starszą odpowiedź zamieniamy na listę
+        if (f.type === 'checkbox' && typeof answers[f.id] === 'string') {
+          if (answers[f.id] === '__other') delete answers[f.id];
+          else answers[f.id] = [answers[f.id]];
+        }
       });
     });
   }
@@ -307,6 +312,7 @@
       wrap = el('fieldset', { class: 'bf-field', 'data-field': f.id, 'aria-describedby': describedBy });
       wrap.appendChild(el('legend', null, f.label, f.required ? el('span', { class: 'req', 'aria-hidden': 'true', text: ' *' }) : null, f.required ? el('span', { class: 'visually-hidden', text: ' (wymagane)' }) : null));
       if (f.hint) wrap.appendChild(el('p', { class: 'bf-hint', id: hintId, text: f.hint }));
+      if (f.examples === 'logo') wrap.appendChild(el('p', { class: 'bf-examples' }, el('button', { type: 'button', class: 'bf-examples-btn', 'data-logo-examples': '', text: 'Zobacz przykłady rodzajów logo', onclick: function (e) { openLogoExamples(f, e.currentTarget); } })));
       var box = el('div', { class: 'bf-options' });
       var groups = f.groups || [{ items: f.options }];
       groups.forEach(function (g) {
@@ -477,6 +483,57 @@
           d.close();
         } })
       )
+    );
+    d.addEventListener('close', function () { d.remove(); if (opener) opener.focus(); });
+    d.addEventListener('click', function (e) { if (e.target === d) d.close(); });
+    document.body.appendChild(d);
+    if (d.showModal) d.showModal(); else d.setAttribute('open', '');
+  }
+
+  /* ---------- Rodzaje logo: okienko z przykładami ---------- */
+  function svgFrom(markup, label) {
+    var d = new DOMParser().parseFromString('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 110">' + markup + '</svg>', 'image/svg+xml');
+    var svg = document.importNode(d.documentElement, true);
+    svg.setAttribute('class', 'bf-logo-ex');
+    svg.setAttribute('role', 'img');
+    svg.setAttribute('aria-label', label);
+    return svg;
+  }
+  // Przykłady są umowne (wymyślona nazwa „Aurora”) — pokazują rodzaj logo, a nie konkretny projekt.
+  var LOGO_EXAMPLES = [
+    { v: 'znak_napis', t: 'Znak graficzny + napis', d: 'Symbol i nazwa obok siebie. Najbardziej uniwersalne: sam znak sprawdza się jako ikona, np. w social mediach.',
+      m: '<rect width="220" height="110" rx="10" fill="#f2f5fa"/><circle cx="52" cy="55" r="24" fill="#142e50"/><path d="M40 62l12-22 12 22z" fill="#ffb547"/><text x="88" y="63" font-family="Georgia,serif" font-size="26" font-weight="700" fill="#142e50">Aurora</text>' },
+    { v: 'napis', t: 'Sam napis (stylizowana nazwa)', d: 'Nazwa firmy złożona charakterystycznym krojem pisma, bez osobnego symbolu. Dobre przy krótkich, łatwych do zapamiętania nazwach.',
+      m: '<rect width="220" height="110" rx="10" fill="#f2f5fa"/><text x="110" y="66" text-anchor="middle" font-family="Georgia,serif" font-size="38" font-style="italic" font-weight="700" fill="#142e50" letter-spacing="1">Aurora</text><rect x="62" y="76" width="96" height="4" rx="2" fill="#ff6b5a"/>' },
+    { v: 'monogram', t: 'Monogram / inicjały', d: 'Jedna lub dwie litery w wyrazistej formie. Sprawdza się przy długich nazwach i tam, gdzie logo bywa bardzo małe (pieczątka, haft).',
+      m: '<rect width="220" height="110" rx="10" fill="#f2f5fa"/><rect x="76" y="21" width="68" height="68" rx="14" fill="#142e50"/><text x="110" y="70" text-anchor="middle" font-family="Georgia,serif" font-size="42" font-weight="700" fill="#ffb547">A</text>' },
+    { v: 'emblemat', t: 'Emblemat / odznaka', d: 'Napis wpisany w kształt — koło, tarczę, pieczęć. Kojarzy się z tradycją i rzemiosłem; gorzej czytelny w bardzo małym rozmiarze.',
+      m: '<rect width="220" height="110" rx="10" fill="#f2f5fa"/><circle cx="110" cy="55" r="44" fill="none" stroke="#142e50" stroke-width="4"/><circle cx="110" cy="55" r="36" fill="#142e50"/><text x="110" y="52" text-anchor="middle" font-family="Georgia,serif" font-size="17" font-weight="700" fill="#fff" letter-spacing="2">AURORA</text><text x="110" y="70" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#ffb547" letter-spacing="2">EST. 2024</text>' },
+  ];
+
+  function openLogoExamples(f, opener) {
+    var old = document.querySelector('.bf-dialog');
+    if (old) old.remove();
+    var grid = el('div', { class: 'bf-logo-grid' });
+    var d;
+    LOGO_EXAMPLES.forEach(function (x) {
+      grid.appendChild(el('div', { class: 'bf-logo-card' },
+        svgFrom(x.m, 'Przykład: ' + x.t),
+        el('h3', { text: x.t }),
+        el('p', { text: x.d }),
+        locked ? null : el('button', { type: 'button', class: 'btn btn--sm bf-btn-ghost', text: 'Wybieram ten rodzaj', onclick: function () {
+          var inp = document.querySelector('input[name="' + f.id + '"][value="' + x.v + '"]');
+          if (inp) { inp.checked = true; inp.dispatchEvent(new Event('change', { bubbles: true })); }
+          d.close();
+        } })
+      ));
+    });
+    d = el('dialog', { class: 'bf-dialog bf-dialog--wide', 'aria-labelledby': 'bf-dialog-title' },
+      el('button', { type: 'button', class: 'bf-dialog__x', 'aria-label': 'Zamknij', text: '×', onclick: function () { d.close(); } }),
+      el('h2', { id: 'bf-dialog-title', text: 'Rodzaje logo — przykłady' }),
+      el('p', { class: 'bf-muted', text: 'Przykłady są umowne (wymyślona nazwa „Aurora”) — pokazują rodzaj logo, a nie gotowy projekt.' }),
+      grid,
+      el('div', { class: 'bf-dialog__actions' }, el('button', { type: 'button', class: 'btn btn--primary', text: 'Zamknij', onclick: function () { d.close(); } }))
     );
     d.addEventListener('close', function () { d.remove(); if (opener) opener.focus(); });
     d.addEventListener('click', function (e) { if (e.target === d) d.close(); });

@@ -8,6 +8,7 @@ import { sendEmail, notifyAboutLead, emailConfigured, sendClientEmail } from '..
 import { gmailConfigured, gmailAddress } from '../../_lib/smtp.js';
 import { normalizeUrl } from '../../_lib/validate.js';
 import { newToken, cleanAnswers } from '../../_lib/brief.js';
+import { readStats } from '../../_lib/stats.js';
 import { SLUG_RE, VER_RE, PATH_RE, MAX_FILE, MAX_TOTAL, MAX_FILES, CARD_TYPES, extOf, isImagePath, sniffOk, slugify, deleteCardFiles, cardUrl } from '../../_lib/card.js';
 
 const STATUSES = ['nowe', 'kontakt', 'w_realizacji', 'zakonczone', 'odrzucone'];
@@ -105,6 +106,8 @@ export async function onRequest(context) {
           siteUrl: (env.SITE_URL || '').trim() || null,
           ipSalt: Boolean(env.IP_HASH_SALT),
         });
+      case 'GET /stats':
+        return json({ ok: true, stats: await readStats(env, new URL(request.url).searchParams.get('days')) });
       case 'POST /password': {
         const b = await body(request);
         const r = await changePassword(env, b.current, b.next);

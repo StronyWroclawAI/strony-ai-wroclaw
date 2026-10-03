@@ -234,6 +234,7 @@
       routerBound = true;
     }
     route();
+    refreshVisitsBadge();
   }
 
   /** Zamienia wywołanie API na { data, error } — ułatwia obsługę błędów w widokach. */
@@ -260,6 +261,7 @@
     zgloszenia: viewLeads,
     zgloszenie: viewLead,
     briefy: viewBriefs,
+    statystyki: viewStats,
     brief: viewBrief,
     tresci: viewContent,
     faq: () => viewList(LISTS.faq),
@@ -1242,6 +1244,80 @@
       head(`Brief: ${(b.answers && b.answers.company_name) || b.company_name}`, 'Brief utworzony bez zgłoszenia (starsza wersja panelu).'),
       ...briefBlocks(b)
     );
+  }
+
+  // =========================================================
+  // STATYSTYKI ODWIEDZIN
+  // =========================================================
+  async function refreshVisitsBadge() {
+    const { data } = await q(api('stats?days=7'));
+    const b = $('[data-visits-today]');
+    if (!b || !data) return;
+    b.textContent = String(data.stats.today.views);
+    b.title = `Wejścia dzisiaj: ${data.stats.today.views}`;
+    b.hidden = false;
+  }
+
+  let statsDays = 30;
+  async function viewStats(main) {
+    const st = (await api(`stats?days=${statsDays}`)).stats;
+    const nf = (n) => Number(n || 0).toLocaleString('pl-PL');
+    const dfmt = (d) => new Date(`${d}T12:00:00`).toLocaleDateString('pl-PL', { day: 'numeric', month: 'short' });
+    const wd = (d) => new Date(`${d}T12:00:00`).toLocaleDateString('pl-PL', { weekday: 'short' });
+    const tile = (label, value, sub) => h('div', { class: 'stat-tile' }, h('div', { class: 'stat-tile__label', text: label }), h('div', { class: 'stat-tile__value', text: nf(value) }), sub ? h('div', { class: 'stat-tile__sub', text: sub }) : null);
+    const diff = st.today.views - st.yesterday.views;
+
+    // Wykres: jedna seria (wejścia dziennie), jedna oś, słupki z dymkiem po najechaniu / fokusie
+    const max = Math.max(1, ...st.series.map((r) => r.views));
+    const step = st.series.length > 120 ? 30 : st.series.length > 45 ? 14 : st.series.length > 14 ? 5 : 1;
+    const tip = h('div', { class: 'chart-tip', role: 'status', 'aria-live': 'polite', text: 'Najedź na słupek, aby zobaczyć dzień.' });
+    const show = (r) => (tip.textContent = `${wd(r.day)}, ${dfmt(r.day)} — wejścia: ${nf(r.views)}, odwiedzający: ${nf(r.uniques)}`);
+    const bars = h(
+      'div',
+      { class: 'chart-bars', role: 'img', 'aria-label': `Wejścia na stronę dziennie, ostatnie ${st.days} dni. Najwięcej jednego dnia: ${nf(max)}.` },
+      st.series.map((r, i) =>
+        h('div', { class: `chart-col${i === st.series.length - 1 ? ' is-today' : ''}`, tabindex: '0', 'aria-label': `${dfmt(r.day)}: ${r.views} wejść, ${r.uniques} odwiedzających`, onmouseenter: () => show(r), onfocus: () => show(r) },
+          h('div', { class: 'chart-bar', style: `height:${r.views ? Math.max(3, Math.round((r.views / max) * 100)) : 0}%` }),
+          h('div', { class: 'chart-x', text: i % step === 0 || i === st.series.length - 1 ? dfmt(r.day) : '' }))
+      )
+    );
+    const range = h('div', { class: 'chips', role: 'group', 'aria-label': 'Zakres dni' },
+      [[7, '7 dni'], [30, '30 dni'], [90, '90 dni'], [365, 'Rok']].map(([n, l]) =>
+        h('button', { class: 'chip', type: 'button', 'aria-pressed': statsDays === n ? 'true' : 'false', text: l, onclick: () => { statsDays = n; route(); } })));
+    const list = (title, rows, key, val, empty) =>
+      h('section', { class: 'panel' }, h('h2', { text: title }),
+        rows.length
+          ? h('ol', { class: 'stat-list' }, rows.map((r) => {
+              const top = Math.max(1, ...rows.map((x) => x[val]));
+              return h('li', null, h('span', { class: 'stat-list__name', text: key(r) }), h('span', { class: 'stat-list__bar' }, h('i', { style: `width:${Math.round((r[val] / top) * 100)}%` })), h('strong', { text: nf(r[val]) }));
+            }))
+          : h('p', { class: 'small muted', text: empty }));
+    const pageName = (p) => (p === '/' ? 'Strona główna' : p === '/polityka-prywatnosci' ? 'Polityka prywatności' : p.startsWith('/portfolio/') ? `Portfolio: ${p.slice(11)}` : p);
+    const DEV = { komputer: 'Komputer', telefon: 'Telefon', tablet: 'Tablet' };
+
+    main.replaceChildren(
+      head('Statystyki odwiedzin', 'Własny licznik bez plików cookies. Nie liczy Twoich wejść (gdy jesteś zalogowany do panelu) ani robotów wyszukiwarek.'),
+      h('div', { class: 'stat-tiles' },
+        tile('Wejścia dzisiaj', st.today.views, diff === 0 ? 'tyle samo co wczoraj' : `${diff > 0 ? '+' : '−'}${nf(Math.abs(diff))} względem wczoraj`),
+        tile('Odwiedzający dzisiaj', st.today.uniques, 'unikalne osoby'),
+        tile('Ostatnie 7 dni', st.last7.views, `${nf(st.last7.uniques)} odwiedzających`),
+        tile(`Ostatnie ${st.days} dni`, st.period.views, `${nf(st.period.uniques)} odwiedzających`),
+        tile('Od początku', st.total.views, st.total.since ? `od ${dfmt(st.total.since)}` : 'brak danych')),
+      h('section', { class: 'panel' },
+        h('div', { class: 'brief-sec__head' }, h('h2', { text: 'Wejścia dziennie' }), range),
+        h('div', { class: 'chart' }, h('div', { class: 'chart-y', 'aria-hidden': 'true' }, h('span', { text: nf(max) }), h('span', { text: '0' })), bars),
+        tip,
+        h('details', { class: 'small' }, h('summary', { text: 'Pokaż dane w tabeli' }),
+          h('table', { class: 'stat-table' }, h('thead', null, h('tr', null, h('th', { text: 'Dzień' }), h('th', { text: 'Wejścia' }), h('th', { text: 'Odwiedzający' }))),
+            h('tbody', null, st.series.slice().reverse().map((r) => h('tr', null, h('td', { text: `${wd(r.day)}, ${dfmt(r.day)}` }), h('td', { text: nf(r.views) }), h('td', { text: nf(r.uniques) }))))))),
+      h('div', { class: 'detail-grid' },
+        list(`Najczęściej oglądane (${st.days} dni)`, st.pages, (r) => pageName(r.path), 'views', 'Brak wejść w tym okresie.'),
+        h('div', null,
+          list('Skąd przychodzą odwiedzający', st.refs, (r) => r.key, 'n', 'Brak danych w tym okresie.'),
+          list('Urządzenia', st.devices, (r) => DEV[r.key] || r.key, 'n', 'Brak danych w tym okresie.'))),
+      h('p', { class: 'small muted', text: '„Odwiedzający” to przybliżona liczba unikalnych osób w danym dniu. Ta sama osoba w kolejnym dniu jest liczona ponownie — licznik celowo nie śledzi nikogo między dniami.' })
+    );
+    refreshVisitsBadge();
   }
 
   // =========================================================

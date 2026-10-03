@@ -11,6 +11,7 @@ import {
   renderLines,
   renderPortfolio,
 } from './render.js';
+import { recordVisit } from './stats.js';
 
 const PRIVACY_REQUIRED = ['privacy.controller_name', 'privacy.db_region', 'privacy.retention', 'privacy.updated', 'privacy.transfer_check'];
 
@@ -56,6 +57,8 @@ export async function loadContent(context) {
 
 export async function renderPage(context) {
   const { request, env } = context;
+  // Licznik odwiedzin (bez cookies) — w tle, nie spowalnia strony.
+  context.waitUntil(recordVisit(env, request, new URL(request.url).pathname.replace(/\/+$/, '') || '/'));
   // Pobieramy plik HTML BEZ nagłówków warunkowych (If-None-Match / If-Modified-Since).
   // Inaczej serwer plików odpowiadałby „304 — bez zmian” (plik się nie zmienił),
   // a przeglądarka pokazywałaby starą wersję mimo zmian zapisanych w panelu.

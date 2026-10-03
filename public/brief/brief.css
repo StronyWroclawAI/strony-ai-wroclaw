@@ -186,3 +186,18 @@
   .bf-opt--layout .bf-wire { width: 68px; }
   .bf-dialog { padding: 20px; }
 }
+
+/* Wskazówka na starcie, przykłady logo */
+.bf-tip { background: #fff7e6; border: 1px solid #f3d38f; border-left: 5px solid #ffb547; border-radius: 12px; padding: 14px 16px; color: #5c4400; margin: 0 0 14px; line-height: 1.5; }
+.bf-examples { margin: 0 0 10px; }
+.bf-examples-btn { background: none; border: 2px solid var(--navy); color: var(--navy); font: inherit; font-weight: 700; font-size: .9375rem; border-radius: 999px; padding: 7px 16px; cursor: pointer; transition: background-color .2s, color .2s; }
+.bf-examples-btn:hover { background: var(--navy); color: #fff; }
+.bf-examples-btn:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.bf-dialog--wide { width: min(760px, calc(100vw - 24px)); }
+.bf-logo-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 14px; }
+.bf-logo-card { border: 1px solid var(--gray-200); border-radius: 14px; padding: 12px; display: grid; gap: 6px; align-content: start; }
+.bf-logo-card .bf-logo-ex { width: 100%; height: auto; border-radius: 10px; display: block; }
+.bf-dialog .bf-logo-card h3 { margin: 6px 0 0; font-size: 1rem; letter-spacing: 0; text-transform: none; color: var(--navy-900); }
+.bf-logo-card p { font-size: .875rem; color: var(--muted); }
+.bf-logo-card .btn { justify-self: start; margin-top: 4px; }
+@media (max-width: 640px) { .bf-logo-grid { grid-template-columns: 1fr; } }

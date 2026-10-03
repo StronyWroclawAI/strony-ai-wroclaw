@@ -84,6 +84,17 @@ Podgląd tego, co widzi klient: **Panel → Briefy klientów → „Jak to widzi
 ## Układ strony w poleceniu dla AI
 Wybrany układ trafia do polecenia „Strona z panelem” razem z opisem, jak ma wyglądać. Przy „nie mam preferencji” AI dostaje listę układów, podpowiedź dla branży i ma uzasadnić wybór w 2–3 zdaniach (do przekazania klientowi). Polecane układy dla branż ustawisz w `public/brief/schema.js` (`LAYOUT_BY_PROFILE`, `LAYOUT_BY_INDUSTRY`).
 
+## Zmiany w wersji 7
+- Ekran startowy: wyraźna informacja „Nie wiesz, co wpisać? Zostaw pole puste”.
+- „Co odwiedzający ma przede wszystkim zrobić po wizycie na Twojej stronie?” — można zaznaczyć kilka odpowiedzi.
+- **Sekcje strony:** grupy „Prezentacja firmy”, „Budowanie zaufania”, „Komunikacja i sprzedaż” i „Informacje praktyczne” mają opcje dobrane do branży (np. restauracja: menu, alergeny, rezerwacja stolika; hotel: pokoje, zasady anulacji, zameldowanie). Listy ustawisz w `schema.js` (`SEC_GROUPS`).
+- **Materiały do przekazania** też są dobrane do branży (`MAT_MAP`).
+- „Gdzie jesteś w internecie?” — doszło Pyszne.pl.
+- „Jaka ma być kolorystyka strony?” — nowa opcja „Różnorodność kolorystyczna”.
+- **Logo:** przycisk „Zobacz przykłady rodzajów logo” otwiera okienko z czterema przykładami.
+- **Domena:** wyjaśnienie, czym jest domena, opcja „proszę o przygotowanie oferty zakupu domeny” z informacją, że to płatna usługa zewnętrznego dostawcy, oraz orientacyjne ceny. Kwoty w tekście sprawdzaj co jakiś czas — ceny u dostawców się zmieniają.
+- „Twoje pomysły i uwagi” — zostały dwa pola: pomysły/wskazówki/uwagi oraz pytania.
+
 ## Co zmieniło się w pytaniach (wersja 5)
 Pytania nie powtarzają się między krokami:
 - „Kim są Twoi klienci” pojawia się raz: w kroku 1 albo w pytaniach branżowych (tam, gdzie branża ma dokładniejszą listę).
