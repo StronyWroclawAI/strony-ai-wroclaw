@@ -2,6 +2,9 @@
 import { esc } from './render.js';
 import { sendEmail } from './email.js';
 
+export const BRIEF_KINDS = ['pelny', 'strona', 'logo'];
+export const KIND_LABEL = { pelny: 'Brief projektowy', strona: 'Brief strony internetowej', logo: 'Brief logo i hasła' };
+
 export const TOKEN_RE = /^[A-Za-z0-9_-]{32,64}$/;
 const KEY_RE = /^[a-z_]{2,40}(__other)?$/;
 const MAX_JSON = 150000;
@@ -51,19 +54,20 @@ export async function notifyBriefSubmitted(env, brief, answers, origin) {
     ['Telefon', answers.contact_phone],
     ['Branża', answers.industry_label || answers.industry],
   ].filter(([, v]) => v);
+  const kindLabel = KIND_LABEL[brief.kind] || KIND_LABEL.pelny;
   const text =
-    `Klient wypełnił brief projektowy.\n\n` +
+    `Klient wypełnił: ${kindLabel.toLowerCase()}.\n\n` +
     rows.map(([k, v]) => `${k}: ${v}`).join('\n') +
     `\n\nPełne odpowiedzi, wydruk i tekst dla AI: ${panel}\n`;
   const html = `<!doctype html><html lang="pl"><body style="font-family:Arial,sans-serif;color:#14213a;background:#f5f7fa;margin:0">
 <div style="max-width:620px;margin:0 auto;padding:24px"><div style="background:#0f2544;color:#fff;padding:20px 24px;border-radius:12px 12px 0 0">
 <div style="font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:#c9d6ea">Strony AI Wrocław</div>
-<div style="font-size:20px;font-weight:bold;margin-top:4px">Brief wypełniony: ${esc(company)}</div></div>
+<div style="font-size:20px;font-weight:bold;margin-top:4px">${esc(kindLabel)} wypełniony: ${esc(company)}</div></div>
 <div style="background:#fff;padding:24px;border:1px solid #dde3ec;border-top:0;border-radius:0 0 12px 12px">
 <table style="font-size:15px;border-collapse:collapse">${rows.map(([k, v]) => `<tr><td style="padding:5px 14px 5px 0;color:#4d5a70">${esc(k)}</td><td>${esc(v)}</td></tr>`).join('')}</table>
 <p style="margin-top:20px"><a href="${esc(panel)}" style="background:#142e50;color:#fff;padding:12px 18px;border-radius:8px;text-decoration:none;font-weight:bold">Otwórz brief w panelu</a></p>
 </div></div></body></html>`;
-  const r = await sendEmail(env, { subject: `Brief wypełniony: ${company}`, text, html, replyTo: answers.contact_email, idempotencyKey: `brief-${brief.id}-${Math.floor(Date.now() / 60000)}` });
+  const r = await sendEmail(env, { subject: `${kindLabel} wypełniony: ${company}`, text, html, replyTo: answers.contact_email, idempotencyKey: `brief-${brief.id}-${Math.floor(Date.now() / 60000)}` });
   try {
     await env.DB.prepare(`UPDATE briefs SET notification_status = ? WHERE id = ?`).bind(r.ok ? 'sent' : r.skipped ? 'skipped' : 'failed', brief.id).run();
   } catch (e) {

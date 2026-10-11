@@ -207,6 +207,15 @@ code { background: var(--gray-100); padding: 1px 6px; border-radius: 4px; font-s
 .brief-attached { margin-top: 28px; padding-top: 24px; border-top: 3px solid transparent; border-image: linear-gradient(90deg, #ff6b5a, #ffb547, #19c2b0, #8b7cf6) 1; scroll-margin-top: 20px; }
 .brief-empty { background: linear-gradient(135deg, #f4f8ff, #fff7ec); }
 .brief-empty h2 { margin-top: 0; }
+.kind-list { margin: 0 0 12px; padding-left: 20px; display: grid; gap: 4px; }
+.brief-index h2 { margin-top: 0; }
+.brief-index__list { list-style: none; margin: 0 0 12px; padding: 0; display: grid; gap: 8px; }
+.brief-index__list li { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.brief-index__list a { font-weight: 700; }
+.merge-box { margin-top: 16px; padding: 16px; border-radius: 12px; background: linear-gradient(135deg, #f4f8ff, #fff7ec); border: 1px solid #dde3ec; }
+.merge-box h3 { margin: 0 0 6px; }
+.brief-item { margin-top: 28px; padding-top: 4px; scroll-margin-top: 20px; }
+.brief-item + .brief-item { border-top: 2px dashed #dde3ec; padding-top: 24px; }
 .brief-actions__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .brief-actions__head h2 { margin: 0; }
 .brief-actions .actions { margin: 10px 0; }
@@ -278,3 +287,6 @@ code { background: var(--gray-100); padding: 1px 6px; border-radius: 4px; font-s
 .stat-list__bar { height: 8px; background: var(--gray-100); border-radius: 4px; overflow: hidden; }
 .stat-list__bar i { display: block; height: 100%; background: #2a6fd6; border-radius: 4px; }
 .stat-list strong { font-variant-numeric: tabular-nums; }
+
+.kind-pick { border: 1px solid #dde3ec; border-radius: 12px; padding: 12px 16px 6px; margin: 12px 0 0; display: grid; gap: 6px; }
+.kind-pick legend { font-weight: 700; padding: 0 6px; }

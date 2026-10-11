@@ -68,6 +68,7 @@
     if (token === 'podglad') DEMO = true;
 
     if (DEMO) {
+      applyKind(new URLSearchParams(location.search).get('rodzaj'));
       document.body.insertBefore(el('div', { class: 'bf-demo-bar', role: 'note', text: 'Tryb podglądu — tak wygląda brief dla klienta. Odpowiedzi nie są nigdzie wysyłane ani zapisywane.' }), document.body.firstChild);
       setSaveStatus('Tryb podglądu');
       applyDefaults();
@@ -85,13 +86,14 @@
       .then(function (r) { return r.json(); })
       .then(function (d) {
         if (!d.ok) return fail(d.message || 'Nie udało się wczytać briefu.');
+        applyKind(d.kind);
         answers = d.answers || {};
         applyDefaults();
         guessIndustry();
         var name = answers.company_name || d.company_name;
         if (!answers.company_name && d.company_name) answers.company_name = d.company_name;
         $('[data-company]').textContent = name || 'Twojej firmy';
-        document.title = 'Brief projektowy — ' + (name || 'Strony AI Wrocław');
+        document.title = S.title + ' — ' + (name || 'Strony AI Wrocław');
         if (d.status === 'wyslany') {
           locked = true;
           setSaveStatus('Brief wysłany ' + formatDate(d.submitted_at));
@@ -115,6 +117,7 @@
       .then(function (x) {
         if (x.status === 401) return fail('Zaloguj się do panelu administratora, a potem otwórz ten link ponownie.');
         if (!x.d.ok || !x.d.brief || x.d.brief.token !== token) return fail('Nie znaleziono briefu do edycji.');
+        applyKind(x.d.brief.kind);
         answers = x.d.brief.answers || {};
         applyDefaults();
         var name = answers.company_name || x.d.brief.company_name || '';
@@ -128,6 +131,20 @@
         goTo(Math.max(0, Math.min(S.steps.length - 1, step)));
       })
       .catch(function () { fail('Brak połączenia z serwerem. Sprawdź internet i odśwież stronę.'); });
+  }
+
+  /** Rodzaj briefu (pełny / strona / logo i hasło) — inne kroki i teksty powitania. */
+  function applyKind(kind) {
+    S.setKind(kind);
+    var K = S.kinds[S.kind];
+    var set = function (sel, text) { var e = $(sel); if (e) e.textContent = text; };
+    set('[data-kind-eyebrow]', K.eyebrow);
+    set('[data-kind-h1]', K.h1 + ' ');
+    set('[data-kind-lead]', K.lead);
+    set('[data-kind-time]', K.time);
+    var sc = $('[data-steps-count]');
+    if (sc) sc.textContent = S.steps.length + ' krótkich kroków';
+    document.body.setAttribute('data-brief-kind', S.kind);
   }
 
   function fail(msg) {

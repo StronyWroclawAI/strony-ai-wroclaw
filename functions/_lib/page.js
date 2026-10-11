@@ -143,6 +143,12 @@ export async function renderPage(context) {
         el.setAttribute('data-size', 'flexible');
       },
     })
+    // Teksty zakładek portfolio są tylko w bazie/panelu — kontener z nimi nie trafia na stronę
+    .on('[data-pf-texts]', {
+      element(el) {
+        el.remove();
+      },
+    })
     // Dane strukturalne dla Google (tylko strona główna ma ten element)
     .on('script#ld-json', {
       element(el) {
@@ -165,7 +171,7 @@ export async function renderPage(context) {
       'industry-options': () => renderIndustryOptions(data.industries),
       capabilities: () => (data.capabilities.length ? renderCapabilities(data.capabilities) : null),
       faq: () => (data.faq.length ? renderFaq(data.faq) : null),
-      portfolio: () => renderPortfolio(data.projects),
+      portfolio: () => renderPortfolio(data.projects, c),
     };
 
     rw = rw

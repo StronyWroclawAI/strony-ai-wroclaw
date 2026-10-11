@@ -12,7 +12,8 @@ Każda realizacja w portfolio może mieć **kartę projektu**, czyli osobną pod
    - Jeśli w paczce jest `opis-do-portfolio.txt`, panel sam wpisze nazwę, podtytuł, opis, tagi, link, adres karty, okładkę i oznaczenie „demonstracyjny”. **Sprawdź te pola.**
    - Zobaczysz ostrzeżenia, jeśli czegoś brakuje (np. obrazka, do którego odwołuje się `index.html`).
 3. Wybierz **okładkę kafelka**, czyli jeden ze zrzutów. Najlepiej poziomy, np. `img/d-start.webp`.
-4. **Projekt demonstracyjny** zaznacz, jeśli firma jest fikcyjna albo to koncepcja. Na stronie pojawi się wtedy etykieta „Projekt demonstracyjny”, więc nikt nie weźmie go za realizację dla prawdziwego klienta.
+4. **Rodzaj projektu** (wymagany): **Projekt zrealizowany** (prawdziwa firma, za jej zgodą) albo **Projekt demonstracyjny** (firma fikcyjna / koncepcja — na kafelku pojawi się etykieta „Projekt demonstracyjny”).
+   Na stronie portfolio ma dwie zakładki: **Projekty zrealizowane** i **Projekty demonstracyjne**. Dopóki nie opublikujesz żadnego zrealizowanego projektu, zakładek nie ma — widać tylko projekty demonstracyjne. Nazwy i opisy zakładek zmienisz w **Treści strony → Portfolio**.
 5. Status: **Szkic** (widzisz go tylko Ty, także kartę — przycisk „Podgląd karty”) albo **Opublikowana**.
 6. Kliknij **Zapisz realizację**. Pliki się wgrają (pasek postępu), a kafelek od razu pojawi się na stronie.
 

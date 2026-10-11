@@ -606,9 +606,41 @@ export const SEED = {
    "key": "portfolio.intro",
    "section": "Portfolio – nagłówek",
    "label": "Wstęp",
-   "kind": "text",
-   "value": "Strony przygotowane dla firm (za ich zgodą) oraz projekty demonstracyjne — kliknij, aby zobaczyć szczegóły.",
+   "kind": "long",
+   "value": "Projekty zrealizowane dla firm (za ich zgodą) oraz projekty demonstracyjne — kliknij kafelek, aby zobaczyć szczegóły.",
    "sort_order": 8075
+  },
+  {
+   "key": "portfolio.real_label",
+   "section": "Portfolio – nagłówek",
+   "label": "Zakładka 1 – nazwa (projekty zrealizowane)",
+   "kind": "text",
+   "value": "Projekty zrealizowane",
+   "sort_order": 8076
+  },
+  {
+   "key": "portfolio.real_intro",
+   "section": "Portfolio – nagłówek",
+   "label": "Zakładka 1 – opis",
+   "kind": "text",
+   "value": "Strony przygotowane dla prawdziwych firm, które zgodziły się na ich prezentację.",
+   "sort_order": 8077
+  },
+  {
+   "key": "portfolio.demo_label",
+   "section": "Portfolio – nagłówek",
+   "label": "Zakładka 2 – nazwa (projekty demonstracyjne)",
+   "kind": "text",
+   "value": "Projekty demonstracyjne",
+   "sort_order": 8078
+  },
+  {
+   "key": "portfolio.demo_intro",
+   "section": "Portfolio – nagłówek",
+   "label": "Zakładka 2 – opis",
+   "kind": "text",
+   "value": "Koncepcje na przykładzie fikcyjnych firm — pokazują, jak może wyglądać strona dla danej branży.",
+   "sort_order": 8079
   },
   {
    "key": "about.eyebrow",
@@ -616,7 +648,7 @@ export const SEED = {
    "label": "Nad nagłówkiem",
    "kind": "text",
    "value": "O mnie",
-   "sort_order": 9076
+   "sort_order": 9080
   },
   {
    "key": "about.title",
@@ -624,7 +656,7 @@ export const SEED = {
    "label": "Nagłówek sekcji",
    "kind": "text",
    "value": "Cześć, jestem Grzegorz",
-   "sort_order": 9077
+   "sort_order": 9081
   },
   {
    "key": "about.p1",
@@ -632,7 +664,7 @@ export const SEED = {
    "label": "Akapit 1",
    "kind": "long",
    "value": "Jestem z Wrocławia i tworzę strony internetowe dla małych firm. Wykorzystuję narzędzia AI do projektowania i tworzenia stron, a każdy projekt dopasowuję do potrzeb konkretnej firmy.",
-   "sort_order": 9078
+   "sort_order": 9082
   },
   {
    "key": "about.p2",
@@ -640,7 +672,7 @@ export const SEED = {
    "label": "Akapit 2",
    "kind": "long",
    "value": "Stawiam pierwsze kroki, rozwijam umiejętności i buduję portfolio — dlatego wybranym firmom wykonuję stronę bezpłatnie. Nie jestem agencją ani zespołem: od pierwszej wiadomości do uruchomienia strony rozmawiasz bezpośrednio ze mną.",
-   "sort_order": 9079
+   "sort_order": 9083
   },
   {
    "key": "about.p3",
@@ -648,7 +680,7 @@ export const SEED = {
    "label": "Akapit 3",
    "kind": "long",
    "value": "Jeśli trafiłeś tutaj z mojej wiadomości e-mail — na tej stronie znajdziesz wszystko, co warto wiedzieć, zanim odpowiesz.",
-   "sort_order": 9080
+   "sort_order": 9084
   },
   {
    "key": "about.v1_title",
@@ -656,7 +688,7 @@ export const SEED = {
    "label": "Wartość 1 – tytuł",
    "kind": "text",
    "value": "Jasne zasady",
-   "sort_order": 9081
+   "sort_order": 9085
   },
   {
    "key": "about.v1_text",
@@ -664,7 +696,7 @@ export const SEED = {
    "label": "Wartość 1 – opis",
    "kind": "text",
    "value": "Koszty zewnętrzne i zakres ustalamy przed rozpoczęciem pracy.",
-   "sort_order": 9082
+   "sort_order": 9086
   },
   {
    "key": "about.v2_title",
@@ -672,7 +704,7 @@ export const SEED = {
    "label": "Wartość 2 – tytuł",
    "kind": "text",
    "value": "Szacunek dla materiałów",
-   "sort_order": 9083
+   "sort_order": 9087
   },
   {
    "key": "about.v2_text",
@@ -680,7 +712,7 @@ export const SEED = {
    "label": "Wartość 2 – opis",
    "kind": "text",
    "value": "Używam tylko tego, co wskażesz i na co masz zgodę.",
-   "sort_order": 9084
+   "sort_order": 9088
   },
   {
    "key": "about.v3_title",
@@ -688,7 +720,7 @@ export const SEED = {
    "label": "Wartość 3 – tytuł",
    "kind": "text",
    "value": "Jeden kontakt",
-   "sort_order": 9085
+   "sort_order": 9089
   },
   {
    "key": "about.v3_text",
@@ -696,7 +728,7 @@ export const SEED = {
    "label": "Wartość 3 – opis",
    "kind": "text",
    "value": "Projekt prowadzę osobiście, od rozmowy do uruchomienia.",
-   "sort_order": 9086
+   "sort_order": 9090
   },
   {
    "key": "faq.eyebrow",
@@ -704,7 +736,7 @@ export const SEED = {
    "label": "Nad nagłówkiem",
    "kind": "text",
    "value": "FAQ",
-   "sort_order": 10087
+   "sort_order": 10091
   },
   {
    "key": "faq.title",
@@ -712,7 +744,7 @@ export const SEED = {
    "label": "Nagłówek sekcji",
    "kind": "text",
    "value": "Najczęstsze pytania",
-   "sort_order": 10088
+   "sort_order": 10092
   },
   {
    "key": "faq.intro",
@@ -720,7 +752,7 @@ export const SEED = {
    "label": "Wstęp",
    "kind": "text",
    "value": "Nie znalazłeś odpowiedzi? Napisz — chętnie wyjaśnię.",
-   "sort_order": 10089
+   "sort_order": 10093
   },
   {
    "key": "contact.eyebrow",
@@ -728,7 +760,7 @@ export const SEED = {
    "label": "Nad nagłówkiem",
    "kind": "text",
    "value": "Kontakt",
-   "sort_order": 11090
+   "sort_order": 11094
   },
   {
    "key": "contact.title",
@@ -736,7 +768,7 @@ export const SEED = {
    "label": "Nagłówek sekcji",
    "kind": "text",
    "value": "Zgłoś swoją firmę",
-   "sort_order": 11091
+   "sort_order": 11095
   },
   {
    "key": "contact.intro",
@@ -744,7 +776,7 @@ export const SEED = {
    "label": "Wstęp",
    "kind": "text",
    "value": "Opisz krótko firmę i swoje oczekiwania. Odpowiem mailowo.",
-   "sort_order": 11092
+   "sort_order": 11096
   },
   {
    "key": "contact.nonbinding",
@@ -752,7 +784,7 @@ export const SEED = {
    "label": "Informacja o niezobowiązującym charakterze",
    "kind": "long",
    "value": "Zgłoszenie jest niezobowiązujące i nie oznacza zawarcia współpracy. Zgody na wykorzystanie materiałów i prezentację w portfolio ustalamy później — przed rozpoczęciem projektu.",
-   "sort_order": 11093
+   "sort_order": 11097
   },
   {
    "key": "contact.mail_label",
@@ -760,7 +792,7 @@ export const SEED = {
    "label": "Karta e-mail – etykieta",
    "kind": "text",
    "value": "Wolisz napisać bezpośrednio?",
-   "sort_order": 11094
+   "sort_order": 11098
   },
   {
    "key": "contact.message_hint",
@@ -768,7 +800,7 @@ export const SEED = {
    "label": "Formularz: podpowiedź nad wiadomością",
    "kind": "long",
    "value": "Poniżej jest gotowy szkic — uzupełnij go lub napisz po swojemu. Wystarczy kilka zdań: resztę ustalimy w krótkim briefie, który wyślę po pierwszym kontakcie.",
-   "sort_order": 11095
+   "sort_order": 11099
   },
   {
    "key": "contact.message_template",
@@ -776,7 +808,7 @@ export const SEED = {
    "label": "Formularz: szkic wiadomości (wpisz „-”, aby pole było puste)",
    "kind": "long",
    "value": "Dzień dobry,\nchcę nawiązać współpracę przy stworzeniu strony internetowej dla mojej firmy.\n\nCzym się zajmujemy: \nCo chcę pokazać na stronie (np. oferta, cennik, galeria, zespół, rezerwacje): \nCzy mam logo i zdjęcia: \nStrony, które mi się podobają: \nNa kiedy strona byłaby potrzebna: \n\nProszę o kontakt w sprawie dalszych kroków.",
-   "sort_order": 11096
+   "sort_order": 11100
   },
   {
    "key": "contact.success_title",
@@ -784,7 +816,7 @@ export const SEED = {
    "label": "Po wysłaniu – nagłówek",
    "kind": "text",
    "value": "Dziękuję — zgłoszenie zostało zapisane",
-   "sort_order": 11097
+   "sort_order": 11101
   },
   {
    "key": "contact.success_text",
@@ -792,7 +824,7 @@ export const SEED = {
    "label": "Po wysłaniu – treść",
    "kind": "long",
    "value": "Przeczytam je i odpiszę na podany adres e-mail. Jeśli chcesz coś dodać, napisz bezpośrednio na stronywroclawai@gmail.com.",
-   "sort_order": 11098
+   "sort_order": 11102
   },
   {
    "key": "contact.closed_title",
@@ -800,7 +832,7 @@ export const SEED = {
    "label": "Nabór wyłączony – nagłówek",
    "kind": "text",
    "value": "Nabór jest chwilowo wstrzymany",
-   "sort_order": 11099
+   "sort_order": 11103
   },
   {
    "key": "contact.closed_text",
@@ -808,7 +840,7 @@ export const SEED = {
    "label": "Nabór wyłączony – treść",
    "kind": "text",
    "value": "Obecnie realizuję przyjęte projekty. Możesz napisać do mnie, aby zapytać o kolejny termin.",
-   "sort_order": 11100
+   "sort_order": 11104
   },
   {
    "key": "footer.location",
@@ -816,7 +848,7 @@ export const SEED = {
    "label": "Stopka – lokalizacja",
    "kind": "text",
    "value": "Z Wrocławia — dla firm z całej Polski",
-   "sort_order": 12101
+   "sort_order": 12105
   },
   {
    "key": "footer.author",
@@ -824,7 +856,7 @@ export const SEED = {
    "label": "Stopka – informacja o autorze",
    "kind": "text",
    "value": "Strony AI Wrocław to projekt Grzegorza — twórcy stron internetowych z Wrocławia.",
-   "sort_order": 12102
+   "sort_order": 12106
   },
   {
    "key": "privacy.updated",

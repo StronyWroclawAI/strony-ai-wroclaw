@@ -33,7 +33,7 @@ export async function onRequest(context) {
 
   try {
     await ensureSchema(env);
-    const brief = await env.DB.prepare(`SELECT id, company_name, status, answers, submitted_at, lead_id FROM briefs WHERE token = ?`).bind(token).first();
+    const brief = await env.DB.prepare(`SELECT id, company_name, status, answers, submitted_at, lead_id, kind FROM briefs WHERE token = ?`).bind(token).first();
     if (!brief) return json({ ok: false, message: 'Ten link do briefu jest nieaktywny. Skontaktuj się ze mną, a wyślę nowy.' }, 404, extraHeaders);
 
     // --- Odczyt ---
@@ -45,7 +45,7 @@ export async function onRequest(context) {
       } catch {
         answers = {};
       }
-      return json({ ok: true, company_name: brief.company_name, status: brief.status, submitted_at: brief.submitted_at, answers }, 200, extraHeaders);
+      return json({ ok: true, kind: brief.kind || 'pelny', company_name: brief.company_name, status: brief.status, submitted_at: brief.submitted_at, answers }, 200, extraHeaders);
     }
 
     if (brief.status === 'wyslany') {

@@ -7,7 +7,7 @@ import { ensureSchema, hasDb, uuid, nowIso, all, first, run, mediaUrl } from '..
 import { sendEmail, notifyAboutLead, emailConfigured, sendClientEmail } from '../../_lib/email.js';
 import { gmailConfigured, gmailAddress } from '../../_lib/smtp.js';
 import { normalizeUrl } from '../../_lib/validate.js';
-import { newToken, cleanAnswers } from '../../_lib/brief.js';
+import { newToken, cleanAnswers, BRIEF_KINDS } from '../../_lib/brief.js';
 import { readStats } from '../../_lib/stats.js';
 import { SLUG_RE, VER_RE, PATH_RE, MAX_FILE, MAX_TOTAL, MAX_FILES, CARD_TYPES, extOf, isImagePath, sniffOk, slugify, deleteCardFiles, cardUrl } from '../../_lib/card.js';
 
@@ -141,14 +141,15 @@ export async function onRequest(context) {
         const lead = await first(env, `SELECT * FROM leads WHERE id = ?`, checkId(seg[1]));
         if (!lead) throw notFound('Nie znaleziono zgłoszenia — mogło zostać usunięte.');
         const notes = await all(env, `SELECT id, body, created_at FROM lead_notes WHERE lead_id = ? ORDER BY created_at`, lead.id);
-        const brief = await first(env, `SELECT * FROM briefs WHERE lead_id = ? ORDER BY created_at DESC LIMIT 1`, lead.id);
-        if (brief) {
+        const briefs = await all(env, `SELECT * FROM briefs WHERE lead_id = ? ORDER BY created_at`, lead.id);
+        for (const br of briefs) {
           try {
-            brief.answers = JSON.parse(brief.answers || '{}');
+            br.answers = JSON.parse(br.answers || '{}');
           } catch {
-            brief.answers = {};
+            br.answers = {};
           }
         }
+        const brief = briefs.length ? briefs[briefs.length - 1] : null;
         const logo = await first(env, `SELECT * FROM logo_proposals WHERE lead_id = ?`, lead.id);
         if (logo) {
           try {
@@ -158,7 +159,7 @@ export async function onRequest(context) {
           }
         }
         const emails = await all(env, `SELECT id, kind, to_email, subject, body, status, error, created_at FROM lead_emails WHERE lead_id = ? ORDER BY created_at DESC LIMIT 100`, lead.id);
-        return json({ ok: true, lead, notes, brief: brief || null, logo: logo || null, emails, mail: { gmail: gmailConfigured(env), from: gmailConfigured(env) ? gmailAddress(env) : null } });
+        return json({ ok: true, lead, notes, brief: brief || null, briefs, logo: logo || null, emails, mail: { gmail: gmailConfigured(env), from: gmailConfigured(env) ? gmailAddress(env) : null } });
       }
       case 'PATCH /leads/:id': {
         const b = await body(request);
@@ -336,7 +337,10 @@ export async function onRequest(context) {
         // Brief przypięty do zgłoszenia — wstępnie wypełniony danymi ze zgłoszenia
         const lead = await first(env, `SELECT * FROM leads WHERE id = ?`, checkId(seg[1]));
         if (!lead) throw notFound();
-        const existing = await first(env, `SELECT id, token, status FROM briefs WHERE lead_id = ? ORDER BY created_at DESC LIMIT 1`, lead.id);
+        const rb = await body(request).catch(() => ({}));
+        const kind = BRIEF_KINDS.includes(rb && rb.kind) ? rb.kind : 'pelny';
+        // Jeden brief danego rodzaju na zgłoszenie (połączony brief to osobna pozycja)
+        const existing = await first(env, `SELECT id, token, status, kind FROM briefs WHERE lead_id = ? AND kind = ? AND merged_at IS NULL ORDER BY created_at DESC LIMIT 1`, lead.id, kind);
         if (existing) return json({ ok: true, item: existing, existed: true });
         const pre = {
           company_name: lead.company_name,
@@ -356,14 +360,43 @@ export async function onRequest(context) {
         if (lead.instagram_url) { social.push('instagram'); links.push(lead.instagram_url); }
         if (social.length) { pre.social = social; pre.social_links = links.join('\n'); }
         if (pre.industry === 'Nie podano') delete pre.industry;
+        if (kind === 'logo') {
+          // brief logo: tylko dane firmy i kontaktu
+          for (const k of ['languages', 'current_site', 'current_site_url', 'social', 'social_links']) delete pre[k];
+        }
         const t = nowIso();
-        const item = { id: uuid(), token: newToken(), status: 'nowy' };
+        const item = { id: uuid(), token: newToken(), status: 'nowy', kind };
         await run(
           env,
-          `INSERT INTO briefs (id, token, company_name, contact_email, status, answers, created_at, updated_at, lead_id) VALUES (?, ?, ?, ?, 'nowy', ?, ?, ?, ?)`,
-          item.id, item.token, lead.company_name, lead.email, JSON.stringify(pre), t, t, lead.id
+          `INSERT INTO briefs (id, token, company_name, contact_email, status, answers, created_at, updated_at, lead_id, kind) VALUES (?, ?, ?, ?, 'nowy', ?, ?, ?, ?, ?)`,
+          item.id, item.token, lead.company_name, lead.email, JSON.stringify(pre), t, t, lead.id, kind
         );
         return json({ ok: true, item });
+      }
+      case 'POST /leads/:id/brief/merge': {
+        // Połączony brief (strona + logo) — odpowiedzi łączy panel, tu tylko zapis jako pełny, wypełniony brief
+        const lead = await first(env, `SELECT * FROM leads WHERE id = ?`, checkId(seg[1]));
+        if (!lead) throw notFound();
+        const b = await body(request);
+        const c = cleanAnswers(b.answers);
+        if (!c.ok) throw bad(c.message);
+        if (!Object.keys(c.answers).length) throw bad('Brak odpowiedzi do połączenia.');
+        const sources = await all(env, `SELECT id, kind FROM briefs WHERE lead_id = ? AND merged_at IS NULL AND kind IN ('strona', 'logo')`, lead.id);
+        if (!sources.some((x) => x.kind === 'strona') || !sources.some((x) => x.kind === 'logo')) throw bad('Do połączenia potrzebne są dwa briefy: strony i logo.');
+        const t = nowIso();
+        const company = String(c.answers.company_name || lead.company_name).slice(0, 150);
+        const merged = await first(env, `SELECT id, token FROM briefs WHERE lead_id = ? AND merged_at IS NOT NULL`, lead.id);
+        if (merged) {
+          await run(env, `UPDATE briefs SET answers = ?, company_name = ?, merged_at = ?, submitted_at = ?, updated_at = ?, status = 'wyslany' WHERE id = ?`, JSON.stringify(c.answers), company, t, t, t, merged.id);
+          return json({ ok: true, id: merged.id, updated: true });
+        }
+        const id = uuid();
+        await run(
+          env,
+          `INSERT INTO briefs (id, token, company_name, contact_email, status, answers, created_at, updated_at, submitted_at, lead_id, kind, merged_at, admin_note) VALUES (?, ?, ?, ?, 'wyslany', ?, ?, ?, ?, ?, 'pelny', ?, ?)`,
+          id, newToken(), company, lead.email, JSON.stringify(c.answers), t, t, t, lead.id, t, 'Brief połączony z briefu strony i briefu logo.'
+        );
+        return json({ ok: true, id });
       }
       case 'POST /leads/:id/notes': {
         const b = await body(request);
@@ -474,7 +507,7 @@ export async function onRequest(context) {
       case 'GET /briefs':
         return json({
           ok: true,
-          items: await all(env, `SELECT id, token, company_name, contact_email, status, created_at, updated_at, opened_at, submitted_at, lead_id FROM briefs ORDER BY created_at DESC LIMIT 500`),
+          items: await all(env, `SELECT id, token, company_name, contact_email, status, created_at, updated_at, opened_at, submitted_at, lead_id, kind, merged_at FROM briefs ORDER BY created_at DESC LIMIT 500`),
         });
       case 'POST /briefs': {
         const b = await body(request);
@@ -482,8 +515,9 @@ export async function onRequest(context) {
         let email = typeof b.contact_email === 'string' ? b.contact_email.trim() : '';
         if (email && (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))) throw bad('Podaj poprawny adres e-mail albo zostaw pole puste.');
         const t = nowIso();
-        const item = { id: uuid(), token: newToken(), company_name: company, contact_email: email || null, status: 'nowy', created_at: t, updated_at: t };
-        await run(env, `INSERT INTO briefs (id, token, company_name, contact_email, status, answers, created_at, updated_at) VALUES (?, ?, ?, ?, 'nowy', ?, ?, ?)`, item.id, item.token, item.company_name, item.contact_email, JSON.stringify({ company_name: company }), t, t);
+        const kind = BRIEF_KINDS.includes(b.kind) ? b.kind : 'pelny';
+        const item = { id: uuid(), token: newToken(), company_name: company, contact_email: email || null, status: 'nowy', created_at: t, updated_at: t, kind };
+        await run(env, `INSERT INTO briefs (id, token, company_name, contact_email, status, answers, created_at, updated_at, kind) VALUES (?, ?, ?, ?, 'nowy', ?, ?, ?, ?)`, item.id, item.token, item.company_name, item.contact_email, JSON.stringify({ company_name: company }), t, t, kind);
         return json({ ok: true, item });
       }
       case 'GET /briefs/:id': {

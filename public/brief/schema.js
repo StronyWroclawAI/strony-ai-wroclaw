@@ -1077,6 +1077,7 @@
             id: 'tagline', type: 'radio', label: 'Hasło firmowe (slogan)', required: true,
             options: O('mam|Mam hasło', 'zmiana|Mam, ale chcę nowe', 'propozycja|Nie mam — proszę o propozycje', 'nie|Nie potrzebuję hasła'),
           },
+          { id: 'tagline_split_info', type: 'info', kinds: ['strona'], showIf: { f: 'tagline', in: ['zmiana', 'propozycja'] }, text: 'Propozycje hasła przygotuję na podstawie osobnego, krótkiego briefu „Logo i hasło”.' },
           { id: 'tagline_text', type: 'text', label: 'Twoje hasło', placeholder: 'np. „Strony, które budują wizerunek”', showIf: { f: 'tagline', in: ['mam', 'zmiana'] }, max: 200 },
           {
             id: 'tagline_style', type: 'checkbox', label: 'Jakie ma być nowe hasło?', other: true, showIf: { f: 'tagline', in: ['zmiana', 'propozycja'] },
@@ -1094,6 +1095,7 @@
             ],
           },
           { id: 'logo_send_info', type: 'info', showIf: { f: 'logo', in: ['tak_wektor', 'tak_obraz', 'odswiezenie'] }, text: 'Obecne logo prześlij mi e-mailem w najlepszej jakości, jaką masz (najlepiej SVG, PDF lub PNG z przezroczystym tłem).' },
+          { id: 'logo_split_info', type: 'info', kinds: ['strona'], showIf: { f: 'logo', in: ['odswiezenie', 'zrobic'] }, text: 'Szczegóły nowego logo (napis, charakter, symbole, inspiracje) zbieram w osobnym, krótkim briefie „Logo i hasło”. Jeśli jeszcze go nie masz — napisz do mnie, wyślę link.' },
           { id: 'logo_keep', type: 'textarea', label: 'Co zachować z obecnego logo, a co zmienić?', hint: 'np. „zostawić kolor i liść, zmienić krój pisma na nowocześniejszy”.', showIf: { f: 'logo', eq: 'odswiezenie' }, max: 1500 },
           { id: 'logo_text', type: 'text', label: 'Jaki napis ma być w logo?', placeholder: 'np. pełna nazwa „Salon Ola”, skrót „SO”, nazwa + „Wrocław”', showIf: { f: 'logo', in: ['odswiezenie', 'zrobic'] }, max: 150 },
           {
@@ -1334,6 +1336,90 @@
     ],
   };
 
+  /* ---------- Rodzaje briefu ----------
+     pelny  — strona + logo i hasło (pełny formularz),
+     strona — sama strona internetowa (logo i hasło tylko w skrócie),
+     logo   — sam projekt logo i hasła (krótki formularz). */
+  var KINDS = {
+    pelny: { label: 'Strona + logo i hasło', title: 'Brief projektowy strony internetowej', eyebrow: 'Brief projektowy', h1: 'Zaprojektujmy stronę dla', time: 'ok. 15–20 minut',
+      lead: 'Ten formularz pomoże mi dobrze zrozumieć Twoją firmę i oczekiwania. Na jego podstawie przygotuję propozycję strony.' },
+    strona: { label: 'Strona internetowa', title: 'Brief strony internetowej', eyebrow: 'Brief strony internetowej', h1: 'Zaprojektujmy stronę dla', time: 'ok. 15 minut',
+      lead: 'Ten formularz pomoże mi dobrze zrozumieć Twoją firmę i oczekiwania wobec strony. Na jego podstawie przygotuję propozycję strony.' },
+    logo: { label: 'Logo i hasło', title: 'Brief: logo i hasło firmy', eyebrow: 'Brief: logo i hasło', h1: 'Zaprojektujmy logo i hasło dla', time: 'ok. 5–8 minut',
+      lead: 'Ten krótki formularz pomoże mi przygotować propozycje logo i hasła dopasowane do charakteru Twojej firmy.' },
+  };
+  var SITE = ['pelny', 'strona'];
+  var KIND_RULES = {
+    steps: { branza: SITE, cele: SITE, jezyki: SITE, struktura: SITE, oferta: SITE, kontakt: SITE, tresci: SITE, funkcje: SITE, techniczne: SITE },
+    fields: {
+      show_address: SITE, style: SITE, theme: SITE, inspirations: SITE,
+      tagline_style: ['pelny', 'logo'], tagline_words: ['pelny', 'logo'], logo_keep: ['pelny', 'logo'], logo_text: ['pelny', 'logo'], logo_type: ['pelny', 'logo'],
+      logo_feel: ['pelny', 'logo'], logo_symbols: ['pelny', 'logo'], logo_avoid: ['pelny', 'logo'], logo_uses: ['pelny', 'logo'], logo_inspirations: ['pelny', 'logo'],
+    },
+    titles: { wyglad: { logo: 'Kolory' }, marka: { strona: 'Marka, logo i hasło' }, organizacja: { logo: 'Termin i kontakt' } },
+    intros: {
+      wyglad: { logo: 'Kolory, które pasują do firmy — logo będzie z nimi współgrać.' },
+      marka: { strona: 'Myśl przewodnia, sposób zwracania się do klientów oraz informacja o logo i haśle.', logo: 'Myśl przewodnia, wartości i oczekiwania wobec logo i hasła. Jeśli czegoś nie wiesz — zostaw puste, zaproponuję.' },
+    },
+    labels: { deadline: { logo: 'Kiedy logo i hasło byłyby Ci potrzebne?' }, avoid: { logo: 'Czego zdecydowanie nie chcesz (kolory, motywy)?' } },
+    hints: {
+      ideas: { logo: 'Wszystko, czego nie było w pytaniach: skojarzenia, historia nazwy, pomysły na znak lub hasło.' },
+      avoid: { logo: 'np. „żadnego różu”, „bez clipartów”, „nie jak u konkurencji X”.' },
+      deadline: { logo: 'To informacja orientacyjna — termin ustalam indywidualnie.' },
+    },
+    options: { colors: { z_logo: SITE } },
+  };
+  var ALL_STEPS = BRIEF.steps;
+  function inKind(list, kind) { return !list || list.indexOf(kind) !== -1; }
+  function copy(o) { var r = {}; for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) r[k] = o[k]; return r; }
+  function pick(map, id, kind, fallback) { return map[id] && map[id][kind] ? map[id][kind] : fallback; }
+  /** Kroki i pytania dla danego rodzaju briefu. */
+  function stepsFor(kind) {
+    var R = KIND_RULES;
+    return ALL_STEPS.filter(function (st) { return inKind(R.steps[st.id], kind); }).map(function (st) {
+      var c = copy(st);
+      c.title = pick(R.titles, st.id, kind, st.title);
+      c.intro = pick(R.intros, st.id, kind, st.intro);
+      c.fields = st.fields.filter(function (f) { return inKind(f.kinds || R.fields[f.id], kind); }).map(function (f) {
+        if (!R.labels[f.id] && !R.hints[f.id] && !R.options[f.id]) return f;
+        var g = copy(f);
+        g.label = pick(R.labels, f.id, kind, f.label);
+        g.hint = pick(R.hints, f.id, kind, f.hint);
+        if (R.options[f.id] && f.options) g.options = f.options.filter(function (o) { return inKind(R.options[f.id][o.v], kind); });
+        return g;
+      });
+      return c;
+    });
+  }
+  /** Ustawia rodzaj briefu: od tej chwili BRIEF.steps i pomocnicze funkcje dotyczą tego rodzaju. */
+  function setKind(kind) {
+    kind = KINDS[kind] ? kind : 'pelny';
+    BRIEF.kind = kind;
+    BRIEF.steps = stepsFor(kind);
+    BRIEF.title = KINDS[kind].title;
+    return BRIEF;
+  }
+  /** Pytania o markę (logo, hasło, kolory) — przy łączeniu briefów wygrywają odpowiedzi z briefu „Logo i hasło”. */
+  function brandFieldIds() {
+    var out = ['colors', 'colors_list'];
+    ALL_STEPS.forEach(function (st) { if (st.id === 'marka') st.fields.forEach(function (f) { if (f.type !== 'info') out.push(f.id); }); });
+    return out;
+  }
+  /** Łączy odpowiedzi z briefu strony i briefu logo w jeden pełny brief. */
+  function mergeAnswers(site, logo) {
+    site = site || {}; logo = logo || {};
+    var brand = brandFieldIds();
+    var out = copy(site);
+    Object.keys(logo).forEach(function (k) {
+      var base = k.replace(/__other$/, '');
+      var v = logo[k];
+      var empty = out[k] === undefined || out[k] === '' || (Array.isArray(out[k]) && !out[k].length);
+      if (brand.indexOf(base) !== -1 || empty) out[k] = Array.isArray(v) ? v.slice() : v;
+    });
+    brand.forEach(function (id) { if (logo[id] !== undefined && logo[id + '__other'] === undefined) delete out[id + '__other']; });
+    return out;
+  }
+
   /* ---------- Pomocnicze ---------- */
 
   function allOptions(field) {
@@ -1346,8 +1432,8 @@
   }
 
   function fieldById(id) {
-    for (var s = 0; s < BRIEF.steps.length; s++) {
-      var f = BRIEF.steps[s].fields;
+    for (var s = 0; s < ALL_STEPS.length; s++) {
+      var f = ALL_STEPS[s].fields;
       for (var i = 0; i < f.length; i++) if (f[i].id === id) return f[i];
     }
     return null;
@@ -1501,7 +1587,7 @@
   function toMarkdown(answers, meta) {
     meta = meta || {};
     var lines = [];
-    lines.push('# Brief strony internetowej: ' + (answers.company_name || meta.company_name || 'firma'));
+    lines.push('# ' + (BRIEF.kind === 'logo' ? 'Brief logo i hasła' : 'Brief strony internetowej') + ': ' + (answers.company_name || meta.company_name || 'firma'));
     var il = industryLabel(answers);
     if (il) lines.push('Branża: ' + il);
     if (meta.submitted_at) lines.push('Wypełniono: ' + meta.submitted_at);
@@ -1529,6 +1615,10 @@
   function needsTagline(a) { return a.tagline === 'propozycja' || a.tagline === 'zmiana'; }
 
   BRIEF.industries = INDUSTRY_GROUPS;
+  BRIEF.kinds = KINDS;
+  BRIEF.kind = 'pelny';
+  BRIEF.setKind = setKind;
+  BRIEF.stepsFor = stepsFor;
   BRIEF.layouts = LAYOUTS;
   BRIEF.profiles = PROFILES;
 
@@ -1552,7 +1642,10 @@
     toMarkdown: toMarkdown,
     needsLogo: needsLogo,
     needsTagline: needsTagline,
+    brandFieldIds: brandFieldIds,
+    mergeAnswers: mergeAnswers,
   };
+  setKind('pelny');
 
   root.BRIEF_SCHEMA = BRIEF;
 })(typeof window !== 'undefined' ? window : globalThis);

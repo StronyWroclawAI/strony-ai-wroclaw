@@ -17,7 +17,72 @@
     initSteps();
     initParallax();
     initTilt();
+    initPortfolioTabs();
+    initContactJump();
   });
+
+  /* ---------- Formularz: na komputerze linki opcjonalne od razu rozwinięte;
+     na telefonie i tablecie przycisk „Zgłoś swoją firmę” przewija prosto do formularza ---------- */
+  function initContactJump() {
+    var more = document.querySelector('[data-form-more]');
+    var wide = window.matchMedia ? window.matchMedia('(min-width: 981px)') : { matches: true };
+    if (more && wide.matches) more.open = true;
+    var card = document.querySelector('#kontakt .form-card:not([hidden])');
+    if (!card) return;
+    function jump(smooth) {
+      var header = document.querySelector('.site-header');
+      var hh = header ? header.offsetHeight : 64;
+      var r = card.getBoundingClientRect();
+      var y = r.top + window.scrollY - hh - 8;
+      // jeśli zmieści się też nagłówek sekcji (np. tablet) — pokazujemy go razem z całym formularzem
+      var eb = document.querySelector('#kontakt .eyebrow');
+      if (eb) {
+        var ebTop = eb.getBoundingClientRect().top + window.scrollY;
+        if (r.bottom + window.scrollY - ebTop + hh + 16 <= window.innerHeight) y = ebTop - hh - 16;
+      }
+      window.scrollTo({ top: Math.max(0, y), behavior: smooth && !reduceMotion ? 'smooth' : 'auto' });
+    }
+    document.addEventListener('click', function (e) {
+      var a = e.target.closest && e.target.closest('a[href="#kontakt"]');
+      if (!a || wide.matches) return;
+      e.preventDefault();
+      if (history.replaceState) history.replaceState(null, '', '#kontakt');
+      jump(true);
+    });
+    if (location.hash === '#kontakt' && !wide.matches) setTimeout(function () { jump(false); }, 60);
+  }
+
+  /* ---------- Portfolio: zakładki „Projekty zrealizowane” / „Projekty demonstracyjne” ---------- */
+  function initPortfolioTabs() {
+    var list = document.querySelector('[data-pf-tabs]');
+    if (!list) return;
+    var tabs = Array.prototype.slice.call(list.querySelectorAll('[role=tab]'));
+    var wrap = list.parentNode;
+    function select(tab, focus) {
+      tabs.forEach(function (t) {
+        var on = t === tab;
+        t.setAttribute('aria-selected', String(on));
+        t.tabIndex = on ? 0 : -1;
+        var panel = document.getElementById(t.getAttribute('aria-controls'));
+        if (panel) panel.hidden = !on;
+      });
+      if (focus) tab.focus();
+    }
+    tabs.forEach(function (t, i) {
+      t.addEventListener('click', function () { select(t, false); });
+      t.addEventListener('keydown', function (e) {
+        var n = null;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') n = tabs[(i + 1) % tabs.length];
+        else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') n = tabs[(i - 1 + tabs.length) % tabs.length];
+        else if (e.key === 'Home') n = tabs[0];
+        else if (e.key === 'End') n = tabs[tabs.length - 1];
+        if (n) { e.preventDefault(); select(n, true); }
+      });
+    });
+    list.hidden = false;
+    wrap.classList.add('pf-tabs-on');
+    select(tabs.filter(function (t) { return t.getAttribute('aria-selected') === 'true'; })[0] || tabs[0], false);
+  }
 
   /* ---------- Pasek postępu przewijania ---------- */
   function initProgress() {
@@ -341,6 +406,8 @@
       var p = form.querySelector('[data-error-for="' + name + '"]');
       if (p) p.textContent = msg || '';
       var el = form.elements[name];
+      // pole w zwiniętej części formularza — rozwijamy ją, żeby błąd był widoczny
+      if (msg && el && el.closest) { var more = el.closest('details'); if (more) more.open = true; }
       if (el && el.setAttribute) {
         if (msg) el.setAttribute('aria-invalid', 'true');
         else el.removeAttribute('aria-invalid');

@@ -93,7 +93,50 @@ export function renderLines(value) {
  * Jeśli realizacja ma kartę projektu (ZIP wgrany w panelu), kafelek prowadzi do /portfolio/<adres>/,
  * a okładką jest wybrany obraz z karty.
  */
-export function renderPortfolio(projects) {
+const PF_DEFAULTS = {
+  'portfolio.real_label': 'Projekty zrealizowane',
+  'portfolio.real_intro': 'Strony przygotowane dla prawdziwych firm, które zgodziły się na ich prezentację.',
+  'portfolio.demo_label': 'Projekty demonstracyjne',
+  'portfolio.demo_intro': 'Koncepcje na przykładzie fikcyjnych firm — pokazują, jak może wyglądać strona dla danej branży.',
+};
+
+/**
+ * Portfolio w dwóch grupach: projekty zrealizowane i demonstracyjne.
+ * Gdy są obie — zakładki (przełącza je main.js; bez JavaScriptu obie grupy są widoczne jedna pod drugą).
+ * Gdy jest tylko jedna — bez zakładek, z etykietą grupy. Grupa bez projektów nie jest pokazywana.
+ */
+export function renderPortfolio(projects, content = {}) {
+  const t = (k) => {
+    const v = content[k];
+    return v && String(v).trim() && String(v).trim() !== '-' ? String(v).trim() : PF_DEFAULTS[k];
+  };
+  const groups = [
+    { key: 'real', items: projects.filter((p) => !p.is_demo) },
+    { key: 'demo', items: projects.filter((p) => p.is_demo) },
+  ].filter((g) => g.items.length);
+  if (!groups.length) return '';
+  const tabs = groups.length > 1;
+  const tablist = tabs
+    ? `<div class="pf-tabs" role="tablist" aria-label="Rodzaj projektów" data-pf-tabs hidden>${groups
+        .map(
+          (g, i) =>
+            `<button class="pf-tab" type="button" role="tab" id="pf-tab-${g.key}" aria-controls="pf-${g.key}" aria-selected="${i === 0}"${i === 0 ? '' : ' tabindex="-1"'}>${esc(t(`portfolio.${g.key}_label`))}<span class="pf-tab__count" aria-label="${g.items.length} ${g.items.length === 1 ? 'projekt' : g.items.length < 5 ? 'projekty' : 'projektów'}">${g.items.length}</span></button>`
+        )
+        .join('')}</div>`
+    : '';
+  const panels = groups
+    .map(
+      (g) =>
+        `<div class="pf-panel" id="pf-${g.key}"${tabs ? ` role="tabpanel" aria-labelledby="pf-tab-${g.key}" tabindex="0"` : ''} data-pf-panel>
+  <div class="pf-panel__head"><p class="pf-panel__label${tabs ? ' pf-panel__label--tabs' : ''}">${esc(t(`portfolio.${g.key}_label`))}</p><p class="pf-panel__intro">${esc(t(`portfolio.${g.key}_intro`))}</p></div>
+  <div class="work-list">${renderWorks(g.items)}</div>
+</div>`
+    )
+    .join('');
+  return tablist + panels;
+}
+
+function renderWorks(projects) {
   return projects
     .map((p, i) => {
       const imgs = (p.images || []).filter((im) => im.url);

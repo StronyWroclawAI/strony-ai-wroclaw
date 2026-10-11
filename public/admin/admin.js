@@ -446,7 +446,10 @@
     const res = await q(api(`leads/${encodeURIComponent(id || '')}`));
     const lead = res.data && res.data.lead;
     const notes = res.data ? res.data.notes : [];
-    const leadBrief = res.data ? res.data.brief : null;
+    const leadBriefs = res.data ? res.data.briefs || (res.data.brief ? [res.data.brief] : []) : [];
+    const leadBrief = leadBriefs.length ? leadBriefs[leadBriefs.length - 1] : null;
+    // Do strony wyboru logo: połączony brief, potem brief logo, potem pełny, na końcu brief strony
+    const logoSource = ['merged', 'logo', 'pelny', 'strona'].map((k) => leadBriefs.filter((x) => (k === 'merged' ? x.merged_at : !x.merged_at && x.kind === k)).pop()).find(Boolean) || null;
     const leadLogo = res.data ? res.data.logo : null;
     const leadEmails = res.data ? res.data.emails || [] : [];
     const mail = (res.data && res.data.mail) || { gmail: false, from: null };
@@ -645,7 +648,7 @@
       head(
         lead.company_name,
         `${lead.source === 'reczne' ? 'Dodane ręcznie' : 'Zgłoszenie'} z ${fmtDate(lead.created_at)}`,
-        h('a', { class: 'btn', href: '#brief-zgloszenia', onclick: (e) => { e.preventDefault(); const t = $('#brief-zgloszenia'); if (t) t.scrollIntoView({ behavior: 'smooth' }); }, text: leadBrief ? 'Brief ↓' : 'Utwórz brief ↓' }),
+        h('a', { class: 'btn', href: '#brief-zgloszenia', onclick: (e) => { e.preventDefault(); const t = $('#brief-zgloszenia'); if (t) t.scrollIntoView({ behavior: 'smooth' }); }, text: leadBrief ? (leadBriefs.length > 1 ? 'Briefy ↓' : 'Brief ↓') : 'Utwórz brief ↓' }),
         h('button', { class: 'btn btn--primary', type: 'button', text: 'Napisz e-mail', onclick: () => mailer.compose('wlasna', `Strona internetowa dla ${lead.company_name}`, `Dzień dobry,\n\n\n\n${SIGN}`) })
       ),
       h(
@@ -670,7 +673,7 @@
               type: 'button',
               text: 'Usuń zgłoszenie',
               onclick: async () => {
-                const ok = await confirmDialog({ title: 'Usunąć zgłoszenie?', text: `Zgłoszenie firmy „${lead.company_name}”, jego notatki${leadBrief ? ' i przypięty brief' : ''} zostaną trwale usunięte. Tej operacji nie można cofnąć.`, ok: 'Usuń na stałe' });
+                const ok = await confirmDialog({ title: 'Usunąć zgłoszenie?', text: `Zgłoszenie firmy „${lead.company_name}”, jego notatki${leadBrief ? (leadBriefs.length > 1 ? ' i przypięte briefy' : ' i przypięty brief') : ''} zostaną trwale usunięte. Tej operacji nie można cofnąć.`, ok: 'Usuń na stałe' });
                 if (!ok) return;
                 const { error: e } = await q(api(`leads/${lead.id}`, { method: 'DELETE' }));
                 if (e) return toast(errMsg(e), 'error');
@@ -681,8 +684,8 @@
           )
         )
       ),
-      leadBriefSection(lead, leadBrief, mailer),
-      leadLogoSection(lead, leadLogo, leadBrief, mailer),
+      leadBriefSection(lead, leadBriefs, mailer),
+      leadLogoSection(lead, leadLogo, logoSource, mailer),
       mailer.el
     );
   }
@@ -864,7 +867,15 @@
     const P = window.BRIEF_PROMPTS;
     const a = brief && brief.answers;
     const promptBtn = P && a
-      ? h('button', { class: 'btn btn--sm', type: 'button', text: 'Kopiuj polecenie dla AI (4 opcje + ZIP)', onclick: () => copyText(P.logoPage(a, { company_name: lead.company_name }), 'Skopiowano polecenie: strona z propozycjami logo i hasła.') })
+      ? h('button', { class: 'btn btn--sm', type: 'button', text: 'Kopiuj polecenie dla AI (4 opcje + ZIP)', onclick: () => {
+          const S = window.BRIEF_SCHEMA;
+          if (S && S.setKind) S.setKind(brief && !brief.merged_at ? brief.kind : 'pelny');
+          try {
+            copyText(P.logoPage(a, { company_name: lead.company_name }), 'Skopiowano polecenie: strona z propozycjami logo i hasła.');
+          } finally {
+            if (S && S.setKind) S.setKind('pelny');
+          }
+        } })
       : null;
 
     if (!logo) {
@@ -936,36 +947,115 @@
     return box;
   }
 
-  function leadBriefSection(lead, b, mailer) {
+  const KIND_NAME = { pelny: 'Strona + logo i hasło', strona: 'Strona internetowa', logo: 'Logo i hasło' };
+  const KIND_DESC = {
+    pelny: 'Jeden pełny formularz: firma, strona, logo i hasło (ok. 15–20 min).',
+    strona: 'Tylko strona internetowa — o logo i haśle pyta krótko (ok. 15 min).',
+    logo: 'Krótki formularz tylko o logo, haśle i kolorach (ok. 5–8 min).',
+  };
+  const briefName = (b) => (b.merged_at ? 'Brief połączony (strona + logo i hasło)' : `Brief: ${KIND_NAME[b.kind] || KIND_NAME.pelny}`);
+
+  function leadBriefSection(lead, briefs, mailer) {
     const box = h('section', { class: 'brief-attached', id: 'brief-zgloszenia' });
-    if (!b) {
-      const btn = h('button', {
-        class: 'btn btn--primary',
-        type: 'button',
-        text: 'Utwórz brief dla tego zgłoszenia',
-        onclick: async () => {
-          busy(btn, true, 'Tworzę…');
-          const { error } = await q(api(`leads/${lead.id}/brief`, { method: 'POST' }));
-          busy(btn, false);
-          if (error) return toast(errMsg(error), 'error');
-          toast('Brief utworzony — skopiuj link albo przygotuj e-mail do klienta.');
-          await route();
-          const t = $('#brief-zgloszenia');
-          if (t) t.scrollIntoView({ behavior: 'smooth' });
-        },
+    const own = briefs.filter((x) => !x.merged_at);
+    const has = (k) => own.some((x) => x.kind === k);
+    const create = (kind, btn) => async () => {
+      busy(btn, true, 'Tworzę…');
+      const { error } = await q(api(`leads/${lead.id}/brief`, { method: 'POST', body: { kind } }));
+      busy(btn, false);
+      if (error) return toast(errMsg(error), 'error');
+      toast('Brief utworzony — skopiuj link albo przygotuj e-mail do klienta.');
+      await route();
+      const t = $('#brief-zgloszenia');
+      if (t) t.scrollIntoView({ behavior: 'smooth' });
+    };
+    const kindButtons = (kinds, primary) =>
+      kinds.map((k) => {
+        const btn = h('button', { class: `btn${primary === k ? ' btn--primary' : ''}`, type: 'button', 'data-new-brief': k, text: `+ ${KIND_NAME[k]}` });
+        btn.addEventListener('click', create(k, btn));
+        return btn;
       });
+
+    if (!briefs.length) {
       box.append(
         h(
           'div',
           { class: 'panel brief-empty' },
           h('h2', { text: 'Brief projektowy' }),
-          h('p', { text: 'Gdy klient zgodzi się na współpracę, utwórz brief — szczegółowy formularz o oczekiwaniach (języki, sekcje, cennik, rezerwacje, wygląd, materiały, pomysły). Dane ze zgłoszenia wpiszą się do niego automatycznie, a odpowiedzi zobaczysz tutaj, w tym zgłoszeniu.' }),
-          h('div', { class: 'actions' }, btn, h('a', { class: 'btn', href: '/brief/podglad', target: '_blank', rel: 'noopener', text: 'Jak to widzi klient? ↗' }))
+          h('p', { text: 'Gdy klient zgodzi się na współpracę, utwórz brief — formularz o jego oczekiwaniach. Dane ze zgłoszenia wpiszą się do niego automatycznie, a odpowiedzi zobaczysz tutaj. Wybierz rodzaj briefu:' }),
+          h('ul', { class: 'kind-list' }, ...['pelny', 'strona', 'logo'].map((k) => h('li', null, h('strong', { text: `${KIND_NAME[k]}: ` }), KIND_DESC[k]))),
+          h('p', { class: 'small muted', text: 'Briefy „Strona internetowa” i „Logo i hasło” możesz wysłać osobno (np. najpierw logo), a potem połączyć je jednym przyciskiem w pełny brief.' }),
+          h(
+            'div',
+            { class: 'actions' },
+            ...kindButtons(['pelny', 'strona', 'logo'], 'pelny'),
+            h('a', { class: 'btn', href: '/brief/podglad', target: '_blank', rel: 'noopener', text: 'Jak to widzi klient? ↗' })
+          )
         )
       );
       return box;
     }
-    box.append(...briefBlocks({ ...b, company_name: b.company_name || lead.company_name, contact_email: b.contact_email || lead.email }, { inLead: true, mailer }));
+
+    // Spis briefów, dodawanie kolejnych i łączenie
+    const missing = ['strona', 'logo'].filter((k) => !has(k) && !has('pelny'));
+    const site = own.filter((x) => x.kind === 'strona').pop();
+    const logo = own.filter((x) => x.kind === 'logo').pop();
+    const merged = briefs.find((x) => x.merged_at);
+    let mergeBox = null;
+    if (site && logo) {
+      const ready = site.status === 'wyslany' && logo.status === 'wyslany';
+      const btn = h('button', { class: `btn${merged ? '' : ' btn--primary'}`, type: 'button', 'data-merge-briefs': '', text: merged ? 'Połącz ponownie (zaktualizuj połączony brief)' : 'Połącz briefy w jeden' });
+      btn.addEventListener('click', async () => {
+        const S = window.BRIEF_SCHEMA;
+        if (!S || !S.helpers.mergeAnswers) return toast('Nie wczytano definicji briefu.', 'error');
+        if (!ready && !(await confirmDialog({ title: 'Połączyć niewypełnione briefy?', text: 'Co najmniej jeden brief nie został jeszcze wysłany przez klienta. Połączę odpowiedzi zapisane do tej pory — później możesz połączyć ponownie.', ok: 'Połącz', danger: false }))) return;
+        busy(btn, true, 'Łączę…');
+        const answers = S.helpers.mergeAnswers(site.answers || {}, logo.answers || {});
+        const { error } = await q(api(`leads/${lead.id}/brief/merge`, { method: 'POST', body: { answers } }));
+        busy(btn, false);
+        if (error) return toast(errMsg(error), 'error');
+        toast(merged ? 'Połączony brief zaktualizowany.' : 'Briefy połączone — pełny brief jest poniżej.');
+        await route();
+        const t = $('[data-brief-merged]');
+        if (t) t.scrollIntoView({ behavior: 'smooth' });
+      });
+      mergeBox = h(
+        'div',
+        { class: 'merge-box' },
+        h('h3', { text: 'Połącz w jeden brief' }),
+        h('p', { class: 'small muted', text: 'Z briefu strony i briefu logo powstanie jeden pełny brief — z niego skopiujesz polecenia dla AI (strona z panelem, strona wyboru logo, karta do portfolio). Przy pytaniach o logo, hasło i kolory pierwszeństwo mają odpowiedzi z briefu „Logo i hasło”. Oryginalne briefy zostają bez zmian.' }),
+        ready ? null : h('p', { class: 'alert alert--info', text: 'Najlepiej połączyć, gdy klient wyśle oba briefy.' }),
+        h('div', { class: 'actions' }, btn)
+      );
+    }
+    box.append(
+      h(
+        'div',
+        { class: 'panel no-print brief-index' },
+        h('h2', { text: briefs.length > 1 ? 'Briefy tego zgłoszenia' : 'Brief tego zgłoszenia' }),
+        h(
+          'ul',
+          { class: 'brief-index__list' },
+          ...briefs.map((b) =>
+            h(
+              'li',
+              null,
+              h('a', { href: `#brief-${b.id}`, onclick: (e) => { e.preventDefault(); const t = document.getElementById(`brief-${b.id}`); if (t) t.scrollIntoView({ behavior: 'smooth' }); }, text: briefName(b) }),
+              ' ',
+              h('span', { class: `status status--${BRIEF_CLASS[b.status]}`, text: b.merged_at ? 'Połączony' : BRIEF_STATUS[b.status] })
+            )
+          )
+        ),
+        missing.length ? h('div', null, h('p', { class: 'small muted', text: 'Dodaj osobny brief:' }), h('div', { class: 'actions' }, ...kindButtons(missing))) : null,
+        mergeBox
+      )
+    );
+    briefs.forEach((b) => {
+      const wrap = h('div', { class: 'brief-item', id: `brief-${b.id}` });
+      if (b.merged_at) wrap.setAttribute('data-brief-merged', '');
+      wrap.append(...briefBlocks({ ...b, company_name: b.company_name || lead.company_name, contact_email: b.contact_email || lead.email }, { inLead: true, mailer }));
+      box.append(wrap);
+    });
     return box;
   }
 
@@ -992,10 +1082,11 @@
   }
 
   function briefMailto(b) {
-    const subject = encodeURIComponent(`Brief strony internetowej — ${b.company_name}`);
+    const logoKind = b.kind === 'logo';
+    const subject = encodeURIComponent(`${logoKind ? 'Brief logo i hasła' : 'Brief strony internetowej'} — ${b.company_name}`);
     const text = encodeURIComponent(
-      `Dzień dobry,\n\nzgodnie z rozmową przesyłam krótki formularz (brief), który pomoże mi przygotować stronę internetową dla ${b.company_name}:\n\n${briefLink(b.token)}\n\n` +
-        `Wypełnienie zajmuje ok. 15 minut. Odpowiedzi zapisują się automatycznie, więc można przerwać i wrócić przez ten sam link. Jeśli czegoś nie wiesz — pomiń pytanie, omówimy to razem.\n\n` +
+      `Dzień dobry,\n\nzgodnie z rozmową przesyłam krótki formularz (brief), który pomoże mi ${logoKind ? 'przygotować logo i hasło' : 'przygotować stronę internetową'} dla ${b.company_name}:\n\n${briefLink(b.token)}\n\n` +
+        `Wypełnienie zajmuje ${logoKind ? 'ok. 5–8 minut' : 'ok. 15 minut'}. Odpowiedzi zapisują się automatycznie, więc można przerwać i wrócić przez ten sam link. Jeśli czegoś nie wiesz — pomiń pytanie, omówimy to razem.\n\n` +
         `Pozdrawiam\nGrzegorz\nStrony AI Wrocław`
     );
     return `mailto:${b.contact_email || ''}?subject=${subject}&body=${text}`;
@@ -1006,6 +1097,22 @@
     const S = window.BRIEF_SCHEMA;
     const H = S && S.helpers;
     const P = window.BRIEF_PROMPTS;
+    const kind = b.merged_at ? 'pelny' : b.kind || 'pelny';
+    // Pytania i kroki zależą od rodzaju briefu — każde użycie schematu przełącza go na ten rodzaj
+    const K = (fn) => (...args) => {
+      if (S && S.setKind) S.setKind(kind);
+      try {
+        return fn(...args);
+      } finally {
+        if (S && S.setKind) S.setKind('pelny');
+      }
+    };
+    if (S && S.setKind) S.setKind(kind);
+    const kindLabel = b.merged_at ? 'połączony' : { pelny: 'strona + logo', strona: 'strona', logo: 'logo i hasło' }[kind];
+    const isLogo = kind === 'logo';
+    const mailWhat = isLogo ? 'przygotować logo i hasło' : 'przygotować stronę internetową';
+    const mailTime = isLogo ? 'ok. 5–8 minut' : kind === 'strona' ? 'ok. 15 minut' : 'ok. 15–20 minut';
+    const mailSubject = isLogo ? 'Brief logo i hasła' : 'Brief strony internetowej';
     const a = b.answers || {};
     const company = a.company_name || b.company_name || 'firma';
     const meta = { company_name: company, submitted_at: b.submitted_at ? fmtDate(b.submitted_at) : '' };
@@ -1036,10 +1143,11 @@
           );
         })
       : [h('div', { class: 'alert alert--error', text: 'Nie wczytano definicji briefu (schema.js).' })];
+    if (S && S.setKind) S.setKind('pelny');
 
     const note = h('textarea', { rows: '3', maxlength: '5000', placeholder: 'Twoje prywatne notatki do tego briefu' });
     note.value = b.admin_note || '';
-    const download = () => {
+    const download = K(() => {
       const blob = new Blob([H.toMarkdown(a, meta)], { type: 'text/markdown;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const link = h('a', { href: url, download: `brief-${company.toLowerCase().replace(/[^a-z0-9ąćęłńóśźż]+/gi, '-')}.md` });
@@ -1047,7 +1155,7 @@
       link.click();
       link.remove();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
-    };
+    });
     const filled = b.status === 'wyslany' || b.status === 'w_trakcie';
 
     const actions = h(
@@ -1056,7 +1164,7 @@
       h(
         'div',
         { class: 'brief-actions__head' },
-        h('h2', { text: opts.inLead ? 'Brief projektowy' : 'Działania' }),
+        h('h2', { text: opts.inLead ? briefName({ kind, merged_at: b.merged_at }) : 'Działania' }),
         h('span', { class: `status status--${BRIEF_CLASS[b.status]}`, text: BRIEF_STATUS[b.status] })
       ),
       h(
@@ -1067,17 +1175,17 @@
         b.admin_edited_at ? ` · poprawiony przez Ciebie ${fmtDate(b.admin_edited_at)}` : '',
         b.submitted_at ? ` · wypełniony ${fmtDate(b.submitted_at)}` : ''
       ),
-      stateText ? h('p', { class: 'alert alert--info', text: stateText }) : null,
+      b.merged_at ? h('p', { class: 'alert alert--info', text: `Połączony ${fmtDate(b.merged_at)} z briefu strony i briefu logo. Jeśli klient coś zmieni w którymś z nich, kliknij „Połącz ponownie” u góry.` }) : stateText ? h('p', { class: 'alert alert--info', text: stateText }) : null,
       H && filled && (H.needsLogo(a) || H.needsTagline(a))
         ? h('p', { class: 'alert alert--warn', text: `Klient prosi o: ${[H.needsLogo(a) ? (a.logo === 'odswiezenie' ? 'odświeżenie logo' : 'projekt logo') : '', H.needsTagline(a) ? 'propozycje hasła' : ''].filter(Boolean).join(' i ')}. Zacznij od przycisku „Strona wyboru…” — AI przygotuje stronę z 4 opcjami do wysłania klientowi i ZIP z plikami.` })
         : null,
-      h('p', { class: 'brief-link' }, h('span', { class: 'small muted', text: 'Link dla klienta: ' }), h('code', { text: briefLink(b.token) })),
-      h(
+      b.merged_at ? null : h('p', { class: 'brief-link' }, h('span', { class: 'small muted', text: 'Link dla klienta: ' }), h('code', { text: briefLink(b.token) })),
+      b.merged_at ? null : h(
         'div',
         { class: 'actions' },
         opts.mailer
-          ? h('button', { class: `btn${filled ? '' : ' btn--primary'}`, type: 'button', 'data-brief-mail': '', text: 'Wyślij link e-mailem', onclick: () => opts.mailer.compose('brief', `Brief strony internetowej — ${company}`, `Dzień dobry,\n\nzgodnie z rozmową przesyłam krótki formularz (brief), który pomoże mi przygotować stronę internetową dla ${company}:\n\n${briefLink(b.token)}\n\nWypełnienie zajmuje ok. 15–20 minut. Odpowiedzi zapisują się automatycznie, więc można przerwać i wrócić przez ten sam link. Jeśli czegoś nie wiesz — pomiń pytanie, omówimy to razem.\n\n${SIGN}`) })
-          : h('a', { class: `btn${filled ? '' : ' btn--primary'}`, href: briefMailto(b), text: 'Wyślij link e-mailem' }),
+          ? h('button', { class: `btn${filled ? '' : ' btn--primary'}`, type: 'button', 'data-brief-mail': '', text: 'Wyślij link e-mailem', onclick: () => opts.mailer.compose('brief', `${mailSubject} — ${company}`, `Dzień dobry,\n\nzgodnie z rozmową przesyłam krótki formularz (brief), który pomoże mi ${mailWhat} dla ${company}:\n\n${briefLink(b.token)}\n\nWypełnienie zajmuje ${mailTime}. Odpowiedzi zapisują się automatycznie, więc można przerwać i wrócić przez ten sam link. Jeśli czegoś nie wiesz — pomiń pytanie, omówimy to razem.\n\n${SIGN}`) })
+          : h('a', { class: `btn${filled ? '' : ' btn--primary'}`, href: briefMailto({ ...b, kind }), text: 'Wyślij link e-mailem' }),
         h('button', { class: 'btn', type: 'button', text: 'Kopiuj link', onclick: () => copyText(briefLink(b.token), 'Link skopiowany.') }),
         h('a', { class: 'btn', href: `/brief/${b.token}`, target: '_blank', rel: 'noopener noreferrer', text: 'Otwórz jak klient ↗' })
       ),
@@ -1091,11 +1199,12 @@
               'div',
               { class: 'actions' },
               H.needsLogo(a) || H.needsTagline(a)
-                ? h('button', { class: 'btn btn--primary', type: 'button', 'data-ai': 'logo', text: `1. Strona wyboru ${H.needsLogo(a) ? 'logo' : 'hasła'}${H.needsLogo(a) && H.needsTagline(a) ? ' i hasła' : ''} (4 opcje + ZIP)`, onclick: () => copyText(P.logoPage(a, meta), 'Skopiowano polecenie: strona wyboru dla klienta i ZIP z plikami.') })
+                ? h('button', { class: 'btn btn--primary', type: 'button', 'data-ai': 'logo', text: `1. Strona wyboru ${H.needsLogo(a) ? 'logo' : 'hasła'}${H.needsLogo(a) && H.needsTagline(a) ? ' i hasła' : ''} (4 opcje + ZIP)`, onclick: K(() => copyText(P.logoPage(a, meta), 'Skopiowano polecenie: strona wyboru dla klienta i ZIP z plikami.')) })
                 : null,
-              h('button', { class: 'btn btn--primary', type: 'button', 'data-ai': 'site', text: `${H.needsLogo(a) || H.needsTagline(a) ? '2. ' : '1. '}Strona z panelem administracyjnym`, onclick: () => copyText(P.site(a, meta), 'Skopiowano polecenie: strona z panelem.') }),
-              h('button', { class: 'btn', type: 'button', 'data-ai': 'panel', text: 'Sam panel (do gotowej strony)', onclick: () => copyText(P.panel(a, meta), 'Skopiowano polecenie: panel administracyjny.') }),
-              h('button', { class: 'btn', type: 'button', 'data-ai': 'portfolio', text: 'Karta do portfolio (ZIP)', onclick: () => copyText(P.portfolio(a, meta), 'Skopiowano polecenie: karta do portfolio.') })
+              isLogo ? null : h('button', { class: 'btn btn--primary', type: 'button', 'data-ai': 'site', text: `${H.needsLogo(a) || H.needsTagline(a) ? '2. ' : '1. '}Strona z panelem administracyjnym`, onclick: K(() => copyText(P.site(a, meta), 'Skopiowano polecenie: strona z panelem.')) }),
+              isLogo ? null : h('button', { class: 'btn', type: 'button', 'data-ai': 'panel', text: 'Sam panel (do gotowej strony)', onclick: K(() => copyText(P.panel(a, meta), 'Skopiowano polecenie: panel administracyjny.')) }),
+              isLogo ? null : h('button', { class: 'btn', type: 'button', 'data-ai': 'portfolio', text: 'Karta do portfolio (ZIP)', onclick: K(() => copyText(P.portfolio(a, meta), 'Skopiowano polecenie: karta do portfolio.')) }),
+              isLogo && !(H.needsLogo(a) || H.needsTagline(a)) ? h('p', { class: 'small muted', text: 'Klient ma logo i hasło — w tym briefie nie ma czego projektować.' }) : null
             )
           )
         : null,
@@ -1103,7 +1212,7 @@
         ? h(
             'div',
             { class: 'actions' },
-            h('button', { class: 'btn', type: 'button', text: 'Kopiuj odpowiedzi', onclick: () => copyText(H.toMarkdown(a, meta), 'Odpowiedzi skopiowane.') }),
+            h('button', { class: 'btn', type: 'button', text: 'Kopiuj odpowiedzi', onclick: K(() => copyText(H.toMarkdown(a, meta), 'Odpowiedzi skopiowane.')) }),
             h('button', { class: 'btn', type: 'button', text: 'Pobierz plik .md', onclick: download }),
             h('button', {
               class: 'btn',
@@ -1120,7 +1229,7 @@
       h(
         'div',
         { class: 'actions' },
-        b.status === 'wyslany'
+        b.status === 'wyslany' && !b.merged_at
           ? h('button', {
               class: 'btn btn--sm',
               type: 'button',
@@ -1169,9 +1278,9 @@
     const answersHead = h(
       'div',
       { class: 'brief-answers-head' },
-      h('h2', { text: `Odpowiedzi klienta — ${company}` }),
+      h('h2', { text: `${b.merged_at ? 'Połączone odpowiedzi' : 'Odpowiedzi klienta'} — ${company}${opts.inLead ? ` (${kindLabel})` : ''}` }),
       H && H.industryLabel(a) ? h('p', null, h('span', { class: 'status status--kontakt', text: `Branża: ${H.industryLabel(a)}` })) : null,
-      h('p', { class: 'small muted', text: b.status === 'wyslany' ? `Wypełniony ${fmtDate(b.submitted_at)}.` : 'Wersja robocza — klient może jeszcze zmieniać odpowiedzi.' })
+      h('p', { class: 'small muted', text: b.merged_at ? `Połączony ${fmtDate(b.merged_at)}.` : b.status === 'wyslany' ? `Wypełniony ${fmtDate(b.submitted_at)}.` : 'Wersja robocza — klient może jeszcze zmieniać odpowiedzi.' })
     );
     if (!filled) return [actions, h('p', { class: 'muted small brief-answers-head', text: 'Odpowiedzi klienta pojawią się tutaj, gdy zacznie wypełniać brief (zapisują się automatycznie w trakcie).' })];
     return [actions, answersHead, ...sections];
@@ -1197,18 +1306,21 @@
                 'div',
                 { class: 'lead-row__badges' },
                 b.lead_id ? null : h('span', { class: 'status status--odrzucone', text: 'Bez zgłoszenia' }),
+                h('span', { class: 'status status--kontakt', text: b.merged_at ? 'Połączony' : KIND_NAME[b.kind] || KIND_NAME.pelny }),
                 h('span', { class: `status status--${BRIEF_CLASS[b.status]}`, text: BRIEF_STATUS[b.status] })
               )
             )
           )
         )
-      : [h('li', { class: 'empty', text: 'Nie utworzono jeszcze żadnego briefu. Otwórz zgłoszenie i kliknij „Utwórz brief dla tego zgłoszenia”.' })];
+      : [h('li', { class: 'empty', text: 'Nie utworzono jeszcze żadnego briefu. Otwórz zgłoszenie i wybierz rodzaj briefu.' })];
 
     main.replaceChildren(
       head(
         'Briefy klientów',
         'Zestawienie wszystkich briefów. Każdy brief jest przypięty do zgłoszenia — kliknij, aby otworzyć zgłoszenie z pełnym podglądem odpowiedzi.',
-        h('a', { class: 'btn', href: '/brief/podglad', target: '_blank', rel: 'noopener', text: 'Jak to widzi klient? ↗' })
+        h('a', { class: 'btn', href: '/brief/podglad', target: '_blank', rel: 'noopener', text: 'Podgląd: pełny ↗' }),
+        h('a', { class: 'btn', href: '/brief/podglad?rodzaj=strona', target: '_blank', rel: 'noopener', text: 'Podgląd: strona ↗' }),
+        h('a', { class: 'btn', href: '/brief/podglad?rodzaj=logo', target: '_blank', rel: 'noopener', text: 'Podgląd: logo i hasło ↗' })
       ),
       h(
         'section',
@@ -1218,7 +1330,8 @@
           'ol',
           { class: 'steps-list' },
           h('li', null, 'Klient pisze przez formularz na stronie — zgłoszenie pojawia się w zakładce ', h('a', { href: '#zgloszenia', text: 'Zgłoszenia' }), '. Jeśli to Ty napisałeś pierwszy (np. mailowo), ', h('a', { href: '#zgloszenia/nowe', text: 'dodaj zgłoszenie ręcznie' }), '.'),
-          h('li', { text: 'Gdy klient zgodzi się na współpracę, otwórz jego zgłoszenie i kliknij „Utwórz brief dla tego zgłoszenia”. Dane firmy wpiszą się same.' }),
+          h('li', { text: 'Gdy klient zgodzi się na współpracę, otwórz jego zgłoszenie i wybierz rodzaj briefu: pełny (strona + logo i hasło), sama strona albo samo logo i hasło. Dane firmy wpiszą się same.' }),
+          h('li', { text: 'Osobne briefy strony i logo możesz potem połączyć w zgłoszeniu przyciskiem „Połącz briefy w jeden” — powstanie pełny brief z poleceniami dla AI.' }),
           h('li', { text: 'Kliknij „Wyślij link e-mailem” — otworzy się gotowa wiadomość do klienta z linkiem.' }),
           h('li', { text: 'Po wypełnieniu dostaniesz e-mail, a pełne odpowiedzi zobaczysz w tym zgłoszeniu.' })
         ),
@@ -1889,7 +2002,7 @@
                 h(
                   'div',
                   { class: 'lead-row__badges' },
-                  p.is_demo ? h('span', { class: 'status status--odrzucone', text: 'Demo' }) : null,
+                  p.is_demo ? h('span', { class: 'status status--odrzucone', text: 'Demonstracyjny' }) : h('span', { class: 'status status--zakonczone', text: 'Zrealizowany' }),
                   p.card_files && p.slug ? h('a', { class: 'btn btn--sm', href: `/portfolio/${p.slug}/`, target: '_blank', rel: 'noopener', text: 'Karta ↗' }) : null,
                   h('span', { class: `status status--${p.status}`, text: p.status === 'published' ? 'Opublikowana' : 'Szkic' }),
                   h('button', { class: 'btn btn--sm icon-btn', type: 'button', 'aria-label': `Przesuń „${p.title}” wyżej`, text: '↑', disabled: idx === 0, onclick: () => move(idx, -1) }),
@@ -1931,10 +2044,13 @@
     statusSel.value = project.status;
     const slugIn = h('input', { type: 'text', maxlength: '60', value: project.slug || '', placeholder: 'np. szalone-auto', pattern: '[a-z0-9-]+' });
     const tagsIn = h('input', { type: 'text', maxlength: '300', value: project.tags || '', placeholder: 'np. Logo · Strona 5 podstron · Panel CMS · Wersja na telefon' });
-    const demoCb = h('input', { type: 'checkbox', checked: Boolean(project.is_demo) });
+    // Rodzaj projektu: zrealizowany (prawdziwa firma) albo demonstracyjny — na stronie trafiają do osobnych zakładek
+    const demoCb = h('input', { type: 'radio', name: 'pf-kind', value: 'demo', checked: !isNew && Boolean(project.is_demo) });
+    const realRb = h('input', { type: 'radio', name: 'pf-kind', value: 'real', checked: !isNew && !project.is_demo });
     const seoFor = h('input', { type: 'text', maxlength: '80', value: project.seo_for || '', placeholder: 'np. warsztatu samochodowego' });
     [title, industry, desc, url, statusSel, slugIn, tagsIn, demoCb, seoFor].forEach((el) => el.addEventListener('input', () => (dirty = true)));
     demoCb.addEventListener('change', () => (dirty = true));
+    realRb.addEventListener('change', () => (dirty = true));
 
     // ----- Karta projektu -----
     let pending = null; // { files, skipped, opis, total, warnings, urls }
@@ -1950,7 +2066,8 @@
       if (o.site_url) url.value = o.site_url;
       if (o.slug) slugIn.value = o.slug;
       if (o.seo_for) seoFor.value = o.seo_for.slice(0, 80);
-      demoCb.checked = o.is_demo;
+      demoCb.checked = Boolean(o.is_demo);
+      realRb.checked = !o.is_demo;
       if (o.cover && pending && pending.files.some((f) => f.path === o.cover)) coverChoice = o.cover;
       dirty = true;
       drawCard();
@@ -2137,6 +2254,10 @@
               return msg.replaceChildren(h('div', { class: 'alert alert--error', text: 'Adres strony ma niepoprawny format.' }));
             }
           }
+          if (!demoCb.checked && !realRb.checked) {
+            realRb.focus();
+            return msg.replaceChildren(h('div', { class: 'alert alert--error', text: 'Wybierz rodzaj projektu: zrealizowany albo demonstracyjny.' }));
+          }
           if (statusSel.value === 'published' && originalStatus !== 'published') {
             const ok = await confirmDialog({
               title: 'Opublikować realizację?',
@@ -2193,7 +2314,14 @@
         field('Tagi (zakres projektu)', tagsIn, 'Oddziel kropką „·” albo przecinkiem. Pokażą się jako etykiety na kafelku.'),
         field('Dla kogo jest ten projekt (do opisu w Google)', seoFor, 'Dokończ zdanie „Projekt strony internetowej dla …”, np. warsztatu samochodowego, salonu fryzjerskiego, gabinetu fizjoterapii. Google zobaczy kartę jako przykładowy projekt dla tej branży, a nie jako stronę prawdziwej firmy. Na stronie nic się nie zmieni.'),
         h('div', { class: 'grid-2' }, field('Adres strony (na żywo)', url), field('Status', statusSel, 'Szkic jest widoczny tylko w panelu.')),
-        h('label', { class: 'check' }, demoCb, 'Projekt demonstracyjny (fikcyjna firma / koncepcja) — na stronie pojawi się oznaczenie „Projekt demonstracyjny”')
+        h(
+          'fieldset',
+          { class: 'kind-pick' },
+          h('legend', { text: 'Rodzaj projektu *' }),
+          h('label', { class: 'check' }, realRb, h('span', null, h('strong', { text: 'Projekt zrealizowany' }), ' — strona dla prawdziwej firmy, pokazywana za jej zgodą')),
+          h('label', { class: 'check' }, demoCb, h('span', null, h('strong', { text: 'Projekt demonstracyjny' }), ' — fikcyjna firma / koncepcja; na stronie pojawi się oznaczenie „Projekt demonstracyjny”')),
+          h('p', { class: 'small muted', text: 'Na stronie projekty są w dwóch zakładkach: „Projekty zrealizowane” i „Projekty demonstracyjne”. Dopóki nie opublikujesz żadnego zrealizowanego projektu, zakładka zrealizowanych jest ukryta.' })
+        )
       ),
       h(
         'section',

@@ -5,11 +5,13 @@ PODGLĄD STRONY NA KOMPUTERZE (przed wgraniem na serwer)
    - podglad-na-urzadzeniach.html — strona na kilku telefonach, tabletach i monitorach naraz
      (przyciski u góry: Telefony / Telefony poziomo / Tablety / Komputery / Wszystko naraz / własna szerokość),
    - podglad-strony.html — sama strona główna w pełnym oknie przeglądarki,
-   - podglad-polityka-prywatnosci.html, podglad-brief.html — pozostałe podstrony.
+   - podglad-polityka-prywatnosci.html, podglad-brief.html — pozostałe podstrony
+     (rodzaj briefu wybierzesz w podglądzie na urządzeniach: pełny, strona, logo i hasło).
 3. Pliki muszą leżeć obok siebie w jednym folderze.
 
 Ważne:
-- Podgląd pokazuje treści domyślne z plików. Na serwerze teksty zmienione w panelu i realizacje z portfolio
-  pojawią się automatycznie (w podglądzie sekcja Portfolio jest ukryta, bo nie ma bazy danych).
+- Podgląd pokazuje treści domyślne z plików. Na serwerze pojawią się teksty zmienione w panelu i Twoje realizacje.
+- W sekcji Portfolio podgląd pokazuje DWA PRZYKŁADOWE kafelki (zakładki „Projekty zrealizowane” i „Projekty
+  demonstracyjne”), żeby było widać układ. Na prawdziwej stronie ich nie ma.
 - Formularz w podglądzie niczego nie wysyła.
 - Folderu „podglad” NIE wgrywaj na GitHub/serwer — nie jest potrzebny do działania strony.

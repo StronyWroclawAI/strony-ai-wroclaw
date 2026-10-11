@@ -4,7 +4,7 @@
 
 import { SEED } from './seed.js';
 
-export const SCHEMA_VERSION = '10';
+export const SCHEMA_VERSION = '11';
 
 // Każda instrukcja w osobnym elemencie (D1 wykonuje je w jednej transakcji przez batch()).
 export const SCHEMA = [
@@ -125,6 +125,9 @@ export const MIGRATIONS = [
   `ALTER TABLE logo_proposals ADD COLUMN scanned INTEGER NOT NULL DEFAULT 0`,
   // v10: SEO kart projektów — „dla kogo” (np. „warsztatu samochodowego”) do tytułu dla Google
   `ALTER TABLE portfolio_projects ADD COLUMN seo_for TEXT NOT NULL DEFAULT ''`,
+  // v11: rodzaje briefu (pelny / strona / logo) i brief połączony z dwóch
+  `ALTER TABLE briefs ADD COLUMN kind TEXT NOT NULL DEFAULT 'pelny'`,
+  `ALTER TABLE briefs ADD COLUMN merged_at TEXT`,
 ];
 
 // v10 (SEO): stare teksty domyślne zamieniane na nowe — TYLKO gdy nie były zmieniane w panelu.
@@ -133,6 +136,9 @@ const CONTENT_UPDATES = [
   ['benefits.title', 'Co zyskuje firma dzięki dobrej stronie'],
   ['process.title', 'Od pierwszej rozmowy do działającej strony'],
   ['portfolio.title', 'Realizacje'],
+  // v11: portfolio w dwóch zakładkach — wstęp obejmuje też projekty demonstracyjne
+  ['portfolio.intro', 'Strony przygotowane dla firm, które zgodziły się na ich prezentację.'],
+  ['portfolio.intro', 'Strony przygotowane dla firm (za ich zgodą) oraz projekty demonstracyjne — kliknij, aby zobaczyć szczegóły.'],
 ];
 // Pola usunięte ze strony (nadtytuł nad hasłem zastąpił nagłówek H1).
 const CONTENT_REMOVED = ['hero.eyebrow'];

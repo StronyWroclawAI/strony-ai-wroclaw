@@ -4,7 +4,21 @@ Brief to szczegółowy kwestionariusz, który klient wypełnia online przed rozp
 
 **Każdy brief jest przypięty do zgłoszenia.** Najpierw jest kontakt (formularz na stronie albo Twój e-mail), a gdy klient zgodzi się na współpracę — tworzysz brief w jego zgłoszeniu i tam widzisz pełne odpowiedzi.
 
-## Co zawiera (14 kroków)
+## Trzy rodzaje briefu
+
+W zgłoszeniu wybierasz, jaki brief wysłać klientowi:
+
+| Rodzaj | Kroki | Czas | Kiedy |
+|---|---|---|---|
+| **Strona + logo i hasło** (pełny) | 14 | ok. 15–20 min | klient chce wszystko naraz |
+| **Strona internetowa** | 14 (logo i hasło tylko w skrócie) | ok. 15 min | klient ma już logo albo logo robicie osobno |
+| **Logo i hasło** | 5: firma, logo i hasło, kolory, termin, uwagi | ok. 5–8 min | sam projekt logo i hasła (np. przed stroną) |
+
+**Łączenie:** gdy w zgłoszeniu są brief strony i brief logo, pojawia się przycisk **„Połącz briefy w jeden”**. Powstaje pełny, wypełniony brief (oznaczony jako „połączony”), z którego kopiujesz polecenia dla AI: strona z panelem, strona wyboru logo, karta do portfolio. Przy pytaniach o logo, hasło i kolory pierwszeństwo mają odpowiedzi z briefu logo, pozostałe pochodzą z briefu strony. Oryginalne briefy zostają bez zmian. Gdy klient coś w nich poprawi, kliknij **„Połącz ponownie”**.
+
+Podgląd dla klienta: `/brief/podglad` (pełny), `/brief/podglad?rodzaj=strona`, `/brief/podglad?rodzaj=logo`.
+
+## Co zawiera pełny brief (14 kroków)
 1. **O firmie:** nazwa, kontakt, **branża wybierana z listy 130 branż w 17 grupach**, opis, wyróżniki, klienci, obszar działania, adres.
 2. **Pytania branżowe:** zestaw pytań dopasowany do wybranej branży (szczegóły niżej).
 3. **Cel strony:** do czego ma służyć i co odwiedzający ma zrobić.

@@ -336,9 +336,15 @@
     <div class="section-head">
       <p class="eyebrow" data-cms="portfolio.eyebrow">Portfolio</p>
       <h2 class="h2" id="portfolio-title" data-cms="portfolio.title">Realizacje i projekty stron internetowych</h2>
-      <p class="lead" data-cms="portfolio.intro">Strony przygotowane dla firm (za ich zgodą) oraz projekty demonstracyjne — kliknij, aby zobaczyć szczegóły.</p>
+      <p class="lead" data-cms="portfolio.intro">Projekty zrealizowane dla firm (za ich zgodą) oraz projekty demonstracyjne — kliknij kafelek, aby zobaczyć szczegóły.</p>
     </div>
-    <div class="work-list" data-cms-list="portfolio"></div>
+    <div class="pf-groups" data-cms-list="portfolio"></div>
+    <div hidden data-pf-texts>
+      <span data-cms="portfolio.real_label">Projekty zrealizowane</span>
+      <span data-cms="portfolio.real_intro">Strony przygotowane dla prawdziwych firm, które zgodziły się na ich prezentację.</span>
+      <span data-cms="portfolio.demo_label">Projekty demonstracyjne</span>
+      <span data-cms="portfolio.demo_intro">Koncepcje na przykładzie fikcyjnych firm — pokazują, jak może wyglądać strona dla danej branży.</span>
+    </div>
   </div>
 </section>
 
@@ -495,49 +501,49 @@
             <p class="field__error" id="e-industry_other" data-error-for="industry_other"></p>
           </div>
 
-          <div class="form-row form-row--2">
+          <div class="form-row form-row--3">
             <div class="field">
-              <label for="f-name">Imię osoby kontaktowej <span class="req" aria-hidden="true">*</span></label>
+              <label for="f-name">Imię <span class="req" aria-hidden="true">*</span></label>
               <input id="f-name" name="contact_name" type="text" required maxlength="100" autocomplete="given-name" aria-describedby="e-contact_name">
               <p class="field__error" id="e-contact_name" data-error-for="contact_name"></p>
             </div>
-            <div class="field">
+            <div class="field field--wide-sm">
               <label for="f-email">E-mail <span class="req" aria-hidden="true">*</span></label>
               <input id="f-email" name="email" type="email" required maxlength="254" autocomplete="email" inputmode="email" aria-describedby="e-email">
               <p class="field__error" id="e-email" data-error-for="email"></p>
             </div>
-          </div>
-
-          <div class="form-row form-row--2">
             <div class="field">
               <label for="f-phone">Telefon <span class="opt">(opcjonalnie)</span></label>
               <input id="f-phone" name="phone" type="tel" maxlength="30" autocomplete="tel" inputmode="tel" aria-describedby="e-phone">
               <p class="field__error" id="e-phone" data-error-for="phone"></p>
             </div>
-            <div class="field">
-              <label for="f-website">Obecna strona www <span class="opt">(opcjonalnie)</span></label>
+          </div>
+
+          <details class="form-more" data-form-more>
+          <summary>Dodaj stronę www, Facebook lub Instagram <span class="opt">(opcjonalnie)</span></summary>
+          <div class="form-row form-row--3">
+            <div class="field field--wide-sm">
+              <label for="f-website">Strona www <span class="opt">(opcjonalnie)</span></label>
               <input id="f-website" name="website_url" type="url" maxlength="500" inputmode="url" placeholder="https://" aria-describedby="e-website_url">
               <p class="field__error" id="e-website_url" data-error-for="website_url"></p>
             </div>
-          </div>
-
-          <div class="form-row form-row--2">
             <div class="field">
               <label for="f-fb">Facebook <span class="opt">(opcjonalnie)</span></label>
-              <input id="f-fb" name="facebook_url" type="url" maxlength="500" inputmode="url" placeholder="https://facebook.com/…" aria-describedby="e-facebook_url">
+              <input id="f-fb" name="facebook_url" type="url" maxlength="500" inputmode="url" placeholder="facebook.com/…" aria-describedby="e-facebook_url">
               <p class="field__error" id="e-facebook_url" data-error-for="facebook_url"></p>
             </div>
             <div class="field">
               <label for="f-ig">Instagram <span class="opt">(opcjonalnie)</span></label>
-              <input id="f-ig" name="instagram_url" type="url" maxlength="500" inputmode="url" placeholder="https://instagram.com/…" aria-describedby="e-instagram_url">
+              <input id="f-ig" name="instagram_url" type="url" maxlength="500" inputmode="url" placeholder="instagram.com/…" aria-describedby="e-instagram_url">
               <p class="field__error" id="e-instagram_url" data-error-for="instagram_url"></p>
             </div>
           </div>
+          </details>
 
           <div class="field">
             <label for="f-message">Twoja wiadomość <span class="req" aria-hidden="true">*</span></label>
             <p class="field__hint" id="h-message" data-cms="contact.message_hint">Poniżej jest gotowy szkic — uzupełnij go lub napisz po swojemu. Wystarczy kilka zdań: resztę ustalimy w krótkim briefie, który wyślę po pierwszym kontakcie.</p>
-            <textarea id="f-message" name="message" rows="13" required minlength="20" maxlength="5000" aria-describedby="h-message e-message" data-cms="contact.message_template">Dzień dobry,
+            <textarea id="f-message" name="message" rows="9" required minlength="20" maxlength="5000" aria-describedby="h-message e-message" data-cms="contact.message_template">Dzień dobry,
 chcę nawiązać współpracę przy stworzeniu strony internetowej dla mojej firmy.
 
 Czym się zajmujemy: 

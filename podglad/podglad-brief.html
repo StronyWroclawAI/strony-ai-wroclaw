@@ -71,7 +71,7 @@
 
   --container: 1180px;
   --gutter: clamp(16px, 4vw, 32px);
-  --section-y: clamp(72px, 10vw, 128px);
+  --section-y: clamp(64px, 8.5vw, 112px);
   --header-h: 72px;
   --ease: cubic-bezier(.2, .7, .2, 1);
 
@@ -879,6 +879,85 @@ button { font: inherit; }
 }
 @media (max-width: 700px) {
   .work-list { grid-template-columns: 1fr; }
+}
+
+/* ===== Portfolio: zakładki projektów zrealizowanych i demonstracyjnych ===== */
+.pf-tabs { display: inline-flex; flex-wrap: wrap; gap: 6px; padding: 6px; margin-bottom: 28px; border-radius: 999px; background: var(--white); border: 1px solid var(--gray-200, #dde3ec); box-shadow: 0 10px 30px -22px rgba(15, 37, 68, .45); max-width: 100%; }
+.pf-tabs[hidden] { display: none; }
+.pf-tab { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 8px 18px; border: 0; border-radius: 999px; background: transparent; color: var(--navy-900); font: inherit; font-weight: 700; font-size: .975rem; cursor: pointer; transition: background-color .2s var(--ease), color .2s var(--ease); }
+.pf-tab:hover { background: var(--gray-50); }
+.pf-tab[aria-selected="true"] { background: var(--navy-900); color: var(--white); }
+.pf-tab:focus-visible { outline: 3px solid var(--sky-200, #9fc3ff); outline-offset: 2px; }
+.pf-tab__count { display: inline-grid; place-items: center; min-width: 26px; height: 26px; padding: 0 7px; border-radius: 999px; font-size: .8125rem; background: var(--gray-50); color: var(--navy-900); }
+.pf-tab[aria-selected="true"] .pf-tab__count { background: rgba(255, 255, 255, .18); color: var(--white); }
+.pf-panel + .pf-panel { margin-top: 48px; }
+.pf-tabs-on .pf-panel + .pf-panel { margin-top: 0; }
+.pf-panel:focus-visible { outline: 3px solid var(--sky-200, #9fc3ff); outline-offset: 6px; border-radius: 8px; }
+.pf-panel__head { margin-bottom: 22px; max-width: 70ch; }
+.pf-panel__label { display: inline-block; margin: 0 0 6px; padding: 4px 12px; border-radius: 999px; background: var(--white); border: 1px solid var(--gray-200, #dde3ec); font-size: .8125rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--navy-600); }
+.pf-tabs-on .pf-panel__label--tabs { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.pf-panel__intro { margin: 0; color: var(--muted); }
+@media (max-width: 520px) {
+  .pf-tabs { display: flex; border-radius: 16px; }
+  .pf-tab { flex: 1 1 100%; justify-content: space-between; border-radius: 12px; }
+}
+
+/* ===== Przejście do sekcji z menu: mniejszy odstęp pod górnym paskiem =====
+   Sekcja „wjeżdża” pod pasek tak, że nad nadtytułem zostaje ok. 28 px (zamiast całego górnego odstępu sekcji). */
+.section[id] { scroll-margin-top: calc(28px - var(--section-y)); }
+
+/* ===== Formularz zgłoszeniowy — zwarty, cały widoczny na ekranie komputera ===== */
+.contact .form-card { padding: clamp(18px, 2.4vw, 30px); }
+.lead-form .form-row--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.lead-form .form-row { align-items: end; }
+.lead-form .field { margin-bottom: 12px; }
+.lead-form .field label { font-size: .875rem; margin-bottom: 4px; line-height: 1.35; }
+.lead-form .opt { font-size: .8125rem; }
+.lead-form .field input, .lead-form .field select { min-height: 44px; padding: 9px 12px; }
+.lead-form .field__hint { font-size: .8125rem; line-height: 1.45; margin: 0 0 6px; }
+/* Wiadomość dopasowuje wysokość do ekranu, żeby przycisk „Wyślij zgłoszenie” był widoczny bez przewijania */
+.lead-form .field textarea { min-height: 120px; height: clamp(120px, calc(100vh - 640px), 300px); height: clamp(120px, calc(100svh - 640px), 300px); padding: 10px 12px; font-size: .9375rem; line-height: 1.5; }
+.lead-form .form-privacy { font-size: .8125rem; line-height: 1.45; margin: 2px 0 12px; }
+.lead-form .btn--lg { min-height: 50px; padding: 12px 22px; }
+.contact__aside { top: calc(var(--header-h) + 20px); }
+@media (max-width: 980px) {
+  /* jedna kolumna: formularz pod nagłówkiem — wiadomość nieco niższa */
+  .lead-form .field textarea { height: clamp(120px, calc(100svh - 560px), 240px); }
+}
+@media (max-width: 640px) {
+  .lead-form .form-row--2 { grid-template-columns: 1fr; }
+  .lead-form .form-row--3 { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-flow: row dense; }
+  .lead-form .field--wide-sm { grid-column: 1 / -1; }
+  .lead-form .field label { white-space: normal; }
+  .lead-form .field textarea { height: 150px; }
+}
+
+.form-more { margin: 0 0 4px; }
+.form-more > summary { cursor: pointer; display: block; padding: 8px 0; margin-bottom: 4px; font-weight: 700; font-size: .875rem; line-height: 1.4; color: var(--navy-600); list-style: none; }
+.form-more > summary::-webkit-details-marker { display: none; }
+.form-more > summary::before { content: "+"; margin-right: 8px; vertical-align: middle; display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 6px; background: var(--gray-50); border: 1px solid var(--gray-200); font-weight: 800; }
+.form-more[open] > summary::before { content: "−"; }
+@media (min-width: 981px) {
+  .form-more[open] > summary { display: none; }
+}
+@media (max-width: 980px) {
+  /* jedna kolumna: nagłówek → formularz → informacje dodatkowe pod formularzem */
+  .contact__grid { gap: 0; }
+  .contact__aside { display: contents; }
+  .contact__aside > .eyebrow { order: 1; }
+  .contact__aside > .h2 { order: 2; }
+  .contact__aside > .lead { order: 3; margin-bottom: 22px; }
+  .contact__main { order: 4; }
+  .contact__small { order: 5; margin-top: 24px; }
+  .mail-card { order: 6; margin-top: 8px; }
+  .lead-form .field textarea { height: clamp(120px, calc(100svh - 700px), 220px); }
+}
+@media (max-width: 640px) {
+  .lead-form .field__hint { display: none; }
+  .lead-form .field textarea { height: clamp(100px, calc(100svh - 690px), 150px); }
+  .lead-form .form-privacy { font-size: .78rem; margin-bottom: 10px; }
+  .lead-form .field { margin-bottom: 10px; }
+  .contact .form-card { padding: 16px 16px 18px; }
 }
 
 </style>
@@ -2169,6 +2248,7 @@ button { font: inherit; }
             id: 'tagline', type: 'radio', label: 'Hasło firmowe (slogan)', required: true,
             options: O('mam|Mam hasło', 'zmiana|Mam, ale chcę nowe', 'propozycja|Nie mam — proszę o propozycje', 'nie|Nie potrzebuję hasła'),
           },
+          { id: 'tagline_split_info', type: 'info', kinds: ['strona'], showIf: { f: 'tagline', in: ['zmiana', 'propozycja'] }, text: 'Propozycje hasła przygotuję na podstawie osobnego, krótkiego briefu „Logo i hasło”.' },
           { id: 'tagline_text', type: 'text', label: 'Twoje hasło', placeholder: 'np. „Strony, które budują wizerunek”', showIf: { f: 'tagline', in: ['mam', 'zmiana'] }, max: 200 },
           {
             id: 'tagline_style', type: 'checkbox', label: 'Jakie ma być nowe hasło?', other: true, showIf: { f: 'tagline', in: ['zmiana', 'propozycja'] },
@@ -2186,6 +2266,7 @@ button { font: inherit; }
             ],
           },
           { id: 'logo_send_info', type: 'info', showIf: { f: 'logo', in: ['tak_wektor', 'tak_obraz', 'odswiezenie'] }, text: 'Obecne logo prześlij mi e-mailem w najlepszej jakości, jaką masz (najlepiej SVG, PDF lub PNG z przezroczystym tłem).' },
+          { id: 'logo_split_info', type: 'info', kinds: ['strona'], showIf: { f: 'logo', in: ['odswiezenie', 'zrobic'] }, text: 'Szczegóły nowego logo (napis, charakter, symbole, inspiracje) zbieram w osobnym, krótkim briefie „Logo i hasło”. Jeśli jeszcze go nie masz — napisz do mnie, wyślę link.' },
           { id: 'logo_keep', type: 'textarea', label: 'Co zachować z obecnego logo, a co zmienić?', hint: 'np. „zostawić kolor i liść, zmienić krój pisma na nowocześniejszy”.', showIf: { f: 'logo', eq: 'odswiezenie' }, max: 1500 },
           { id: 'logo_text', type: 'text', label: 'Jaki napis ma być w logo?', placeholder: 'np. pełna nazwa „Salon Ola”, skrót „SO”, nazwa + „Wrocław”', showIf: { f: 'logo', in: ['odswiezenie', 'zrobic'] }, max: 150 },
           {
@@ -2426,6 +2507,90 @@ button { font: inherit; }
     ],
   };
 
+  /* ---------- Rodzaje briefu ----------
+     pelny  — strona + logo i hasło (pełny formularz),
+     strona — sama strona internetowa (logo i hasło tylko w skrócie),
+     logo   — sam projekt logo i hasła (krótki formularz). */
+  var KINDS = {
+    pelny: { label: 'Strona + logo i hasło', title: 'Brief projektowy strony internetowej', eyebrow: 'Brief projektowy', h1: 'Zaprojektujmy stronę dla', time: 'ok. 15–20 minut',
+      lead: 'Ten formularz pomoże mi dobrze zrozumieć Twoją firmę i oczekiwania. Na jego podstawie przygotuję propozycję strony.' },
+    strona: { label: 'Strona internetowa', title: 'Brief strony internetowej', eyebrow: 'Brief strony internetowej', h1: 'Zaprojektujmy stronę dla', time: 'ok. 15 minut',
+      lead: 'Ten formularz pomoże mi dobrze zrozumieć Twoją firmę i oczekiwania wobec strony. Na jego podstawie przygotuję propozycję strony.' },
+    logo: { label: 'Logo i hasło', title: 'Brief: logo i hasło firmy', eyebrow: 'Brief: logo i hasło', h1: 'Zaprojektujmy logo i hasło dla', time: 'ok. 5–8 minut',
+      lead: 'Ten krótki formularz pomoże mi przygotować propozycje logo i hasła dopasowane do charakteru Twojej firmy.' },
+  };
+  var SITE = ['pelny', 'strona'];
+  var KIND_RULES = {
+    steps: { branza: SITE, cele: SITE, jezyki: SITE, struktura: SITE, oferta: SITE, kontakt: SITE, tresci: SITE, funkcje: SITE, techniczne: SITE },
+    fields: {
+      show_address: SITE, style: SITE, theme: SITE, inspirations: SITE,
+      tagline_style: ['pelny', 'logo'], tagline_words: ['pelny', 'logo'], logo_keep: ['pelny', 'logo'], logo_text: ['pelny', 'logo'], logo_type: ['pelny', 'logo'],
+      logo_feel: ['pelny', 'logo'], logo_symbols: ['pelny', 'logo'], logo_avoid: ['pelny', 'logo'], logo_uses: ['pelny', 'logo'], logo_inspirations: ['pelny', 'logo'],
+    },
+    titles: { wyglad: { logo: 'Kolory' }, marka: { strona: 'Marka, logo i hasło' }, organizacja: { logo: 'Termin i kontakt' } },
+    intros: {
+      wyglad: { logo: 'Kolory, które pasują do firmy — logo będzie z nimi współgrać.' },
+      marka: { strona: 'Myśl przewodnia, sposób zwracania się do klientów oraz informacja o logo i haśle.', logo: 'Myśl przewodnia, wartości i oczekiwania wobec logo i hasła. Jeśli czegoś nie wiesz — zostaw puste, zaproponuję.' },
+    },
+    labels: { deadline: { logo: 'Kiedy logo i hasło byłyby Ci potrzebne?' }, avoid: { logo: 'Czego zdecydowanie nie chcesz (kolory, motywy)?' } },
+    hints: {
+      ideas: { logo: 'Wszystko, czego nie było w pytaniach: skojarzenia, historia nazwy, pomysły na znak lub hasło.' },
+      avoid: { logo: 'np. „żadnego różu”, „bez clipartów”, „nie jak u konkurencji X”.' },
+      deadline: { logo: 'To informacja orientacyjna — termin ustalam indywidualnie.' },
+    },
+    options: { colors: { z_logo: SITE } },
+  };
+  var ALL_STEPS = BRIEF.steps;
+  function inKind(list, kind) { return !list || list.indexOf(kind) !== -1; }
+  function copy(o) { var r = {}; for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) r[k] = o[k]; return r; }
+  function pick(map, id, kind, fallback) { return map[id] && map[id][kind] ? map[id][kind] : fallback; }
+  /** Kroki i pytania dla danego rodzaju briefu. */
+  function stepsFor(kind) {
+    var R = KIND_RULES;
+    return ALL_STEPS.filter(function (st) { return inKind(R.steps[st.id], kind); }).map(function (st) {
+      var c = copy(st);
+      c.title = pick(R.titles, st.id, kind, st.title);
+      c.intro = pick(R.intros, st.id, kind, st.intro);
+      c.fields = st.fields.filter(function (f) { return inKind(f.kinds || R.fields[f.id], kind); }).map(function (f) {
+        if (!R.labels[f.id] && !R.hints[f.id] && !R.options[f.id]) return f;
+        var g = copy(f);
+        g.label = pick(R.labels, f.id, kind, f.label);
+        g.hint = pick(R.hints, f.id, kind, f.hint);
+        if (R.options[f.id] && f.options) g.options = f.options.filter(function (o) { return inKind(R.options[f.id][o.v], kind); });
+        return g;
+      });
+      return c;
+    });
+  }
+  /** Ustawia rodzaj briefu: od tej chwili BRIEF.steps i pomocnicze funkcje dotyczą tego rodzaju. */
+  function setKind(kind) {
+    kind = KINDS[kind] ? kind : 'pelny';
+    BRIEF.kind = kind;
+    BRIEF.steps = stepsFor(kind);
+    BRIEF.title = KINDS[kind].title;
+    return BRIEF;
+  }
+  /** Pytania o markę (logo, hasło, kolory) — przy łączeniu briefów wygrywają odpowiedzi z briefu „Logo i hasło”. */
+  function brandFieldIds() {
+    var out = ['colors', 'colors_list'];
+    ALL_STEPS.forEach(function (st) { if (st.id === 'marka') st.fields.forEach(function (f) { if (f.type !== 'info') out.push(f.id); }); });
+    return out;
+  }
+  /** Łączy odpowiedzi z briefu strony i briefu logo w jeden pełny brief. */
+  function mergeAnswers(site, logo) {
+    site = site || {}; logo = logo || {};
+    var brand = brandFieldIds();
+    var out = copy(site);
+    Object.keys(logo).forEach(function (k) {
+      var base = k.replace(/__other$/, '');
+      var v = logo[k];
+      var empty = out[k] === undefined || out[k] === '' || (Array.isArray(out[k]) && !out[k].length);
+      if (brand.indexOf(base) !== -1 || empty) out[k] = Array.isArray(v) ? v.slice() : v;
+    });
+    brand.forEach(function (id) { if (logo[id] !== undefined && logo[id + '__other'] === undefined) delete out[id + '__other']; });
+    return out;
+  }
+
   /* ---------- Pomocnicze ---------- */
 
   function allOptions(field) {
@@ -2438,8 +2603,8 @@ button { font: inherit; }
   }
 
   function fieldById(id) {
-    for (var s = 0; s < BRIEF.steps.length; s++) {
-      var f = BRIEF.steps[s].fields;
+    for (var s = 0; s < ALL_STEPS.length; s++) {
+      var f = ALL_STEPS[s].fields;
       for (var i = 0; i < f.length; i++) if (f[i].id === id) return f[i];
     }
     return null;
@@ -2593,7 +2758,7 @@ button { font: inherit; }
   function toMarkdown(answers, meta) {
     meta = meta || {};
     var lines = [];
-    lines.push('# Brief strony internetowej: ' + (answers.company_name || meta.company_name || 'firma'));
+    lines.push('# ' + (BRIEF.kind === 'logo' ? 'Brief logo i hasła' : 'Brief strony internetowej') + ': ' + (answers.company_name || meta.company_name || 'firma'));
     var il = industryLabel(answers);
     if (il) lines.push('Branża: ' + il);
     if (meta.submitted_at) lines.push('Wypełniono: ' + meta.submitted_at);
@@ -2621,6 +2786,10 @@ button { font: inherit; }
   function needsTagline(a) { return a.tagline === 'propozycja' || a.tagline === 'zmiana'; }
 
   BRIEF.industries = INDUSTRY_GROUPS;
+  BRIEF.kinds = KINDS;
+  BRIEF.kind = 'pelny';
+  BRIEF.setKind = setKind;
+  BRIEF.stepsFor = stepsFor;
   BRIEF.layouts = LAYOUTS;
   BRIEF.profiles = PROFILES;
 
@@ -2644,7 +2813,10 @@ button { font: inherit; }
     toMarkdown: toMarkdown,
     needsLogo: needsLogo,
     needsTagline: needsTagline,
+    brandFieldIds: brandFieldIds,
+    mergeAnswers: mergeAnswers,
   };
+  setKind('pelny');
 
   root.BRIEF_SCHEMA = BRIEF;
 })(typeof window !== 'undefined' ? window : globalThis);
@@ -2721,6 +2893,7 @@ button { font: inherit; }
     if (token === 'podglad') DEMO = true;
 
     if (DEMO) {
+      applyKind(new URLSearchParams(location.search).get('rodzaj'));
       document.body.insertBefore(el('div', { class: 'bf-demo-bar', role: 'note', text: 'Tryb podglądu — tak wygląda brief dla klienta. Odpowiedzi nie są nigdzie wysyłane ani zapisywane.' }), document.body.firstChild);
       setSaveStatus('Tryb podglądu');
       applyDefaults();
@@ -2738,13 +2911,14 @@ button { font: inherit; }
       .then(function (r) { return r.json(); })
       .then(function (d) {
         if (!d.ok) return fail(d.message || 'Nie udało się wczytać briefu.');
+        applyKind(d.kind);
         answers = d.answers || {};
         applyDefaults();
         guessIndustry();
         var name = answers.company_name || d.company_name;
         if (!answers.company_name && d.company_name) answers.company_name = d.company_name;
         $('[data-company]').textContent = name || 'Twojej firmy';
-        document.title = 'Brief projektowy — ' + (name || 'Strony AI Wrocław');
+        document.title = S.title + ' — ' + (name || 'Strony AI Wrocław');
         if (d.status === 'wyslany') {
           locked = true;
           setSaveStatus('Brief wysłany ' + formatDate(d.submitted_at));
@@ -2768,6 +2942,7 @@ button { font: inherit; }
       .then(function (x) {
         if (x.status === 401) return fail('Zaloguj się do panelu administratora, a potem otwórz ten link ponownie.');
         if (!x.d.ok || !x.d.brief || x.d.brief.token !== token) return fail('Nie znaleziono briefu do edycji.');
+        applyKind(x.d.brief.kind);
         answers = x.d.brief.answers || {};
         applyDefaults();
         var name = answers.company_name || x.d.brief.company_name || '';
@@ -2781,6 +2956,20 @@ button { font: inherit; }
         goTo(Math.max(0, Math.min(S.steps.length - 1, step)));
       })
       .catch(function () { fail('Brak połączenia z serwerem. Sprawdź internet i odśwież stronę.'); });
+  }
+
+  /** Rodzaj briefu (pełny / strona / logo i hasło) — inne kroki i teksty powitania. */
+  function applyKind(kind) {
+    S.setKind(kind);
+    var K = S.kinds[S.kind];
+    var set = function (sel, text) { var e = $(sel); if (e) e.textContent = text; };
+    set('[data-kind-eyebrow]', K.eyebrow);
+    set('[data-kind-h1]', K.h1 + ' ');
+    set('[data-kind-lead]', K.lead);
+    set('[data-kind-time]', K.time);
+    var sc = $('[data-steps-count]');
+    if (sc) sc.textContent = S.steps.length + ' krótkich kroków';
+    document.body.setAttribute('data-brief-kind', S.kind);
   }
 
   function fail(msg) {
@@ -3433,11 +3622,11 @@ button { font: inherit; }
   <!-- Powitanie -->
   <section class="bf-welcome" data-view="welcome" hidden>
     <div class="bf-welcome__card">
-      <p class="eyebrow">Brief projektowy</p>
-      <h1 class="bf-h1">Zaprojektujmy stronę dla <span class="bf-accent" data-company>Twojej firmy</span></h1>
-      <p class="bf-lead">Ten formularz pomoże mi dobrze zrozumieć Twoją firmę i oczekiwania. Na jego podstawie przygotuję propozycję strony.</p>
+      <p class="eyebrow" data-kind-eyebrow>Brief projektowy</p>
+      <h1 class="bf-h1"><span data-kind-h1>Zaprojektujmy stronę dla </span><span class="bf-accent" data-company>Twojej firmy</span></h1>
+      <p class="bf-lead" data-kind-lead>Ten formularz pomoże mi dobrze zrozumieć Twoją firmę i oczekiwania. Na jego podstawie przygotuję propozycję strony.</p>
       <ul class="bf-facts">
-        <li><strong>ok. 15–20 minut</strong><span data-steps-count>12 krótkich kroków</span></li>
+        <li><strong data-kind-time>ok. 15–20 minut</strong><span data-steps-count>12 krótkich kroków</span></li>
         <li><strong>Zapis automatyczny</strong><span>Możesz przerwać i wrócić przez ten sam link</span></li>
         <li><strong>Bez zobowiązań</strong><span>Wysłanie briefu nie jest zamówieniem</span></li>
       </ul>
