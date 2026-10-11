@@ -175,6 +175,7 @@
   }
 
   function applyDefaults() {
+    if (H.applyKindDefaults) H.applyKindDefaults(answers, S.kind);
     S.steps.forEach(function (st) {
       st.fields.forEach(function (f) {
         if (f.default && answers[f.id] === undefined) answers[f.id] = f.default.slice ? f.default.slice() : f.default;

@@ -1073,6 +1073,7 @@
             id: 'brand_tone', type: 'radio', label: 'Jak zwracać się do klientów na stronie?',
             options: O('ty|Na „Ty” — bezpośrednio i przyjaźnie', 'pan_pani|Na „Pan / Pani” — oficjalnie', 'bezosobowo|Bezosobowo / „Państwo”', 'nie_wiem|Nie wiem — proszę o rekomendację'),
           },
+          { id: 'logo_current', type: 'textarea', kinds: ['logo'], label: 'Masz już logo lub hasło? Co z nich zachować?', hint: 'Jeśli tak — prześlij obecne logo e-mailem i napisz, co Ci się w nim podoba, a co chcesz zmienić. Jeśli zaczynamy od zera — zostaw puste.', max: 1500 },
           {
             id: 'tagline', type: 'radio', label: 'Hasło firmowe (slogan)', required: true,
             options: O('mam|Mam hasło', 'zmiana|Mam, ale chcę nowe', 'propozycja|Nie mam — proszę o propozycje', 'nie|Nie potrzebuję hasła'),
@@ -1353,13 +1354,15 @@
     steps: { branza: SITE, cele: SITE, jezyki: SITE, struktura: SITE, oferta: SITE, kontakt: SITE, tresci: SITE, funkcje: SITE, techniczne: SITE },
     fields: {
       show_address: SITE, style: SITE, theme: SITE, inspirations: SITE,
+      // w briefie „Logo i hasło” nie pytamy, czy klient chce logo i hasło — to wynika z rodzaju briefu
+      tagline: SITE, logo: SITE, logo_send_info: SITE,
       tagline_style: ['pelny', 'logo'], tagline_words: ['pelny', 'logo'], logo_keep: ['pelny', 'logo'], logo_text: ['pelny', 'logo'], logo_type: ['pelny', 'logo'],
       logo_feel: ['pelny', 'logo'], logo_symbols: ['pelny', 'logo'], logo_avoid: ['pelny', 'logo'], logo_uses: ['pelny', 'logo'], logo_inspirations: ['pelny', 'logo'],
     },
     titles: { wyglad: { logo: 'Kolory' }, marka: { strona: 'Marka, logo i hasło' }, organizacja: { logo: 'Termin i kontakt' } },
     intros: {
       wyglad: { logo: 'Kolory, które pasują do firmy — logo będzie z nimi współgrać.' },
-      marka: { strona: 'Myśl przewodnia, sposób zwracania się do klientów oraz informacja o logo i haśle.', logo: 'Myśl przewodnia, wartości i oczekiwania wobec logo i hasła. Jeśli czegoś nie wiesz — zostaw puste, zaproponuję.' },
+      marka: { strona: 'Myśl przewodnia, sposób zwracania się do klientów oraz informacja o logo i haśle.', logo: 'Przygotuję dla Ciebie propozycje logo i hasła. Opisz myśl przewodnią firmy i swoje oczekiwania — jeśli czegoś nie wiesz, zostaw puste, zaproponuję.' },
     },
     labels: { deadline: { logo: 'Kiedy logo i hasło byłyby Ci potrzebne?' }, avoid: { logo: 'Czego zdecydowanie nie chcesz (kolory, motywy)?' } },
     hints: {
@@ -1369,6 +1372,13 @@
     },
     options: { colors: { z_logo: SITE } },
   };
+  /** Odpowiedzi ustawiane automatycznie dla rodzaju briefu (pytania nie są wtedy pokazywane). */
+  var KIND_DEFAULTS = { logo: { logo: 'zrobic', tagline: 'propozycja' } };
+  function applyKindDefaults(answers, kind) {
+    var d = KIND_DEFAULTS[kind || BRIEF.kind] || {};
+    Object.keys(d).forEach(function (k) { answers[k] = d[k]; });
+    return answers;
+  }
   var ALL_STEPS = BRIEF.steps;
   function inKind(list, kind) { return !list || list.indexOf(kind) !== -1; }
   function copy(o) { var r = {}; for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) r[k] = o[k]; return r; }
@@ -1643,6 +1653,7 @@
     needsLogo: needsLogo,
     needsTagline: needsTagline,
     brandFieldIds: brandFieldIds,
+    applyKindDefaults: applyKindDefaults,
     mergeAnswers: mergeAnswers,
   };
   setKind('pelny');

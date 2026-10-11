@@ -47,7 +47,7 @@
   /* ---------- Panel administracyjny (specyfikacja) ---------- */
   function panelSpec(a, standalone) {
     const scope = val('panel_scope', a);
-    return `${standalone ? 'Dodaj do mojej strony panel administracyjny (CMS) według poniższej specyfikacji.' : 'Dodaj do tej strony panel administracyjny (CMS) według poniższej specyfikacji.'} Strona jest pojedynczym plikiem HTML (czysty HTML/CSS/JS, bez frameworków i bez serwera). Panel ma być wbudowany w ten sam plik, cały interfejs po polsku, treści strony w językach: ${langs(a)}. Ma być w nim również możliwość zmiany hasła do logowania się do panelu administracyjnego.
+    return `${standalone ? 'Dodaj do mojej strony panel administracyjny (CMS) według poniższej specyfikacji.' : 'Dodaj do tej strony panel administracyjny (CMS) według poniższej specyfikacji.'} Strona to statyczne pliki HTML (czysty HTML/CSS/JS, bez frameworków i bez serwera). Panel ma być wbudowany w stronę (w pliku index.html), cały interfejs po polsku, treści strony w językach: ${langs(a)}. Ma być w nim również możliwość zmiany hasła do logowania się do panelu administracyjnego.
 Dopasuj panel do branży klienta i do sekcji, które faktycznie są na stronie: pomiń podstrony panelu dla elementów, których strona nie ma, a nazwy grup i list dostosuj do branży (np. „Menu” zamiast „Oferta” w restauracji, „Pokoje” w hotelu).${scope ? ` Klient chce samodzielnie zmieniać przede wszystkim: ${scope}.` : ''}
 
 === 1. ZASADA DZIAŁANIA ===
@@ -146,33 +146,79 @@ W tekstach działa proste formatowanie: *kursywa* (w kolorze akcentu), **pogrubi
 Na koniec przetestuj: logowanie (złe i dobre hasło), zmianę hasła (stare przestaje działać, nowe działa po odświeżeniu), dodanie promocji zaplanowanej (nie ma jej na stronie) i aktywnej (jest na stronie i na pasku), usunięcie, zmianę kolejności, ukrycie, zmianę godzin w niedzielę, dodanie dnia specjalnego, wyłączenie sekcji, zmianę tekstu nagłówka oraz to, czy wszystko zostaje po odświeżeniu strony.`;
   }
 
-  /* ---------- 1. Strona + panel ---------- */
-  function site(a, meta) {
+  /* ---------- SEO (wymagania dla każdej strony) ---------- */
+  function seoSpec(a, meta) {
+    const n = name(a, meta);
+    const city = (a.location ? String(a.location).split(',')[0].trim() : '') || '';
+    const branch = H.industryLabel(a) || 'branża z briefu';
+    const multi = a.site_type === 'podstrony' || (a.layout && a.layout !== 'onepage' && a.site_type !== 'onepage' && a.site_type);
+    const otherLangs = Array.isArray(a.languages) ? a.languages.filter((x) => x !== 'pl') : [];
+    const area = val('area', a);
+    return `ZADANIE: PROFESJONALNE SEO (strona ma być od razu gotowa do pozycjonowania w Google)
+Zanim zaczniesz kodować, przygotuj krótki PLAN SEO i pokaż go na początku odpowiedzi:
+- 1 główna fraza i 3–6 fraz pobocznych dla ${multi ? 'każdej podstrony' : 'strony'} — naturalne zapytania klientów tej branży (${branch}${city ? `, ${city}` : ''}${area ? `, obszar: ${area}` : ''}), np. „[usługa] ${city || '[miasto]'}”, „[usługa] cennik”. Bez upychania słów kluczowych.
+- Mapa stron/sekcji z przypisanymi frazami i proponowanymi adresami URL.
+
+Wymagania techniczne i treściowe (wykonaj wszystkie):
+1. <html lang="pl">, poprawny, semantyczny HTML5: header, nav, main, section, article, footer; menu jako lista linków.
+2. Na każdej stronie unikalny <title> (do ok. 60 znaków, fraza główna + „${n}”) i <meta name="description"> (ok. 140–160 znaków, z korzyścią i wezwaniem do działania).
+3. Dokładnie jeden <h1> na stronę (z frazą główną), pod nim logiczna hierarchia <h2>/<h3> — bez przeskakiwania poziomów i bez nagłówków użytych tylko dla wyglądu.
+4. <link rel="canonical"> z pełnym adresem (adres domeny z briefu; jeśli go nie ma — https://[DOMENA] do podmiany w jednym miejscu w kodzie).
+5. Open Graph i Twitter Card: og:title, og:description, og:url, og:image (1200×630, przygotuj plik og-image lub oznacz [OG-IMAGE DO PODMIANY]), og:type, og:locale pl_PL, twitter:card summary_large_image.
+6. Dane strukturalne JSON-LD: ${'LocalBusiness'} w najlepiej pasującym podtypie schema.org dla branży (np. HairSalon, AutoRepair, Restaurant, Dentist), z WYŁĄCZNIE prawdziwymi danymi z briefu: nazwa, adres (tylko jeśli ma być widoczny), telefon, e-mail, godziny otwarcia, obszar działania, link do map i profili społecznościowych (sameAs), logo. Do tego WebSite oraz — jeśli są — FAQPage (z pytań FAQ widocznych na stronie)${multi ? ' i BreadcrumbList na podstronach' : ''}. NIE dodawaj ocen, liczby opinii ani recenzji, których nie ma na stronie. Dane w JSON-LD muszą być identyczne z widocznymi (NAP: nazwa, adres, telefon — wszędzie tak samo).
+7. Treść początkowa ma być w HTML w momencie wczytania strony (widoczna dla Google bez wykonywania JavaScriptu). Panel administracyjny może ją nadpisywać zapisanymi zmianami, ale nie może być jedynym źródłem treści. Przy zmianach z panelu aktualizuj też <title>, opis i JSON-LD, jeśli dotyczą zmienionych danych.
+8. Obrazy: opisowe atrybuty alt (co przedstawia zdjęcie, naturalnie z kontekstem branży — bez upychania fraz), width i height (zero przeskakiwania układu), loading="lazy" poza pierwszym ekranem, główny obraz pierwszego ekranu z fetchpriority="high"; format WebP/AVIF; opisowe nazwy plików (np. strzyzenie-damskie-wroclaw.webp).
+9. Szybkość (Core Web Vitals): LCP < 2,5 s, CLS < 0,1, INP < 200 ms. Krytyczny CSS w <head>, skrypty z defer, czcionki z preload i font-display: swap (maksymalnie 2 kroje), brak ciężkich bibliotek, mapa Google ładowana dopiero po kliknięciu lub przewinięciu (z obrazkiem zastępczym).
+10. Wersja mobilna jako podstawowa (mobile-first), meta viewport, przyciski i linki min. 44×44 px, czytelny tekst min. 16 px.
+11. Linkowanie wewnętrzne z opisowymi tekstami linków (np. „cennik strzyżenia”, a nie „kliknij tutaj”); przyciski kontaktu: tel:, mailto:, link do map.
+12. SEO lokalne: miasto i obszar działania naturalnie w treści, nagłówkach i stopce; pełne dane kontaktowe w stopce (jeśli mają być widoczne); osadzona mapa lub link do Map Google; miejsce na link do Profilu Firmy w Google [LINK DO UZUPEŁNIENIA].
+13. Treści: unikalne, konkretne i pomocne (co, dla kogo, gdzie, za ile, jak się umówić), sekcja FAQ odpowiadająca na pytania klientów (jeśli wybrana w briefie), budowanie zaufania (o firmie, doświadczenie, zespół — tylko prawdziwe informacje).
+${multi ? '14. Podstrony jako osobne pliki HTML z przyjaznymi adresami (np. /oferta/, /cennik/, /kontakt/ albo oferta.html), każda z własnym title, description, canonical i H1; wspólne menu i stopka.\n' : '14. Strona jednostronicowa: sekcje z czytelnymi kotwicami (id po polsku bez znaków diakrytycznych, np. #oferta, #cennik, #kontakt).\n'}15. Pliki dodatkowe: robots.txt (z adresem mapy strony), sitemap.xml (wszystkie publiczne adresy), 404.html (z linkiem do strony głównej), favicon (SVG + PNG 32 px + apple-touch-icon 180 px), site.webmanifest, theme-color.
+${otherLangs.length ? `16. Wersje językowe (${otherLangs.map((x) => x.toUpperCase()).join(', ')}): osobne adresy dla każdego języka (np. /en/), atrybuty hreflang (w tym x-default), przetłumaczone title, description i alt.\n` : ''}${otherLangs.length ? '17' : '16'}. Analityka i ciasteczka: nie dodawaj śledzenia bez zgody; zostaw w kodzie zakomentowane miejsce na Google Analytics 4 / Google Search Console (meta weryfikacyjna) z instrukcją.
+Na końcu odpowiedzi dodaj LISTĘ KONTROLNĄ SEO (spełnione / do uzupełnienia przez klienta, np. adres domeny, zdjęcia, link do Profilu Firmy w Google) i krótką instrukcję: jak dodać stronę do Google Search Console i wysłać sitemap.xml.`;
+  }
+
+  /** Wybrane przez klienta logo i hasło (ze strony wyboru) — do polecenia na stronę. */
+  function chosenBrand(choice) {
+    if (!choice || !choice.option) return '';
+    const svg = choice.svg && choice.svg.length <= 40000 ? `\nKod SVG wybranego logo (wersja pozioma) — użyj go w nagłówku i stopce, przygotuj z niego favicon i wersję na ciemne tło:\n${choice.svg}\n` : '\nPliki wybranego logo dołączam osobno (z paczki ZIP z propozycjami: folder opcja-' + choice.option + ').\n';
+    return `
+LOGO I HASŁO — WYBRANE PRZEZ KLIENTA (gotowe, nie projektuj nowych)
+- Logo: opcja ${choice.option}${choice.name ? ` — „${choice.name}”` : ''}${choice.accepted ? ' (zaakceptowana przez klienta)' : ''}.
+- Hasło firmowe: ${choice.tagline ? `„${choice.tagline}”` : 'bez hasła'}.${choice.notes ? `\n- Uwagi klienta do logo: ${choice.notes}` : ''}
+- Kolory i typografię strony dopasuj do wybranego logo (podaj kody HEX).${svg}`;
+  }
+
+  /* ---------- 1. Strona + panel (+ SEO, + wybrane logo) ---------- */
+  function site(a, meta, choice) {
     const needsBrand = H.needsLogo(a) || H.needsTagline(a);
     const what = [H.needsLogo(a) ? 'logo' : '', H.needsTagline(a) ? 'hasło' : ''].filter(Boolean).join(' i ');
-    return `Jesteś doświadczonym projektantem stron internetowych, UX/UI designerem, copywriterem i programistą front-end.
-Na podstawie briefu klienta (na końcu tej wiadomości) przygotuj kompletną stronę internetową firmy „${name(a, meta)}” z wbudowanym panelem administracyjnym.
+    const brand = chosenBrand(choice);
+    return `Jesteś doświadczonym projektantem stron internetowych, specjalistą SEO, UX/UI designerem, copywriterem i programistą front-end.
+Na podstawie briefu klienta (na końcu tej wiadomości) przygotuj kompletną stronę internetową firmy „${name(a, meta)}” z wbudowanym panelem administracyjnym, od razu przygotowaną pod profesjonalne SEO.
 
 ZASADY OGÓLNE
 - Nie wymyślaj faktów, opinii klientów, liczb, nagród ani certyfikatów, których nie ma w briefie — brakujące informacje oznacz jako [DO UZUPEŁNIENIA].
 - Dopasuj strukturę, słownictwo, zdjęcia i wezwania do działania do branży klienta oraz tego, czego szukają jego klienci.
 - Treści pisz po polsku, zgodnie z myślą przewodnią, wartościami i sposobem zwracania się do klientów z briefu.
-- Uwzględnij tylko sekcje i funkcje wybrane w briefie; propozycje dodatkowe wypisz osobno na końcu, nie dodawaj ich samowolnie.
+- Uwzględnij wszystkie sekcje i funkcje wybrane w briefie; propozycje dodatkowe wypisz osobno na końcu, nie dodawaj ich samowolnie.
 - Dostępność WCAG 2.1 AA, wygląd na telefonie (390 px) bez przewijania poziomego, szybkie ładowanie, prefers-reduced-motion.
-${needsBrand ? `
+${brand || (needsBrand ? `
 LOGO I HASŁO
 Klient prosi o: ${what}. Powstają w osobnym kroku (strona wyboru z 4 opcjami, którą klient akceptuje).
 - Jeśli do tej wiadomości dołączam wybrane ${what} — użyj ich i dopasuj do nich kolory oraz typografię strony.
 - Jeśli nie dołączam — użyj tymczasowego logotypu z nazwy firmy i oznacz miejsca [LOGO DO PODMIANY] / [HASŁO DO PODMIANY].
-` : ''}
+` : '')}
 ${layoutTask(a)}
 
 ZADANIE 1: STRONA
-- Jeden plik HTML (czysty HTML/CSS/JS, bez frameworków i bez serwera), gotowy do wgrania na hosting statyczny (np. Cloudflare Pages).
-- Zanim zaczniesz kodować, wypisz krótko: mapę sekcji, główny przekaz pierwszego ekranu i kolory z kodami HEX.
+- Czysty HTML/CSS/JS (bez frameworków i bez serwera), gotowy do wgrania na hosting statyczny (np. Cloudflare Pages). Strona główna w index.html${a.site_type === 'podstrony' ? ', podstrony jako osobne pliki HTML' : ''}; wszystkie pliki spakuj do ZIP.
+- Zanim zaczniesz kodować, wypisz krótko: mapę sekcji, główny przekaz pierwszego ekranu, kolory z kodami HEX i plan SEO (zadanie 2).
 - Zdjęcia: użyj wyłącznie materiałów wskazanych w briefie; tam, gdzie ich brakuje, wstaw neutralne tła zastępcze opisane [ZDJĘCIE: co ma przedstawiać].
 
-ZADANIE 2: PANEL ADMINISTRACYJNY
+${seoSpec(a, meta)}
+
+ZADANIE 3: PANEL ADMINISTRACYJNY
 ${panelSpec(a, false)}
 
 === BRIEF KLIENTA ===
@@ -364,5 +410,5 @@ NA KONIEC
 * Podaj listę plików z rozmiarami.`;
   }
 
-  window.BRIEF_PROMPTS = { site, logoPage, panel, portfolio };
+  window.BRIEF_PROMPTS = { site, logoPage, panel, portfolio, seoSpec };
 })();

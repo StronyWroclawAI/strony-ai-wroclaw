@@ -363,6 +363,9 @@ export async function onRequest(context) {
         if (kind === 'logo') {
           // brief logo: tylko dane firmy i kontaktu
           for (const k of ['languages', 'current_site', 'current_site_url', 'social', 'social_links']) delete pre[k];
+          // brief „Logo i hasło” = klient prosi o projekt logo i hasła (bez dodatkowego pytania)
+          pre.logo = 'zrobic';
+          pre.tagline = 'propozycja';
         }
         const t = nowIso();
         const item = { id: uuid(), token: newToken(), status: 'nowy', kind };

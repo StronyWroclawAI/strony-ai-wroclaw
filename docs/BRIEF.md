@@ -14,6 +14,12 @@ W zgłoszeniu wybierasz, jaki brief wysłać klientowi:
 | **Strona internetowa** | 14 (logo i hasło tylko w skrócie) | ok. 15 min | klient ma już logo albo logo robicie osobno |
 | **Logo i hasło** | 5: firma, logo i hasło, kolory, termin, uwagi | ok. 5–8 min | sam projekt logo i hasła (np. przed stroną) |
 
+W briefie **Logo i hasło** klient nie dostaje pytań „Czy masz logo?” ani „Hasło firmowe” — sam rodzaj briefu oznacza prośbę o projekt logo i hasła. Zamiast nich jest opcjonalne pole „Masz już logo lub hasło? Co z nich zachować?”.
+
+**Centrum briefów** jest na górze każdego zgłoszenia: przycisk „Kompleksowy brief: logo + hasło + strona” albo dwie kolumny (1. Logo i hasło, 2. Strona internetowa) z przyciskami „Pokaż odpowiedzi ↓”, „Wyślij link”, „Kopiuj link”, pod nimi łączenie briefów i dwa polecenia dla AI:
+- **A. Prompt: zaprojektuj logo i hasło** — 4 propozycje na stronie wyboru dla klienta + ZIP,
+- **B. Prompt: cała strona + SEO** — strona ze wszystkimi funkcjami z briefu, panelem do edycji i kompletnym SEO (tytuły, opisy, jeden H1, canonical, Open Graph, dane strukturalne LocalBusiness, sitemap.xml, robots.txt, szybkość, SEO lokalne). Gdy klient wybierze logo na stronie wyboru, polecenie samo dołącza wybraną opcję, hasło, uwagi i kod SVG logo.
+
 **Łączenie:** gdy w zgłoszeniu są brief strony i brief logo, pojawia się przycisk **„Połącz briefy w jeden”**. Powstaje pełny, wypełniony brief (oznaczony jako „połączony”), z którego kopiujesz polecenia dla AI: strona z panelem, strona wyboru logo, karta do portfolio. Przy pytaniach o logo, hasło i kolory pierwszeństwo mają odpowiedzi z briefu logo, pozostałe pochodzą z briefu strony. Oryginalne briefy zostają bez zmian. Gdy klient coś w nich poprawi, kliknij **„Połącz ponownie”**.
 
 Podgląd dla klienta: `/brief/podglad` (pełny), `/brief/podglad?rodzaj=strona`, `/brief/podglad?rodzaj=logo`.

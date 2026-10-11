@@ -107,6 +107,31 @@
     return h('div', { class: 'field' }, h('label', { for: id, text: label }), input, hint ? h('p', { class: 'hint', text: hint }) : null);
   }
 
+  /** Wybór branży — ta sama lista co w formularzu zgłoszeniowym na stronie (z „Inna branża” i polem do wpisania). */
+  function industryPicker(initial) {
+    const S = window.BRIEF_SCHEMA;
+    const select = h('select', { 'data-industry-select': '' }, h('option', { value: '', text: '— wybierz branżę —' }));
+    (S ? S.industries : []).forEach((g) => {
+      if (g.items[0] && g.items[0].v === 'inna') select.append(h('option', { value: 'Inna', text: 'Inna branża (wpiszę poniżej)' }));
+      else select.append(h('optgroup', { label: g.l }, ...g.items.map((i) => h('option', { value: i.l, text: i.l }))));
+    });
+    const other = h('input', { type: 'text', maxlength: '90', placeholder: 'np. pracownia ceramiki', 'data-industry-other': '' });
+    const otherBox = field('Jaka to branża?', other);
+    const init = String(initial || '').trim();
+    const known = [...select.options].some((o) => o.value === init);
+    if (/^Inna:\s*/.test(init)) { select.value = 'Inna'; other.value = init.replace(/^Inna:\s*/, ''); }
+    else if (known) select.value = init;
+    else if (init && init !== 'Nie podano') { select.value = 'Inna'; other.value = init; }
+    const sync = () => (otherBox.hidden = select.value !== 'Inna');
+    select.addEventListener('change', sync);
+    sync();
+    return {
+      select,
+      otherBox,
+      get: () => (select.value === 'Inna' ? (other.value.trim() ? `Inna: ${other.value.trim()}` : 'Inna') : select.value),
+    };
+  }
+
   function withCounter(input, max) {
     const c = h('div', { class: 'counter', 'aria-live': 'off' });
     const upd = () => (c.textContent = `${input.value.length} / ${max}`);
@@ -405,10 +430,10 @@
       contact_name: h('input', { type: 'text', maxlength: '100', required: true }),
       email: h('input', { type: 'email', maxlength: '254', required: true }),
       phone: h('input', { type: 'tel', maxlength: '30' }),
-      industry: h('input', { type: 'text', maxlength: '100', placeholder: 'np. salon kosmetyczny' }),
       website_url: h('input', { type: 'url', maxlength: '500', placeholder: 'https://' }),
       message: h('textarea', { rows: '3', maxlength: '5000', placeholder: 'np. „Napisałem 3.10, odpowiedziała, że jest zainteresowana”' }),
     };
+    const ind = industryPicker('');
     const btn = h('button', { class: 'btn btn--primary', type: 'submit', text: 'Zapisz zgłoszenie' });
     const form = h(
       'form',
@@ -425,6 +450,7 @@
           }
           const payload = {};
           Object.keys(f).forEach((k) => (payload[k] = f[k].value.trim()));
+          payload.industry = ind.get();
           busy(btn, true);
           const { data, error } = await q(api('leads', { method: 'POST', body: payload }));
           busy(btn, false);
@@ -435,7 +461,7 @@
       },
       h('h2', { text: 'Dodaj zgłoszenie ręcznie' }),
       h('p', { class: 'small muted', text: 'Dla firm, z którymi kontakt nawiązałeś mailowo lub telefonicznie, a nie przez formularz na stronie. Dzięki temu wszyscy klienci i ich briefy są w jednym miejscu.' }),
-      h('div', { class: 'grid-2' }, field('Nazwa firmy *', f.company_name), field('Osoba kontaktowa *', f.contact_name), field('E-mail *', f.email), field('Telefon', f.phone), field('Branża', f.industry), field('Obecna strona', f.website_url)),
+      h('div', { class: 'grid-2' }, field('Nazwa firmy *', f.company_name), field('Osoba kontaktowa *', f.contact_name), field('E-mail *', f.email), field('Telefon', f.phone), field('Branża', ind.select), ind.otherBox, field('Obecna strona', f.website_url)),
       field('Opis / jak nawiązano kontakt', f.message),
       h('div', { class: 'actions' }, btn, h('button', { class: 'btn', type: 'button', text: 'Anuluj', onclick: () => { form.reset(); form.hidden = true; } }))
     );
@@ -488,7 +514,6 @@
       }
       const f = {
         company_name: h('input', { type: 'text', maxlength: '150', value: lead.company_name, required: true }),
-        industry: h('input', { type: 'text', maxlength: '100', value: lead.industry || '' }),
         contact_name: h('input', { type: 'text', maxlength: '100', value: lead.contact_name, required: true }),
         email: h('input', { type: 'email', maxlength: '254', value: lead.email, required: true }),
         phone: h('input', { type: 'tel', maxlength: '30', value: lead.phone || '' }),
@@ -498,6 +523,8 @@
         message: h('textarea', { rows: '6', maxlength: '5000' }),
       };
       f.message.value = lead.message || '';
+      const ind = industryPicker(lead.industry);
+      ind.select.addEventListener('change', () => (dirty = true));
       Object.values(f).forEach((i) => i.addEventListener('input', () => (dirty = true)));
       const emsg = h('div', { 'aria-live': 'polite' });
       const save = h('button', { class: 'btn btn--primary', type: 'submit', text: 'Zapisz dane' });
@@ -512,6 +539,7 @@
               e.preventDefault();
               const payload = {};
               Object.keys(f).forEach((k) => (payload[k] = f[k].value.trim()));
+              payload.industry = ind.get();
               if (!payload.company_name || !payload.contact_name || !payload.email) return emsg.replaceChildren(h('div', { class: 'alert alert--error', text: 'Nazwa firmy, osoba kontaktowa i e-mail są wymagane.' }));
               busy(save, true);
               const { error } = await q(api(`leads/${lead.id}`, { method: 'PATCH', body: payload }));
@@ -522,7 +550,7 @@
               route();
             },
           },
-          h('div', { class: 'grid-2' }, field('Nazwa firmy *', f.company_name), field('Branża', f.industry), field('Osoba kontaktowa *', f.contact_name), field('E-mail *', f.email), field('Telefon', f.phone), field('Obecna strona', f.website_url), field('Facebook', f.facebook_url), field('Instagram', f.instagram_url)),
+          h('div', { class: 'grid-2' }, field('Nazwa firmy *', f.company_name), field('Branża', ind.select), ind.otherBox, field('Osoba kontaktowa *', f.contact_name), field('E-mail *', f.email), field('Telefon', f.phone), field('Obecna strona', f.website_url), field('Facebook', f.facebook_url), field('Instagram', f.instagram_url)),
           field('Oczekiwania / opis', f.message),
           h('p', { class: 'small muted', text: 'Zmieniasz dane zapisane w zgłoszeniu. Odpowiedzi klienta w briefie zostają bez zmian (popraw je przyciskiem „Popraw” przy briefie).' }),
           emsg,
@@ -648,9 +676,9 @@
       head(
         lead.company_name,
         `${lead.source === 'reczne' ? 'Dodane ręcznie' : 'Zgłoszenie'} z ${fmtDate(lead.created_at)}`,
-        h('a', { class: 'btn', href: '#brief-zgloszenia', onclick: (e) => { e.preventDefault(); const t = $('#brief-zgloszenia'); if (t) t.scrollIntoView({ behavior: 'smooth' }); }, text: leadBrief ? (leadBriefs.length > 1 ? 'Briefy ↓' : 'Brief ↓') : 'Utwórz brief ↓' }),
         h('button', { class: 'btn btn--primary', type: 'button', text: 'Napisz e-mail', onclick: () => mailer.compose('wlasna', `Strona internetowa dla ${lead.company_name}`, `Dzień dobry,\n\n\n\n${SIGN}`) })
       ),
+      leadBriefHub(lead, leadBriefs, leadLogo, mailer),
       h(
         'div',
         { class: 'detail-grid' },
@@ -684,7 +712,7 @@
           )
         )
       ),
-      leadBriefSection(lead, leadBriefs, mailer),
+      leadBriefSection(lead, leadBriefs, mailer, leadLogo),
       leadLogoSection(lead, leadLogo, logoSource, mailer),
       mailer.el
     );
@@ -947,7 +975,7 @@
     return box;
   }
 
-  const KIND_NAME = { pelny: 'Strona + logo i hasło', strona: 'Strona internetowa', logo: 'Logo i hasło' };
+  const KIND_NAME = { pelny: 'Kompleksowy (logo + hasło + strona)', strona: 'Strona internetowa', logo: 'Logo i hasło' };
   const KIND_DESC = {
     pelny: 'Jeden pełny formularz: firma, strona, logo i hasło (ok. 15–20 min).',
     strona: 'Tylko strona internetowa — o logo i haśle pyta krótko (ok. 15 min).',
@@ -955,105 +983,192 @@
   };
   const briefName = (b) => (b.merged_at ? 'Brief połączony (strona + logo i hasło)' : `Brief: ${KIND_NAME[b.kind] || KIND_NAME.pelny}`);
 
-  function leadBriefSection(lead, briefs, mailer) {
-    const box = h('section', { class: 'brief-attached', id: 'brief-zgloszenia' });
+  /** Wybór logo klienta (strona wyboru) jako dane do polecenia dla AI. */
+  function logoChoice(logo) {
+    if (!logo || !logo.choice_option) return null;
+    const opt = (logo.options || []).find((o) => o.nr === logo.choice_option) || {};
+    return { option: logo.choice_option, name: logo.choice_name || opt.name || '', tagline: logo.choice_tagline || '', notes: logo.choice_notes || '', accepted: Boolean(logo.choice_accepted), svg: opt.svg || '' };
+  }
+
+  /** Uruchamia funkcję z ustawionym rodzajem briefu (pytania zależą od rodzaju). */
+  function withKind(b, fn) {
+    const S = window.BRIEF_SCHEMA;
+    if (S && S.setKind) S.setKind(b && !b.merged_at ? b.kind || 'pelny' : 'pelny');
+    try {
+      return fn();
+    } finally {
+      if (S && S.setKind) S.setKind('pelny');
+    }
+  }
+
+  /** Centrum briefów na górze zgłoszenia: briefy w dwóch kolumnach, łączenie i polecenia dla AI. */
+  function leadBriefHub(lead, briefs, logo, mailer) {
+    const hub = h('section', { class: 'panel brief-hub no-print', id: 'briefy-zgloszenia', 'aria-labelledby': 'brief-hub-title' });
     const own = briefs.filter((x) => !x.merged_at);
-    const has = (k) => own.some((x) => x.kind === k);
+    const last = (k) => own.filter((x) => x.kind === k).pop();
+    const full = last('pelny');
+    const logoB = last('logo');
+    const siteB = last('strona');
+    const merged = briefs.find((x) => x.merged_at);
+    const choice = logoChoice(logo);
+    const jump = (b) => () => {
+      const t = document.getElementById(`brief-${b.id}`);
+      if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
     const create = (kind, btn) => async () => {
       busy(btn, true, 'Tworzę…');
       const { error } = await q(api(`leads/${lead.id}/brief`, { method: 'POST', body: { kind } }));
       busy(btn, false);
       if (error) return toast(errMsg(error), 'error');
-      toast('Brief utworzony — skopiuj link albo przygotuj e-mail do klienta.');
+      toast('Brief utworzony — wyślij klientowi link e-mailem albo go skopiuj.');
       await route();
-      const t = $('#brief-zgloszenia');
+      const t = $('#briefy-zgloszenia');
       if (t) t.scrollIntoView({ behavior: 'smooth' });
     };
-    const kindButtons = (kinds, primary) =>
-      kinds.map((k) => {
-        const btn = h('button', { class: `btn${primary === k ? ' btn--primary' : ''}`, type: 'button', 'data-new-brief': k, text: `+ ${KIND_NAME[k]}` });
-        btn.addEventListener('click', create(k, btn));
-        return btn;
-      });
-
-    if (!briefs.length) {
-      box.append(
+    const newBtn = (kind, label, primary) => {
+      const btn = h('button', { class: `btn${primary ? ' btn--primary' : ''}`, type: 'button', 'data-new-brief': kind, text: label });
+      btn.addEventListener('click', create(kind, btn));
+      return btn;
+    };
+    const sendBtn = (b) => {
+      const company = b.company_name || lead.company_name;
+      const isLogo = b.kind === 'logo';
+      const subj = `${isLogo ? 'Brief logo i hasła' : 'Brief strony internetowej'} — ${company}`;
+      const body = `Dzień dobry,\n\nzgodnie z rozmową przesyłam krótki formularz (brief), który pomoże mi ${isLogo ? 'przygotować logo i hasło' : b.kind === 'pelny' ? 'przygotować logo, hasło i stronę internetową' : 'przygotować stronę internetową'} dla ${company}:\n\n${briefLink(b.token)}\n\nWypełnienie zajmuje ${isLogo ? 'ok. 5–8 minut' : b.kind === 'strona' ? 'ok. 15 minut' : 'ok. 15–20 minut'}. Odpowiedzi zapisują się automatycznie, więc można przerwać i wrócić przez ten sam link. Jeśli czegoś nie wiesz — pomiń pytanie, omówimy to razem.\n\n${SIGN}`;
+      return h('button', { class: `btn btn--sm${b.status === 'nowy' ? ' btn--primary' : ''}`, type: 'button', 'data-hub-mail': b.kind, text: 'Wyślij link', onclick: () => mailer.compose('brief', subj, body) });
+    };
+    const card = (title, desc, b, kind) =>
+      h(
+        'div',
+        { class: `hub-card${b ? ' hub-card--on' : ''}`, 'data-hub-card': kind },
+        h('div', { class: 'hub-card__head' }, h('h3', { text: title }), b ? h('span', { class: `status status--${BRIEF_CLASS[b.status]}`, text: BRIEF_STATUS[b.status] }) : null),
+        h('p', { class: 'small muted', text: b ? `Utworzony ${fmtDate(b.created_at)}${b.submitted_at ? ` · wypełniony ${fmtDate(b.submitted_at)}` : b.opened_at ? ` · otwarty ${fmtDate(b.opened_at)}` : ''}` : desc }),
         h(
           'div',
-          { class: 'panel brief-empty' },
-          h('h2', { text: 'Brief projektowy' }),
-          h('p', { text: 'Gdy klient zgodzi się na współpracę, utwórz brief — formularz o jego oczekiwaniach. Dane ze zgłoszenia wpiszą się do niego automatycznie, a odpowiedzi zobaczysz tutaj. Wybierz rodzaj briefu:' }),
-          h('ul', { class: 'kind-list' }, ...['pelny', 'strona', 'logo'].map((k) => h('li', null, h('strong', { text: `${KIND_NAME[k]}: ` }), KIND_DESC[k]))),
-          h('p', { class: 'small muted', text: 'Briefy „Strona internetowa” i „Logo i hasło” możesz wysłać osobno (np. najpierw logo), a potem połączyć je jednym przyciskiem w pełny brief.' }),
-          h(
-            'div',
-            { class: 'actions' },
-            ...kindButtons(['pelny', 'strona', 'logo'], 'pelny'),
-            h('a', { class: 'btn', href: '/brief/podglad', target: '_blank', rel: 'noopener', text: 'Jak to widzi klient? ↗' })
-          )
+          { class: 'actions' },
+          b
+            ? [
+                h('button', { class: 'btn btn--sm', type: 'button', 'data-hub-open': kind, text: b.status === 'nowy' ? 'Szczegóły ↓' : 'Pokaż odpowiedzi ↓', onclick: jump(b) }),
+                sendBtn(b),
+                h('button', { class: 'btn btn--sm', type: 'button', text: 'Kopiuj link', onclick: () => copyText(briefLink(b.token), 'Link skopiowany.') }),
+              ]
+            : newBtn(kind, '+ Utwórz brief', false)
         )
       );
-      return box;
+
+    const parts = [h('div', { class: 'brief-hub__head' }, h('h2', { id: 'brief-hub-title', text: 'Briefy i polecenia dla AI' }), h('a', { class: 'small', href: '/brief/podglad', target: '_blank', rel: 'noopener', text: 'Jak to widzi klient? ↗' }))];
+
+    // 1) kompleksowy brief albo dwie kolumny
+    if (full) {
+      parts.push(h('div', { class: 'hub-grid hub-grid--one' }, card('Kompleksowy brief: logo + hasło + strona', '', full, 'pelny')));
+    } else {
+      if (!logoB && !siteB) {
+        parts.push(
+          h(
+            'div',
+            { class: 'hub-full' },
+            h('div', null, h('strong', { text: 'Klient chce wszystko od podstaw?' }), h('p', { class: 'small muted', text: 'Jeden formularz: firma, logo, hasło i strona (ok. 15–20 min).' })),
+            newBtn('pelny', 'Kompleksowy brief: logo + hasło + strona', true)
+          ),
+          h('p', { class: 'hub-or small muted', text: 'albo osobno — np. najpierw logo, potem strona:' })
+        );
+      }
+      parts.push(
+        h(
+          'div',
+          { class: 'hub-grid' },
+          card('1. Logo i hasło', 'Krótki brief tylko o logo, haśle i kolorach (ok. 5–8 min).', logoB, 'logo'),
+          card('2. Strona internetowa', 'Brief o stronie: sekcje, oferta, kontakt, funkcje (ok. 15 min).', siteB, 'strona')
+        )
+      );
     }
 
-    // Spis briefów, dodawanie kolejnych i łączenie
-    const missing = ['strona', 'logo'].filter((k) => !has(k) && !has('pelny'));
-    const site = own.filter((x) => x.kind === 'strona').pop();
-    const logo = own.filter((x) => x.kind === 'logo').pop();
-    const merged = briefs.find((x) => x.merged_at);
-    let mergeBox = null;
-    if (site && logo) {
-      const ready = site.status === 'wyslany' && logo.status === 'wyslany';
-      const btn = h('button', { class: `btn${merged ? '' : ' btn--primary'}`, type: 'button', 'data-merge-briefs': '', text: merged ? 'Połącz ponownie (zaktualizuj połączony brief)' : 'Połącz briefy w jeden' });
+    // 2) łączenie
+    if (logoB && siteB) {
+      const ready = logoB.status === 'wyslany' && siteB.status === 'wyslany';
+      const btn = h('button', { class: `btn btn--sm${merged ? '' : ' btn--primary'}`, type: 'button', 'data-merge-briefs': '', text: merged ? 'Połącz ponownie' : 'Połącz briefy w jeden' });
       btn.addEventListener('click', async () => {
         const S = window.BRIEF_SCHEMA;
         if (!S || !S.helpers.mergeAnswers) return toast('Nie wczytano definicji briefu.', 'error');
         if (!ready && !(await confirmDialog({ title: 'Połączyć niewypełnione briefy?', text: 'Co najmniej jeden brief nie został jeszcze wysłany przez klienta. Połączę odpowiedzi zapisane do tej pory — później możesz połączyć ponownie.', ok: 'Połącz', danger: false }))) return;
         busy(btn, true, 'Łączę…');
-        const answers = S.helpers.mergeAnswers(site.answers || {}, logo.answers || {});
+        const answers = S.helpers.mergeAnswers(siteB.answers || {}, logoB.answers || {});
         const { error } = await q(api(`leads/${lead.id}/brief/merge`, { method: 'POST', body: { answers } }));
         busy(btn, false);
         if (error) return toast(errMsg(error), 'error');
-        toast(merged ? 'Połączony brief zaktualizowany.' : 'Briefy połączone — pełny brief jest poniżej.');
+        toast(merged ? 'Połączony brief zaktualizowany.' : 'Briefy połączone w jeden.');
         await route();
-        const t = $('[data-brief-merged]');
+        const t = $('#briefy-zgloszenia');
         if (t) t.scrollIntoView({ behavior: 'smooth' });
       });
-      mergeBox = h(
-        'div',
-        { class: 'merge-box' },
-        h('h3', { text: 'Połącz w jeden brief' }),
-        h('p', { class: 'small muted', text: 'Z briefu strony i briefu logo powstanie jeden pełny brief — z niego skopiujesz polecenia dla AI (strona z panelem, strona wyboru logo, karta do portfolio). Przy pytaniach o logo, hasło i kolory pierwszeństwo mają odpowiedzi z briefu „Logo i hasło”. Oryginalne briefy zostają bez zmian.' }),
-        ready ? null : h('p', { class: 'alert alert--info', text: 'Najlepiej połączyć, gdy klient wyśle oba briefy.' }),
-        h('div', { class: 'actions' }, btn)
+      parts.push(
+        h(
+          'div',
+          { class: 'hub-merge' },
+          h('div', null,
+            h('h3', { text: merged ? '3. Brief połączony' : '3. Połącz w jeden brief' }),
+            h('p', { class: 'small muted', text: merged ? `Połączony ${fmtDate(merged.merged_at)}.${choice ? ` Wybrane logo: opcja ${choice.option}${choice.name ? ` „${choice.name}”` : ''}${choice.tagline ? `, hasło „${choice.tagline}”` : ''} — zostanie dołączone do polecenia na stronę.` : ''}` : 'Z obu briefów powstanie jeden pełny brief. Przy logo, haśle i kolorach liczą się odpowiedzi z briefu logo.' }),
+            ready ? null : h('p', { class: 'small', text: 'Najlepiej połączyć, gdy klient wyśle oba briefy.' })
+          ),
+          h('div', { class: 'actions' }, merged ? h('button', { class: 'btn btn--sm', type: 'button', text: 'Pokaż połączony ↓', onclick: jump(merged) }) : null, btn)
+        )
       );
     }
-    box.append(
-      h(
-        'div',
-        { class: 'panel no-print brief-index' },
-        h('h2', { text: briefs.length > 1 ? 'Briefy tego zgłoszenia' : 'Brief tego zgłoszenia' }),
+
+    // 3) polecenia dla AI
+    const P = window.BRIEF_PROMPTS;
+    const S = window.BRIEF_SCHEMA;
+    const filled = (b) => b && (b.status === 'wyslany' || b.status === 'w_trakcie' || b.merged_at);
+    const brandSrc = [merged, full, logoB].find(filled);
+    const siteSrc = [merged, full].find(filled) || (filled(siteB) && !logoB ? siteB : null);
+    if (P && S && (brandSrc || siteSrc)) {
+      const metaOf = (b) => ({ company_name: (b.answers && b.answers.company_name) || lead.company_name });
+      const needsBrand = brandSrc && withKind(brandSrc, () => S.helpers.needsLogo(brandSrc.answers || {}) || S.helpers.needsTagline(brandSrc.answers || {}));
+      const aiLogo = h('button', {
+        class: 'btn btn--primary', type: 'button', 'data-hub-ai': 'logo', disabled: !needsBrand,
+        text: 'Prompt: zaprojektuj logo i hasło',
+        onclick: () => withKind(brandSrc, () => copyText(P.logoPage(brandSrc.answers || {}, metaOf(brandSrc)), 'Skopiowano polecenie: projekt logo i hasła (4 opcje do wyboru + ZIP).')),
+      });
+      const aiSite = h('button', {
+        class: 'btn btn--primary', type: 'button', 'data-hub-ai': 'site', disabled: !siteSrc,
+        text: choice ? 'Prompt: cała strona z wybranym logo + SEO' : 'Prompt: cała strona + SEO',
+        onclick: () => withKind(siteSrc, () => copyText(P.site(siteSrc.answers || {}, metaOf(siteSrc), choice), 'Skopiowano polecenie: cała strona z panelem i SEO.')),
+      });
+      const note = [];
+      if (!needsBrand) note.push('Projekt logo i hasła: klient nie prosi o logo ani hasło albo brief nie jest jeszcze wypełniony.');
+      if (!siteSrc) note.push(logoB && siteB ? 'Polecenie na stronę będzie dostępne po połączeniu briefów.' : 'Polecenie na stronę będzie dostępne, gdy klient wypełni brief strony.');
+      else if (needsBrand && !choice) note.push('Klient jeszcze nie wybrał logo — polecenie na stronę użyje tymczasowego logotypu (po wyborze kliknij przycisk ponownie, a wybrane logo i hasło dopiszą się same).');
+      parts.push(
         h(
-          'ul',
-          { class: 'brief-index__list' },
-          ...briefs.map((b) =>
-            h(
-              'li',
-              null,
-              h('a', { href: `#brief-${b.id}`, onclick: (e) => { e.preventDefault(); const t = document.getElementById(`brief-${b.id}`); if (t) t.scrollIntoView({ behavior: 'smooth' }); }, text: briefName(b) }),
-              ' ',
-              h('span', { class: `status status--${BRIEF_CLASS[b.status]}`, text: b.merged_at ? 'Połączony' : BRIEF_STATUS[b.status] })
-            )
-          )
-        ),
-        missing.length ? h('div', null, h('p', { class: 'small muted', text: 'Dodaj osobny brief:' }), h('div', { class: 'actions' }, ...kindButtons(missing))) : null,
-        mergeBox
-      )
-    );
+          'div',
+          { class: 'hub-ai' },
+          h('h3', { text: 'Polecenia dla AI (ChatGPT, Claude)' }),
+          h('p', { class: 'small muted', text: 'Przycisk kopiuje gotowe polecenie z odpowiedziami klienta — wklej je do czatu.' }),
+          h(
+            'div',
+            { class: 'hub-ai__grid' },
+            h('div', { class: 'hub-ai__item' }, h('strong', { text: 'A. Logo i hasło' }), h('p', { class: 'small muted', text: '4 różne propozycje logo i haseł na stronie wyboru dla klienta + ZIP z plikami.' }), aiLogo),
+            h('div', { class: 'hub-ai__item' }, h('strong', { text: 'B. Strona internetowa' }), h('p', { class: 'small muted', text: `Cała strona ze wszystkimi funkcjami z briefu, panelem do edycji i kompletnym SEO${choice ? ` — z wybranym logo (opcja ${choice.option})` : ''}.` }), aiSite)
+          ),
+          note.length ? h('ul', { class: 'small muted hub-ai__notes' }, ...note.map((t) => h('li', { text: t }))) : null
+        )
+      );
+    }
+    hub.append(...parts);
+    return hub;
+  }
+
+  function leadBriefSection(lead, briefs, mailer, logo) {
+    const box = h('section', { class: 'brief-attached', id: 'brief-zgloszenia' });
+    if (!briefs.length) return box;
+    const choice = logoChoice(logo);
     briefs.forEach((b) => {
       const wrap = h('div', { class: 'brief-item', id: `brief-${b.id}` });
       if (b.merged_at) wrap.setAttribute('data-brief-merged', '');
-      wrap.append(...briefBlocks({ ...b, company_name: b.company_name || lead.company_name, contact_email: b.contact_email || lead.email }, { inLead: true, mailer }));
+      wrap.append(
+        h('p', { class: 'no-print brief-item__top' }, h('a', { href: '#briefy-zgloszenia', onclick: (e) => { e.preventDefault(); const t = $('#briefy-zgloszenia'); if (t) t.scrollIntoView({ behavior: 'smooth' }); }, text: '↑ Wróć do briefów' })),
+        ...briefBlocks({ ...b, company_name: b.company_name || lead.company_name, contact_email: b.contact_email || lead.email }, { inLead: true, mailer, choice })
+      );
       box.append(wrap);
     });
     return box;
@@ -1201,7 +1316,7 @@
               H.needsLogo(a) || H.needsTagline(a)
                 ? h('button', { class: 'btn btn--primary', type: 'button', 'data-ai': 'logo', text: `1. Strona wyboru ${H.needsLogo(a) ? 'logo' : 'hasła'}${H.needsLogo(a) && H.needsTagline(a) ? ' i hasła' : ''} (4 opcje + ZIP)`, onclick: K(() => copyText(P.logoPage(a, meta), 'Skopiowano polecenie: strona wyboru dla klienta i ZIP z plikami.')) })
                 : null,
-              isLogo ? null : h('button', { class: 'btn btn--primary', type: 'button', 'data-ai': 'site', text: `${H.needsLogo(a) || H.needsTagline(a) ? '2. ' : '1. '}Strona z panelem administracyjnym`, onclick: K(() => copyText(P.site(a, meta), 'Skopiowano polecenie: strona z panelem.')) }),
+              isLogo ? null : h('button', { class: 'btn btn--primary', type: 'button', 'data-ai': 'site', text: `${H.needsLogo(a) || H.needsTagline(a) ? '2. ' : '1. '}Strona z panelem administracyjnym`, onclick: K(() => copyText(P.site(a, meta, opts.choice), 'Skopiowano polecenie: strona z panelem i SEO.')) }),
               isLogo ? null : h('button', { class: 'btn', type: 'button', 'data-ai': 'panel', text: 'Sam panel (do gotowej strony)', onclick: K(() => copyText(P.panel(a, meta), 'Skopiowano polecenie: panel administracyjny.')) }),
               isLogo ? null : h('button', { class: 'btn', type: 'button', 'data-ai': 'portfolio', text: 'Karta do portfolio (ZIP)', onclick: K(() => copyText(P.portfolio(a, meta), 'Skopiowano polecenie: karta do portfolio.')) }),
               isLogo && !(H.needsLogo(a) || H.needsTagline(a)) ? h('p', { class: 'small muted', text: 'Klient ma logo i hasło — w tym briefie nie ma czego projektować.' }) : null
