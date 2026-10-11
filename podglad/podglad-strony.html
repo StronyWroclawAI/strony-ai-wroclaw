@@ -974,6 +974,20 @@ button { font: inherit; }
   .contact .form-card { padding: 16px 16px 18px; }
 }
 
+/* ===== Formularz zawsze mieści się w oknie (komputer): karta ma wysokość ekranu,
+   a pole wiadomości zajmuje tylko pozostałe miejsce — przycisk „Wyślij” jest zawsze widoczny ===== */
+.lead-form .turnstile-box { min-height: 0; margin-bottom: 0; }
+.lead-form .turnstile-box:not(:empty) { margin-bottom: 10px; }
+@media (min-width: 981px) and (min-height: 520px) {
+  .contact .form-card { display: flex; flex-direction: column; max-height: calc(100vh - var(--header-h) - 40px); max-height: calc(100svh - var(--header-h) - 40px); overflow: auto; overscroll-behavior: contain; }
+  .contact .form-card > .lead-form { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+  .lead-form .field--message { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+  .lead-form .field--message textarea { flex: 1 1 auto; height: auto; min-height: 76px; max-height: 260px; }
+  /* gdy treści przybędzie (komunikaty błędów, okienko Cloudflare) — przycisk zostaje przyklejony na dole karty */
+  .lead-form > [data-submit] { position: sticky; bottom: 0; z-index: 2; box-shadow: 0 -14px 14px -4px #fff, 0 30px 0 0 #fff; }
+  .lead-form > .form-row, .lead-form > .field:not(.field--message), .lead-form > details, .lead-form > p, .lead-form > button, .lead-form > .turnstile-box { flex: 0 0 auto; }
+}
+
 
 .preview-bar{position:fixed;left:12px;right:12px;bottom:16px;margin:0 auto;width:fit-content;z-index:90;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;max-width:calc(100vw - 24px);padding:10px 12px 10px 16px;border-radius:14px;background:#fff;color:#0b1d36;font-size:.875rem;box-shadow:0 20px 50px -18px rgba(0,0,0,.55);border:2px solid transparent;background-image:linear-gradient(#fff,#fff),linear-gradient(90deg,#ff6b5a,#ffb547,#19c2b0,#8b7cf6);background-origin:border-box;background-clip:padding-box,border-box}
 .preview-bar span{color:#4d5a70}
@@ -2263,7 +2277,7 @@ button { font: inherit; }
           </div>
           </details>
 
-          <div class="field">
+          <div class="field field--message">
             <label for="f-message">Twoja wiadomość <span class="req" aria-hidden="true">*</span></label>
             <p class="field__hint" id="h-message" data-cms="contact.message_hint">Uzupełnij szkic albo napisz po swojemu — wystarczy kilka zdań.</p>
             <textarea id="f-message" name="message" rows="9" required minlength="20" maxlength="5000" aria-describedby="h-message e-message" data-cms="contact.message_template">Dzień dobry,

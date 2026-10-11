@@ -959,6 +959,20 @@ button { font: inherit; }
   .contact .form-card { padding: 16px 16px 18px; }
 }
 
+/* ===== Formularz zawsze mieści się w oknie (komputer): karta ma wysokość ekranu,
+   a pole wiadomości zajmuje tylko pozostałe miejsce — przycisk „Wyślij” jest zawsze widoczny ===== */
+.lead-form .turnstile-box { min-height: 0; margin-bottom: 0; }
+.lead-form .turnstile-box:not(:empty) { margin-bottom: 10px; }
+@media (min-width: 981px) and (min-height: 520px) {
+  .contact .form-card { display: flex; flex-direction: column; max-height: calc(100vh - var(--header-h) - 40px); max-height: calc(100svh - var(--header-h) - 40px); overflow: auto; overscroll-behavior: contain; }
+  .contact .form-card > .lead-form { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+  .lead-form .field--message { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+  .lead-form .field--message textarea { flex: 1 1 auto; height: auto; min-height: 76px; max-height: 260px; }
+  /* gdy treści przybędzie (komunikaty błędów, okienko Cloudflare) — przycisk zostaje przyklejony na dole karty */
+  .lead-form > [data-submit] { position: sticky; bottom: 0; z-index: 2; box-shadow: 0 -14px 14px -4px #fff, 0 30px 0 0 #fff; }
+  .lead-form > .form-row, .lead-form > .field:not(.field--message), .lead-form > details, .lead-form > p, .lead-form > button, .lead-form > .turnstile-box { flex: 0 0 auto; }
+}
+
 </style>
 <style>
 /* Brief projektowy — korzysta z kolorów i czcionek z /assets/css/style.css */
