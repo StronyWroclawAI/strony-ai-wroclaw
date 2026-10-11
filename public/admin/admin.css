@@ -71,7 +71,7 @@ code { background: var(--gray-100); padding: 1px 6px; border-radius: 4px; font-s
 .alert--info { background: var(--info-bg); color: var(--navy-600); border: 1px solid var(--sky-200); font-weight: 500; }
 
 /* Układ panelu */
-.app { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; background: linear-gradient(90deg, var(--navy-900) 240px, var(--gray-50) 240px); }
+.app { display: grid; grid-template-columns: 240px minmax(0, 1fr); min-height: 100vh; background: linear-gradient(90deg, var(--navy-900) 240px, var(--gray-50) 240px); }
 .sidebar { background: var(--navy-900); color: #dbe5f3; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; padding: 18px 14px; }
 .sidebar__brand { display: flex; gap: 12px; align-items: center; color: #fff; text-decoration: none; font-weight: 800; padding: 6px 8px 22px; line-height: 1.2; }
 .sidebar__brand small { font-weight: 500; color: var(--sky-200); font-size: 12px; }
@@ -162,7 +162,8 @@ code { background: var(--gray-100); padding: 1px 6px; border-radius: 4px; font-s
 .switch input:checked + .switch__track::after { transform: translateX(22px); }
 .switch input:focus-visible + .switch__track { outline: 3px solid var(--focus); outline-offset: 2px; }
 .status-list { list-style: none; padding: 0; margin: 0 0 14px; display: grid; gap: 8px; }
-.status-list li { display: flex; justify-content: space-between; gap: 12px; padding: 10px 12px; background: var(--gray-50); border-radius: 8px; }
+.status-list li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; padding: 10px 12px; background: var(--gray-50); border-radius: 8px; min-width: 0; }
+.status-list li > * { min-width: 0; overflow-wrap: anywhere; }
 
 /* Komunikaty */
 .toasts { position: fixed; right: 16px; bottom: 16px; z-index: 100; display: grid; gap: 8px; max-width: min(420px, calc(100vw - 32px)); }
@@ -174,8 +175,11 @@ code { background: var(--gray-100); padding: 1px 6px; border-radius: 4px; font-s
 .dialog__actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
 
 @media (max-width: 900px) {
-  .app { grid-template-columns: 1fr; background: var(--gray-50); }
-  .sidebar { position: static; height: auto; padding: 12px; }
+  .app { grid-template-columns: minmax(0, 1fr); background: var(--gray-50); }
+  .sidebar { position: static; height: auto; padding: 12px; min-width: 0; }
+  .sidebar__nav { max-width: 100%; }
+  .sidebar::after { margin: 12px -12px -12px !important; }
+  .app > main, .main { min-width: 0; }
   .sidebar__brand { padding-bottom: 10px; }
   .sidebar__nav { display: flex; overflow-x: auto; gap: 4px; padding-bottom: 6px; }
   .sidebar__nav a { white-space: nowrap; padding: 8px 12px; }

@@ -277,27 +277,20 @@
     var submitBtn = form.querySelector('[data-submit]');
     var industry = form.elements.industry;
     var otherWrap = form.querySelector('[data-other-industry]');
-    // Szkic wiadomości jako podpowiedź (placeholder) — pole startuje puste, więc nie ma suwaka.
-    // Przycisk „Wstaw gotowy szkic” wpisuje szkic do pola dla osób, które wolą go uzupełnić.
+    // Szkic wiadomości jest wpisany w pole; pole ma wysokość dopasowaną do treści (bez suwaka)
+    // i rośnie, gdy klient dopisuje kolejne linie.
     var msgEl = form.elements.message;
-    var tplText = '';
-    if (msgEl && msgEl.value.trim()) {
-      tplText = msgEl.value.replace(/^\n+|\s+$/g, '');
-      msgEl.placeholder = tplText;
-      msgEl.textContent = '';
-      msgEl.value = '';
-      var tplBtn = document.createElement('button');
-      tplBtn.type = 'button';
-      tplBtn.className = 'msg-tpl-btn';
-      tplBtn.textContent = 'Wstaw gotowy szkic';
-      tplBtn.addEventListener('click', function () {
-        if (!msgEl.value.trim()) msgEl.value = tplText;
-        msgEl.focus();
-        msgEl.setSelectionRange(msgEl.value.length, msgEl.value.length);
-        msgEl.scrollTop = 0;
-      });
-      var msgField = msgEl.closest('.field');
-      if (msgField) msgField.appendChild(tplBtn);
+    var tplText = msgEl ? msgEl.value.replace(/^\n+|\s+$/g, '') : '';
+    function fitMessage() {
+      if (!msgEl) return;
+      msgEl.style.height = 'auto';
+      msgEl.style.height = msgEl.scrollHeight + 2 + 'px';
+    }
+    if (msgEl) {
+      msgEl.addEventListener('input', fitMessage);
+      window.addEventListener('resize', fitMessage);
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitMessage);
+      fitMessage();
     }
     // wyszukiwarka branży (wpisz pierwsze litery)
     if (industry && window.IndustryCombo) window.IndustryCombo.enhance(industry, { other: form.elements.industry_other });

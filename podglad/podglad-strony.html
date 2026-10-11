@@ -193,7 +193,7 @@ button { font: inherit; }
   position: fixed; inset: 0 0 auto; z-index: 50; height: var(--header-h);
   color: var(--white); transition: background-color .3s, box-shadow .3s, color .3s;
 }
-.site-header.is-solid { background: rgba(255, 255, 255, .96); color: var(--navy-900); box-shadow: 0 1px 0 var(--gray-200), 0 8px 24px -16px rgba(11, 29, 54, .3); backdrop-filter: saturate(1.4) blur(10px); }
+.site-header.is-solid { background: rgba(255, 255, 255, .96); color: var(--navy-900); box-shadow: 0 1px 0 var(--gray-200), 0 8px 24px -16px rgba(11, 29, 54, .3); -webkit-backdrop-filter: saturate(1.4) blur(10px); backdrop-filter: saturate(1.4) blur(10px); }
 .site-header__inner { height: 100%; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
 .brand { display: inline-flex; align-items: center; gap: 12px; color: inherit; text-decoration: none; }
 .brand:hover { color: inherit; }
@@ -988,11 +988,54 @@ button { font: inherit; }
   .lead-form > .form-row, .lead-form > .field:not(.field--message), .lead-form > details, .lead-form > p, .lead-form > button, .lead-form > .turnstile-box { flex: 0 0 auto; }
 }
 
-/* Szkic wiadomości jako podpowiedź + przycisk „Wstaw gotowy szkic” w linii etykiety (bez dodatkowej wysokości) */
-.lead-form .field--message { position: relative; }
-.msg-tpl-btn { position: absolute; top: -2px; right: 0; border: 0; background: none; padding: 2px 0; font: inherit; font-size: .8125rem; font-weight: 700; color: var(--navy-600); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
-.msg-tpl-btn:hover { color: var(--navy-900); }
-.lead-form textarea::placeholder { color: #7a8699; opacity: 1; }
+/* Pole wiadomości: wysokość = treść (ustawia main.js), bez własnego suwaka */
+.lead-form .field--message textarea { overflow-y: hidden; resize: none; min-height: 0; max-height: none; font-size: .875rem; line-height: 1.45; padding: 8px 12px; }
+@media (min-width: 981px) and (min-height: 520px) {
+  .lead-form .field--message { flex: 0 0 auto; }
+  .lead-form .field--message textarea { flex: 0 0 auto; }
+}
+@media (max-height: 720px) and (min-width: 981px) {
+  .lead-form .field--message textarea { font-size: .8125rem; line-height: 1.4; padding: 6px 10px; }
+  .lead-form .field__hint { display: none; }
+}
+
+/* Pole wiadomości bez suwaka w każdej przeglądarce (Chrome, Edge, Firefox, Safari) */
+.lead-form .field--message textarea { scrollbar-width: none; -ms-overflow-style: none; }
+.lead-form .field--message textarea::-webkit-scrollbar { display: none; width: 0; height: 0; }
+.contact .form-card { scrollbar-width: thin; }
+
+/* Niskie ekrany komputerów (np. laptop 1366×768 z paskami przeglądarki) — zwarty formularz */
+@media (min-width: 981px) and (max-height: 680px) {
+  .contact .form-card { padding: 16px 20px 14px; }
+  .lead-form .field { margin-bottom: 6px; }
+  .lead-form .field label { margin-bottom: 2px; font-size: .8125rem; }
+  .lead-form .field input, .lead-form .field select { min-height: 38px; padding: 6px 10px; font-size: .9375rem; }
+  .lead-form .form-more > summary { padding: 2px 0; margin-bottom: 2px; }
+  .lead-form .field--message textarea { font-size: .78rem; line-height: 1.35; padding: 5px 10px; }
+  .lead-form .form-privacy { font-size: .75rem; margin: 0 0 8px; }
+  .lead-form .btn--lg { min-height: 44px; padding: 8px 18px; }
+}
+/* Telefony — trochę ciaśniej, żeby przycisk „Wyślij” był widoczny bez przewijania */
+@media (max-width: 640px) {
+  .lead-form .field { margin-bottom: 8px; }
+  .lead-form .field label { margin-bottom: 2px; }
+  .lead-form .field--message textarea { font-size: .8125rem; line-height: 1.4; padding: 6px 10px; }
+  .lead-form .btn--lg { min-height: 46px; }
+}
+.form-more__short { display: none; }
+@media (max-width: 640px) {
+  .form-more__long { display: none; }
+  .form-more__short { display: inline; }
+  .lead-form .form-more > summary { padding: 4px 0; margin-bottom: 2px; }
+  .lead-form .field { margin-bottom: 6px; }
+  .lead-form .field input, .lead-form .field select { min-height: 42px; }
+  .lead-form .form-privacy { font-size: .72rem; line-height: 1.4; margin-bottom: 8px; }
+}
+
+/* iPhone/iPad: pola z czcionką mniejszą niż 16 px powodują automatyczne powiększanie strony przy dotknięciu — wyłączamy to */
+@supports (-webkit-touch-callout: none) {
+  .lead-form .field input, .lead-form .field select, .lead-form .field textarea { font-size: 16px; }
+}
 
 
 .preview-bar{position:fixed;left:12px;right:12px;bottom:16px;margin:0 auto;width:fit-content;z-index:90;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;max-width:calc(100vw - 24px);padding:10px 12px 10px 16px;border-radius:14px;background:#fff;color:#0b1d36;font-size:.875rem;box-shadow:0 20px 50px -18px rgba(0,0,0,.55);border:2px solid transparent;background-image:linear-gradient(#fff,#fff),linear-gradient(90deg,#ff6b5a,#ffb547,#19c2b0,#8b7cf6);background-origin:border-box;background-clip:padding-box,border-box}
@@ -1562,27 +1605,20 @@ button { font: inherit; }
     var submitBtn = form.querySelector('[data-submit]');
     var industry = form.elements.industry;
     var otherWrap = form.querySelector('[data-other-industry]');
-    // Szkic wiadomości jako podpowiedź (placeholder) — pole startuje puste, więc nie ma suwaka.
-    // Przycisk „Wstaw gotowy szkic” wpisuje szkic do pola dla osób, które wolą go uzupełnić.
+    // Szkic wiadomości jest wpisany w pole; pole ma wysokość dopasowaną do treści (bez suwaka)
+    // i rośnie, gdy klient dopisuje kolejne linie.
     var msgEl = form.elements.message;
-    var tplText = '';
-    if (msgEl && msgEl.value.trim()) {
-      tplText = msgEl.value.replace(/^\n+|\s+$/g, '');
-      msgEl.placeholder = tplText;
-      msgEl.textContent = '';
-      msgEl.value = '';
-      var tplBtn = document.createElement('button');
-      tplBtn.type = 'button';
-      tplBtn.className = 'msg-tpl-btn';
-      tplBtn.textContent = 'Wstaw gotowy szkic';
-      tplBtn.addEventListener('click', function () {
-        if (!msgEl.value.trim()) msgEl.value = tplText;
-        msgEl.focus();
-        msgEl.setSelectionRange(msgEl.value.length, msgEl.value.length);
-        msgEl.scrollTop = 0;
-      });
-      var msgField = msgEl.closest('.field');
-      if (msgField) msgField.appendChild(tplBtn);
+    var tplText = msgEl ? msgEl.value.replace(/^\n+|\s+$/g, '') : '';
+    function fitMessage() {
+      if (!msgEl) return;
+      msgEl.style.height = 'auto';
+      msgEl.style.height = msgEl.scrollHeight + 2 + 'px';
+    }
+    if (msgEl) {
+      msgEl.addEventListener('input', fitMessage);
+      window.addEventListener('resize', fitMessage);
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitMessage);
+      fitMessage();
     }
     // wyszukiwarka branży (wpisz pierwsze litery)
     if (industry && window.IndustryCombo) window.IndustryCombo.enhance(industry, { other: form.elements.industry_other });
@@ -2285,7 +2321,7 @@ button { font: inherit; }
           </div>
 
           <details class="form-more" data-form-more>
-          <summary>Dodaj stronę www, Facebook lub Instagram <span class="opt">(opcjonalnie)</span></summary>
+          <summary><span class="form-more__long">Dodaj stronę www, Facebook lub Instagram</span><span class="form-more__short">Strona www i social media</span> <span class="opt">(opcjonalnie)</span></summary>
           <div class="form-row form-row--3">
             <div class="field field--wide-sm">
               <label for="f-website">Strona www <span class="opt">(opcjonalnie)</span></label>
@@ -2307,7 +2343,7 @@ button { font: inherit; }
 
           <div class="field field--message">
             <label for="f-message">Twoja wiadomość <span class="req" aria-hidden="true">*</span></label>
-            <p class="field__hint" id="h-message" data-cms="contact.message_hint">Napisz kilka zdań o firmie i stronie — możesz też wstawić gotowy szkic.</p>
+            <p class="field__hint" id="h-message" data-cms="contact.message_hint">Uzupełnij szkic albo napisz po swojemu.</p>
             <textarea id="f-message" name="message" rows="9" required minlength="20" maxlength="5000" aria-describedby="h-message e-message" data-cms="contact.message_template">Dzień dobry,
 chcę nawiązać współpracę przy stworzeniu strony internetowej dla mojej firmy.
 
