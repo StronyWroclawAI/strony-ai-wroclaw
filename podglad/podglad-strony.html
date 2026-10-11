@@ -988,6 +988,12 @@ button { font: inherit; }
   .lead-form > .form-row, .lead-form > .field:not(.field--message), .lead-form > details, .lead-form > p, .lead-form > button, .lead-form > .turnstile-box { flex: 0 0 auto; }
 }
 
+/* Szkic wiadomości jako podpowiedź + przycisk „Wstaw gotowy szkic” w linii etykiety (bez dodatkowej wysokości) */
+.lead-form .field--message { position: relative; }
+.msg-tpl-btn { position: absolute; top: -2px; right: 0; border: 0; background: none; padding: 2px 0; font: inherit; font-size: .8125rem; font-weight: 700; color: var(--navy-600); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.msg-tpl-btn:hover { color: var(--navy-900); }
+.lead-form textarea::placeholder { color: #7a8699; opacity: 1; }
+
 
 .preview-bar{position:fixed;left:12px;right:12px;bottom:16px;margin:0 auto;width:fit-content;z-index:90;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;max-width:calc(100vw - 24px);padding:10px 12px 10px 16px;border-radius:14px;background:#fff;color:#0b1d36;font-size:.875rem;box-shadow:0 20px 50px -18px rgba(0,0,0,.55);border:2px solid transparent;background-image:linear-gradient(#fff,#fff),linear-gradient(90deg,#ff6b5a,#ffb547,#19c2b0,#8b7cf6);background-origin:border-box;background-clip:padding-box,border-box}
 .preview-bar span{color:#4d5a70}
@@ -1556,6 +1562,28 @@ button { font: inherit; }
     var submitBtn = form.querySelector('[data-submit]');
     var industry = form.elements.industry;
     var otherWrap = form.querySelector('[data-other-industry]');
+    // Szkic wiadomości jako podpowiedź (placeholder) — pole startuje puste, więc nie ma suwaka.
+    // Przycisk „Wstaw gotowy szkic” wpisuje szkic do pola dla osób, które wolą go uzupełnić.
+    var msgEl = form.elements.message;
+    var tplText = '';
+    if (msgEl && msgEl.value.trim()) {
+      tplText = msgEl.value.replace(/^\n+|\s+$/g, '');
+      msgEl.placeholder = tplText;
+      msgEl.textContent = '';
+      msgEl.value = '';
+      var tplBtn = document.createElement('button');
+      tplBtn.type = 'button';
+      tplBtn.className = 'msg-tpl-btn';
+      tplBtn.textContent = 'Wstaw gotowy szkic';
+      tplBtn.addEventListener('click', function () {
+        if (!msgEl.value.trim()) msgEl.value = tplText;
+        msgEl.focus();
+        msgEl.setSelectionRange(msgEl.value.length, msgEl.value.length);
+        msgEl.scrollTop = 0;
+      });
+      var msgField = msgEl.closest('.field');
+      if (msgField) msgField.appendChild(tplBtn);
+    }
     // wyszukiwarka branży (wpisz pierwsze litery)
     if (industry && window.IndustryCombo) window.IndustryCombo.enhance(industry, { other: form.elements.industry_other });
     var submissionId = newId();
@@ -1660,7 +1688,7 @@ button { font: inherit; }
       ['website_url', 'facebook_url', 'instagram_url'].forEach(function (k) {
         if (d[k] && !looksLikeUrl(d[k])) e[k] = MSG.url;
       });
-      var tpl = form.elements.message && form.elements.message.defaultValue;
+      var tpl = tplText;
       if (d.message && tpl && d.message.replace(/\s+/g, ' ').trim() === tpl.replace(/\s+/g, ' ').trim()) e.message = 'Uzupełnij szkic wiadomości — dopisz choć kilka słów o swojej firmie.';
       else if (!d.message) e.message = MSG.required;
       else if (d.message.length < 20) e.message = MSG.messageShort;
@@ -2279,7 +2307,7 @@ button { font: inherit; }
 
           <div class="field field--message">
             <label for="f-message">Twoja wiadomość <span class="req" aria-hidden="true">*</span></label>
-            <p class="field__hint" id="h-message" data-cms="contact.message_hint">Uzupełnij szkic albo napisz po swojemu — wystarczy kilka zdań.</p>
+            <p class="field__hint" id="h-message" data-cms="contact.message_hint">Napisz kilka zdań o firmie i stronie — możesz też wstawić gotowy szkic.</p>
             <textarea id="f-message" name="message" rows="9" required minlength="20" maxlength="5000" aria-describedby="h-message e-message" data-cms="contact.message_template">Dzień dobry,
 chcę nawiązać współpracę przy stworzeniu strony internetowej dla mojej firmy.
 

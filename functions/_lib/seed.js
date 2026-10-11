@@ -799,7 +799,7 @@ export const SEED = {
    "section": "Kontakt i formularz",
    "label": "Formularz: podpowiedź nad wiadomością",
    "kind": "text",
-   "value": "Uzupełnij szkic albo napisz po swojemu — wystarczy kilka zdań.",
+   "value": "Napisz kilka zdań o firmie i stronie — możesz też wstawić gotowy szkic.",
    "sort_order": 11099
   },
   {

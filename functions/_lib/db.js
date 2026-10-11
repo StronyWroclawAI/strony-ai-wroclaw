@@ -4,7 +4,7 @@
 
 import { SEED } from './seed.js';
 
-export const SCHEMA_VERSION = '12';
+export const SCHEMA_VERSION = '13';
 
 // Każda instrukcja w osobnym elemencie (D1 wykonuje je w jednej transakcji przez batch()).
 export const SCHEMA = [
@@ -139,6 +139,8 @@ const CONTENT_UPDATES = [
   // v11: portfolio w dwóch zakładkach — wstęp obejmuje też projekty demonstracyjne
   ['portfolio.intro', 'Strony przygotowane dla firm, które zgodziły się na ich prezentację.'],
   ['portfolio.intro', 'Strony przygotowane dla firm (za ich zgodą) oraz projekty demonstracyjne — kliknij, aby zobaczyć szczegóły.'],
+  // v13: szkic wiadomości jako podpowiedź
+  ['contact.message_hint', 'Uzupełnij szkic albo napisz po swojemu — wystarczy kilka zdań.'],
   // v12: krótszy formularz zgłoszeniowy
   ['contact.message_hint', 'Poniżej jest gotowy szkic — uzupełnij go lub napisz po swojemu. Wystarczy kilka zdań: resztę ustalimy w krótkim briefie, który wyślę po pierwszym kontakcie.'],
 ];

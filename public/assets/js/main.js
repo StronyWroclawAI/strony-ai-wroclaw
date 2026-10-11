@@ -277,6 +277,28 @@
     var submitBtn = form.querySelector('[data-submit]');
     var industry = form.elements.industry;
     var otherWrap = form.querySelector('[data-other-industry]');
+    // Szkic wiadomości jako podpowiedź (placeholder) — pole startuje puste, więc nie ma suwaka.
+    // Przycisk „Wstaw gotowy szkic” wpisuje szkic do pola dla osób, które wolą go uzupełnić.
+    var msgEl = form.elements.message;
+    var tplText = '';
+    if (msgEl && msgEl.value.trim()) {
+      tplText = msgEl.value.replace(/^\n+|\s+$/g, '');
+      msgEl.placeholder = tplText;
+      msgEl.textContent = '';
+      msgEl.value = '';
+      var tplBtn = document.createElement('button');
+      tplBtn.type = 'button';
+      tplBtn.className = 'msg-tpl-btn';
+      tplBtn.textContent = 'Wstaw gotowy szkic';
+      tplBtn.addEventListener('click', function () {
+        if (!msgEl.value.trim()) msgEl.value = tplText;
+        msgEl.focus();
+        msgEl.setSelectionRange(msgEl.value.length, msgEl.value.length);
+        msgEl.scrollTop = 0;
+      });
+      var msgField = msgEl.closest('.field');
+      if (msgField) msgField.appendChild(tplBtn);
+    }
     // wyszukiwarka branży (wpisz pierwsze litery)
     if (industry && window.IndustryCombo) window.IndustryCombo.enhance(industry, { other: form.elements.industry_other });
     var submissionId = newId();
@@ -381,7 +403,7 @@
       ['website_url', 'facebook_url', 'instagram_url'].forEach(function (k) {
         if (d[k] && !looksLikeUrl(d[k])) e[k] = MSG.url;
       });
-      var tpl = form.elements.message && form.elements.message.defaultValue;
+      var tpl = tplText;
       if (d.message && tpl && d.message.replace(/\s+/g, ' ').trim() === tpl.replace(/\s+/g, ' ').trim()) e.message = 'Uzupełnij szkic wiadomości — dopisz choć kilka słów o swojej firmie.';
       else if (!d.message) e.message = MSG.required;
       else if (d.message.length < 20) e.message = MSG.messageShort;
