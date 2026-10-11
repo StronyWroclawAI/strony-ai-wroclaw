@@ -4,7 +4,7 @@
 
 import { SEED } from './seed.js';
 
-export const SCHEMA_VERSION = '9';
+export const SCHEMA_VERSION = '10';
 
 // Każda instrukcja w osobnym elemencie (D1 wykonuje je w jednej transakcji przez batch()).
 export const SCHEMA = [
@@ -123,7 +123,19 @@ export const MIGRATIONS = [
   `ALTER TABLE briefs ADD COLUMN admin_edited_at TEXT`,
   // v8: podglądy opcji logo
   `ALTER TABLE logo_proposals ADD COLUMN scanned INTEGER NOT NULL DEFAULT 0`,
+  // v10: SEO kart projektów — „dla kogo” (np. „warsztatu samochodowego”) do tytułu dla Google
+  `ALTER TABLE portfolio_projects ADD COLUMN seo_for TEXT NOT NULL DEFAULT ''`,
 ];
+
+// v10 (SEO): stare teksty domyślne zamieniane na nowe — TYLKO gdy nie były zmieniane w panelu.
+const CONTENT_UPDATES = [
+  ['hero.lead', 'Projektuję i tworzę nowoczesne strony internetowe dla małych firm usługowych. Buduję portfolio, dlatego wybranym firmom wykonuję stronę bezpłatnie.'],
+  ['benefits.title', 'Co zyskuje firma dzięki dobrej stronie'],
+  ['process.title', 'Od pierwszej rozmowy do działającej strony'],
+  ['portfolio.title', 'Realizacje'],
+];
+// Pola usunięte ze strony (nadtytuł nad hasłem zastąpił nagłówek H1).
+const CONTENT_REMOVED = ['hero.eyebrow'];
 
 export const uuid = () => crypto.randomUUID();
 export const nowIso = () => new Date().toISOString();
@@ -192,6 +204,15 @@ async function init(env) {
         )
         .bind(...params)
     );
+  }
+  for (const [key, oldValue] of CONTENT_UPDATES) {
+    const seed = SEED.content.find((c) => c.key === key);
+    if (seed && seed.value !== oldValue) {
+      stmts.push(db.prepare(`UPDATE site_content SET value = ?, updated_at = ? WHERE key = ? AND value = ?`).bind(seed.value, t, key, oldValue));
+    }
+  }
+  for (const key of CONTENT_REMOVED) {
+    if (!SEED.content.some((c) => c.key === key)) stmts.push(db.prepare(`DELETE FROM site_content WHERE key = ?`).bind(key));
   }
   stmts.push(db.prepare(`INSERT OR REPLACE INTO meta (key, value) VALUES ('schema_version', ?)`).bind(SCHEMA_VERSION));
   await db.batch(stmts);

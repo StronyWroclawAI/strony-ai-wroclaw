@@ -2,7 +2,8 @@
 // Opublikowane karty widzi każdy; szkice tylko zalogowany administrator (podgląd).
 import { ensureSchema, hasDb } from '../_lib/db.js';
 import { hasValidSession } from '../_lib/auth.js';
-import { SLUG_RE, PATH_RE, cardHeaders } from '../_lib/card.js';
+import { SLUG_RE, PATH_RE, cardHeaders, rewriteCardHead } from '../_lib/card.js';
+import { siteOrigin } from '../_lib/http.js';
 import { recordVisit } from '../_lib/stats.js';
 
 const notFound = () =>
@@ -25,7 +26,7 @@ export async function onRequestGet({ request, env, params, waitUntil }) {
   if (!hasDb(env) || !env.MEDIA) return notFound();
 
   await ensureSchema(env);
-  const p = await env.DB.prepare(`SELECT id, status, card_ver FROM portfolio_projects WHERE slug = ?`).bind(slug).first();
+  const p = await env.DB.prepare(`SELECT id, status, card_ver, title, industry, description, is_demo, seo_for, slug, card_cover FROM portfolio_projects WHERE slug = ?`).bind(slug).first();
   if (!p || !p.card_ver) return notFound();
   let preview = false;
   if (p.status !== 'published') {
@@ -38,5 +39,8 @@ export async function onRequestGet({ request, env, params, waitUntil }) {
   if (!obj) return notFound();
   const isHtml = f.content_type.startsWith('text/html');
   if (isHtml && !preview) waitUntil(recordVisit(env, request, `/portfolio/${slug}`));
-  return new Response(obj, { headers: cardHeaders(f.content_type, { html: isHtml, preview }) });
+  const res = new Response(obj, { headers: cardHeaders(f.content_type, { html: isHtml, preview }) });
+  // Główna strona karty: tytuł, opis i canonical „projekt strony internetowej dla …” (treść karty bez zmian)
+  if (isHtml && path === 'index.html') return rewriteCardHead(res, p, siteOrigin(env, request));
+  return res;
 }

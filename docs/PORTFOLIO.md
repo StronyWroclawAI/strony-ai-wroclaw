@@ -52,7 +52,9 @@ Tagi: Identyfikacja wizualna · Strona 5 podstron · Panel CMS · Wersja na tele
 Miniatura: img/d-start.webp
 Link do strony: https://szalone-auto.pages.dev
 Link do karty: /portfolio/szalone-auto/
+Dla kogo: warsztatu samochodowego
 ```
+Linia **„Dla kogo”** dokańcza zdanie „Projekt strony internetowej dla …”. Na jej podstawie strona sama ustawia kartom tytuł i opis dla Google, np. „Projekt strony internetowej dla warsztatu samochodowego | Strony AI Wrocław”. Dzięki temu karta demonstracyjna nie udaje w wynikach wyszukiwania prawdziwej firmy, a wygląd karty się nie zmienia. To samo pole jest w panelu: **Dla kogo jest ten projekt (do opisu w Google)**.
 Słowo „demonstracyjny” albo „fikcyjny” w opisie zaznacza automatycznie „Projekt demonstracyjny”.
 
 ---
@@ -119,6 +121,7 @@ WYMAGANIA DLA PACZKI
    Miniatura: img/d-start.webp
    Link do strony: https://…
    Link do karty: /portfolio/[adres-karty]/
+   Dla kogo: [branża w dopełniaczu, np. warsztatu samochodowego]
 10. Na końcu spakuj folder do ZIP i podaj listę plików z rozmiarami.
 ```
 

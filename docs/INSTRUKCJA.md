@@ -179,13 +179,15 @@ Szczegóły błędów: projekt → **Deployments** → wdrożenie → **Function
 4. Uzupełnij:
    - Pages → **Variables and Secrets** → `SITE_URL` = `https://twojadomena.pl` (bez ukośnika na końcu) → **Retry deployment**;
    - Turnstile → widżet → **Hostnames** → dodaj domenę.
-5. Po ustawieniu `SITE_URL` adres `*.pages.dev` prosi wyszukiwarki o nieindeksowanie.
+5. Adres `*.pages.dev` zawsze prosi wyszukiwarki o nieindeksowanie (nagłówek `X-Robots-Tag: noindex` i `robots.txt` z `Disallow: /`), a jego canonical wskazuje na `https://stronyaiwroclaw.pl`.
+6. Wejścia na `www.stronyaiwroclaw.pl` strona sama przekierowuje (301) na `https://stronyaiwroclaw.pl` z tą samą ścieżką. Domena `www` musi tylko pozostać podłączona w **Custom domains**.
 
 ---
 
 ## Krok 9. (Opcjonalnie) Uruchomienie na własnym komputerze
 
 **Sam wygląd strony** obejrzysz bez instalowania czegokolwiek: otwórz dwuklikiem `podglad/podglad-strony.html`.
+Żeby zobaczyć stronę jednocześnie na kilku telefonach, tabletach i monitorach, otwórz `podglad/podglad-na-urzadzeniach.html` (pliki z folderu `podglad` muszą leżeć obok siebie; folderu nie wgrywasz na serwer).
 
 **Pełna wersja z panelem i bazą:**
 1. Zainstaluj **Node.js LTS** z https://nodejs.org (domyślne opcje).

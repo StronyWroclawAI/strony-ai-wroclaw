@@ -1,10 +1,10 @@
-import { siteOrigin } from './_lib/http.js';
+import { siteOrigin, isPagesDev } from './_lib/http.js';
 
 export function onRequestGet({ env, request }) {
   const origin = siteOrigin(env, request);
-  // Wersje robocze pod adresem *.pages.dev nie powinny trafiać do wyszukiwarek, gdy jest już domena docelowa.
+  // Adresy robocze *.pages.dev nie trafiają do wyszukiwarek — indeksowana jest tylko domena docelowa.
   const host = new URL(request.url).hostname;
-  const isPreview = host.endsWith('.pages.dev') && env.SITE_URL && !String(env.SITE_URL).includes(host);
+  const isPreview = isPagesDev(request) && !String(env.SITE_URL || '').includes(host);
   const body = isPreview
     ? 'User-agent: *\nDisallow: /\n'
     : `User-agent: *\nDisallow: /admin/\nDisallow: /api/\nDisallow: /brief/\nDisallow: /logo/\nDisallow: /wybor-logo/\n\nSitemap: ${origin}/sitemap.xml\n`;

@@ -15,6 +15,15 @@
    Kolory: granat i biel, jasne szarości jako tło pomocnicze.
    ========================================================= */
 
+/* Krój zastępczy dopasowany wymiarami do Plus Jakarta Sans (mniej przesunięć tekstu podczas wczytywania czcionki) */
+@font-face {
+  font-family: "Jakarta Fallback";
+  src: local("Arial"), local("Helvetica Neue"), local("Helvetica"), local("Liberation Sans"), local("Roboto");
+  size-adjust: 104%;
+  ascent-override: 100%;
+  descent-override: 21%;
+  line-gap-override: 0%;
+}
 @font-face {
   font-family: "Plus Jakarta Sans";
   font-style: normal;
@@ -71,10 +80,10 @@
 
 /* ---------- Podstawy ---------- */
 *, *::before, *::after { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; scroll-padding-top: calc(var(--header-h) + 16px); }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; scroll-behavior: smooth; scroll-padding-top: calc(var(--header-h) + 16px); }
 body {
   margin: 0;
-  font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  font-family: "Plus Jakarta Sans", "Jakarta Fallback", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
   font-size: 1.0625rem;
   line-height: 1.65;
   color: var(--text);
@@ -118,6 +127,9 @@ button { font: inherit; }
 }
 .eyebrow::before { content: ""; width: 10px; height: 10px; background: currentColor; border-radius: 2px; flex: none; }
 .eyebrow--light { color: var(--sky-200); }
+/* H1 strony głównej wygląda jak nadtytuł — główne hasło (.hero__title) zostaje wizualnie największe */
+.hero__h1 { font-size: clamp(.8125rem, .4vw + .72rem, .9375rem); line-height: 1.45; letter-spacing: .1em; align-items: flex-start; max-width: 100%; text-wrap: balance; }
+.hero__h1::before { margin-top: .3em; }
 .h2 { font-size: clamp(1.9rem, 3.6vw, 2.9rem); font-weight: 800; color: var(--navy-900); margin-bottom: 18px; text-wrap: balance; }
 .h2--light { color: var(--white); }
 .lead { font-size: clamp(1.0625rem, 1.4vw, 1.2rem); color: var(--muted); line-height: 1.6; max-width: 62ch; }
@@ -482,7 +494,7 @@ button { font: inherit; }
   .nav {
     position: fixed; inset: var(--header-h) 0 auto 0; flex-direction: column; align-items: stretch; gap: 16px;
     background: var(--navy-900); color: var(--white); padding: 16px var(--gutter) 24px;
-    box-shadow: 0 20px 40px -20px rgba(0, 0, 0, .5); max-height: calc(100vh - var(--header-h)); overflow-y: auto;
+    box-shadow: 0 20px 40px -20px rgba(0, 0, 0, .5); max-height: calc(100vh - var(--header-h)); max-height: calc(100dvh - var(--header-h)); overflow-y: auto; overscroll-behavior: contain;
     visibility: hidden; opacity: 0; transform: translateY(-8px); transition: opacity .2s, transform .25s var(--ease), visibility 0s .25s;
     --focus: #9cc3ff;
   }
@@ -549,7 +561,7 @@ button { font: inherit; }
 .prose p, .prose li { color: #2c3950; }
 .todo { background: #fff4ce; color: #5c4400; border: 1px dashed #c79a00; border-radius: 6px; padding: 1px 6px; font-weight: 700; }
 .draft-banner { background: #fff4ce; color: #5c4400; border: 1px solid #e8c95b; padding: 14px 18px; border-radius: 12px; margin-bottom: 32px; font-weight: 600; }
-.error-page { min-height: 100vh; display: grid; place-items: center; text-align: center; padding: 120px var(--gutter) 80px; background: var(--navy-800); color: var(--white); position: relative; overflow: hidden; }
+.error-page { min-height: 100vh; min-height: 100svh; display: grid; place-items: center; text-align: center; padding: 120px var(--gutter) 80px; background: var(--navy-800); color: var(--white); position: relative; overflow: hidden; }
 .error-page__inner { position: relative; max-width: 620px; }
 .error-page__code { font-size: clamp(5rem, 18vw, 9rem); font-weight: 800; letter-spacing: -.05em; line-height: 1; color: var(--sky-200); margin-bottom: 12px; }
 .error-page h1 { font-size: clamp(1.6rem, 4vw, 2.4rem); font-weight: 800; margin-bottom: 14px; }
@@ -607,7 +619,7 @@ button { font: inherit; }
 .hero__accent-static, .rotator li { background: linear-gradient(90deg, #ffd29a 0%, #ff9a7f 45%, #7fe3d6 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .rotator { display: none; }
 .has-rotator .hero__accent-static { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-.has-rotator .rotator { display: block; position: relative; height: var(--rot-h, 1.1em); transition: height .4s var(--ease); }
+.has-rotator .rotator { display: block; position: relative; height: var(--rot-h, 1.1em); }
 .rotator__list { list-style: none; margin: 0; padding: 0; }
 .rotator li { position: absolute; left: 0; top: 0; right: 0; opacity: 0; transform: translateY(55%) rotateX(-40deg); transform-origin: 50% 100%; transition: opacity .55s var(--ease), transform .7s var(--ease-pop); padding-bottom: .08em; }
 .rotator li.is-active { opacity: 1; transform: none; }
@@ -615,8 +627,8 @@ button { font: inherit; }
 
 .offer-card { position: relative; overflow: hidden; border-color: rgba(255, 197, 107, .45); background: linear-gradient(135deg, rgba(255, 181, 71, .16), rgba(255, 107, 90, .08) 45%, rgba(25, 194, 176, .1)); }
 .offer-card__value { background: var(--grad-warm); -webkit-background-clip: text; background-clip: text; color: transparent; }
-.offer-card::after { content: ""; position: absolute; top: -40%; left: -30%; width: 40%; height: 180%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .12), transparent); transform: rotate(20deg); animation: sheen 6s ease-in-out infinite; pointer-events: none; }
-@keyframes sheen { 0%, 60% { left: -40%; } 100% { left: 130%; } }
+.offer-card::after { content: ""; position: absolute; top: -40%; left: -40%; width: 40%; height: 180%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .12), transparent); transform: translateX(0) rotate(20deg); animation: sheen 6s ease-in-out infinite; pointer-events: none; will-change: transform; }
+@keyframes sheen { 0%, 60% { transform: translateX(0) rotate(20deg); } 100% { transform: translateX(425%) rotate(20deg); } }
 
 .hero__ring { position: absolute; width: 440px; height: 440px; right: 4%; top: 50%; margin-top: -220px; border-radius: 50%; border: 2px dashed rgba(255, 255, 255, .16); animation: spin 60s linear infinite; }
 .hero__ring::before { content: ""; position: absolute; top: -9px; left: 50%; width: 16px; height: 16px; border-radius: 50%; background: var(--amber); box-shadow: 0 0 20px var(--amber); }

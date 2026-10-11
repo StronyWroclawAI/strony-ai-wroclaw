@@ -1825,6 +1825,7 @@
       cover: (get(/^\s*Miniatura\s*:\s*(.+)$/im).match(/[A-Za-z0-9_./-]+\.(?:webp|png|jpe?g|avif|gif|svg)/i) || [''])[0],
       site_url: (get(/^\s*Link do strony\s*:\s*(.+)$/im).match(/https?:\/\/[^\s←]+/) || [''])[0],
       slug: (get(/^\s*Link do karty\s*:\s*(.+)$/im).match(/\/portfolio\/([a-z0-9-]+)/) || ['', ''])[1],
+      seo_for: get(/^\s*Dla kogo\s*:\s*(.+)$/im).replace(/^(projekt strony internetowej\s+)?dla\s+/i, ''),
       is_demo: /demonstracyjn|fikcyjn/i.test(text),
     };
     return r;
@@ -1904,7 +1905,7 @@
 
   async function viewProject(main, id) {
     const isNew = id === 'nowa';
-    let project = { title: '', industry: '', description: '', site_url: '', status: 'draft', slug: '', tags: '', is_demo: 0 };
+    let project = { title: '', industry: '', description: '', site_url: '', status: 'draft', slug: '', tags: '', is_demo: 0, seo_for: '' };
     let images = [];
     let card = null;
     if (!isNew) {
@@ -1931,7 +1932,8 @@
     const slugIn = h('input', { type: 'text', maxlength: '60', value: project.slug || '', placeholder: 'np. szalone-auto', pattern: '[a-z0-9-]+' });
     const tagsIn = h('input', { type: 'text', maxlength: '300', value: project.tags || '', placeholder: 'np. Logo · Strona 5 podstron · Panel CMS · Wersja na telefon' });
     const demoCb = h('input', { type: 'checkbox', checked: Boolean(project.is_demo) });
-    [title, industry, desc, url, statusSel, slugIn, tagsIn, demoCb].forEach((el) => el.addEventListener('input', () => (dirty = true)));
+    const seoFor = h('input', { type: 'text', maxlength: '80', value: project.seo_for || '', placeholder: 'np. warsztatu samochodowego' });
+    [title, industry, desc, url, statusSel, slugIn, tagsIn, demoCb, seoFor].forEach((el) => el.addEventListener('input', () => (dirty = true)));
     demoCb.addEventListener('change', () => (dirty = true));
 
     // ----- Karta projektu -----
@@ -1947,6 +1949,7 @@
       if (o.tags) tagsIn.value = o.tags.slice(0, 300);
       if (o.site_url) url.value = o.site_url;
       if (o.slug) slugIn.value = o.slug;
+      if (o.seo_for) seoFor.value = o.seo_for.slice(0, 80);
       demoCb.checked = o.is_demo;
       if (o.cover && pending && pending.files.some((f) => f.path === o.cover)) coverChoice = o.cover;
       dirty = true;
@@ -2151,7 +2154,7 @@
             return msg.replaceChildren(h('div', { class: 'alert alert--error', text: 'Adres karty: tylko małe litery bez polskich znaków, cyfry i pojedyncze myślniki, np. salon-ola.' }));
           }
           busy(saveBtn, true);
-          const payload = { title: t, industry: industry.value.trim(), description: desc.value.trim(), site_url: site || null, status: statusSel.value, slug: slugVal, tags: tagsIn.value.trim(), is_demo: demoCb.checked };
+          const payload = { title: t, industry: industry.value.trim(), description: desc.value.trim(), site_url: site || null, status: statusSel.value, slug: slugVal, tags: tagsIn.value.trim(), is_demo: demoCb.checked, seo_for: seoFor.value.trim() };
           const res = await q(api(isNew ? 'portfolio' : `portfolio/${project.id}`, { method: isNew ? 'POST' : 'PUT', body: { ...payload, image_ids: images.map((m) => m.id) } }));
           if (res.error) {
             busy(saveBtn, false);
@@ -2188,6 +2191,7 @@
         h('div', { class: 'grid-2' }, field('Nazwa realizacji / firmy *', title), field('Branża / podtytuł', industry, 'np. Warsztat samochodowy · Wrocław')),
         field('Opis (1–2 zdania na kafelek)', desc, 'Co przygotowałeś i co było ważne dla firmy.'),
         field('Tagi (zakres projektu)', tagsIn, 'Oddziel kropką „·” albo przecinkiem. Pokażą się jako etykiety na kafelku.'),
+        field('Dla kogo jest ten projekt (do opisu w Google)', seoFor, 'Dokończ zdanie „Projekt strony internetowej dla …”, np. warsztatu samochodowego, salonu fryzjerskiego, gabinetu fizjoterapii. Google zobaczy kartę jako przykładowy projekt dla tej branży, a nie jako stronę prawdziwej firmy. Na stronie nic się nie zmieni.'),
         h('div', { class: 'grid-2' }, field('Adres strony (na żywo)', url), field('Status', statusSel, 'Szkic jest widoczny tylko w panelu.')),
         h('label', { class: 'check' }, demoCb, 'Projekt demonstracyjny (fikcyjna firma / koncepcja) — na stronie pojawi się oznaczenie „Projekt demonstracyjny”')
       ),

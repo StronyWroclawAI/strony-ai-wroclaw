@@ -560,6 +560,7 @@ export async function onRequest(context) {
         const status = b.status === 'published' ? 'published' : 'draft';
         const tags = str(b.tags ?? '', [0, 300], 'Tagi');
         const isDemo = bool(b.is_demo);
+        const seoFor = str(b.seo_for ?? '', [0, 80], 'Dla kogo jest ten projekt').replace(/^dla\s+/i, '');
         const imageIds = Array.isArray(b.image_ids) ? b.image_ids.slice(0, 30) : [];
         imageIds.forEach(checkId);
         const t = nowIso();
@@ -583,8 +584,8 @@ export async function onRequest(context) {
         }
         const stmts = [
           isNew
-            ? env.DB.prepare(`INSERT INTO portfolio_projects (id, title, industry, description, site_url, status, sort_order, created_at, updated_at, slug, tags, is_demo) VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?)`).bind(id, title, industry, description, u.value, status, t, t, slug, tags, isDemo)
-            : env.DB.prepare(`UPDATE portfolio_projects SET title = ?, industry = ?, description = ?, site_url = ?, status = ?, updated_at = ?, slug = ?, tags = ?, is_demo = ? WHERE id = ?`).bind(title, industry, description, u.value, status, t, slug, tags, isDemo, id),
+            ? env.DB.prepare(`INSERT INTO portfolio_projects (id, title, industry, description, site_url, status, sort_order, created_at, updated_at, slug, tags, is_demo, seo_for) VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?)`).bind(id, title, industry, description, u.value, status, t, t, slug, tags, isDemo, seoFor)
+            : env.DB.prepare(`UPDATE portfolio_projects SET title = ?, industry = ?, description = ?, site_url = ?, status = ?, updated_at = ?, slug = ?, tags = ?, is_demo = ?, seo_for = ? WHERE id = ?`).bind(title, industry, description, u.value, status, t, slug, tags, isDemo, seoFor, id),
           env.DB.prepare(`DELETE FROM portfolio_images WHERE project_id = ?`).bind(id),
           ...[...new Set(imageIds)].map((mid, i) => env.DB.prepare(`INSERT INTO portfolio_images (project_id, media_id, sort_order) VALUES (?, ?, ?)`).bind(id, mid, (i + 1) * 10)),
         ];

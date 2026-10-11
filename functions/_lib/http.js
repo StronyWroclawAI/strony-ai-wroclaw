@@ -35,11 +35,22 @@ export function json(data, status = 200, extraHeaders = {}) {
   return new Response(JSON.stringify(data), { status, headers: h });
 }
 
-/** Adres strony: zmienna SITE_URL albo adres, pod który przyszło żądanie. */
+/** Docelowy (kanoniczny) adres strony — bez „www”. Można go nadpisać zmienną SITE_URL. */
+export const CANONICAL_ORIGIN = 'https://stronyaiwroclaw.pl';
+
+/** Czy żądanie przyszło na adres roboczy Cloudflare (*.pages.dev)? */
+export const isPagesDev = (request) => new URL(request.url).hostname.endsWith('.pages.dev');
+
+/**
+ * Adres strony: zmienna SITE_URL; na adresach *.pages.dev i „www.” — domena docelowa;
+ * w pozostałych przypadkach (np. podgląd lokalny) — adres, pod który przyszło żądanie.
+ */
 export function siteOrigin(env, request) {
   const fromEnv = (env.SITE_URL || '').trim().replace(/\/+$/, '');
   if (/^https?:\/\//.test(fromEnv)) return fromEnv;
-  return new URL(request.url).origin;
+  const url = new URL(request.url);
+  if (url.hostname.endsWith('.pages.dev') || url.hostname.startsWith('www.')) return CANONICAL_ORIGIN;
+  return url.origin;
 }
 
 export function contactEmail(env) {

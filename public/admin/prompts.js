@@ -355,6 +355,7 @@ Tagi: [3–5 tagów oddzielonych „ · ”]
 Miniatura: img/d-start.webp
 Link do strony: [https://…]
 Link do karty: /portfolio/${sl}/
+Dla kogo: [branża w dopełniaczu, np. warsztatu samochodowego — dokończenie zdania „Projekt strony internetowej dla …”]
 (Jeśli projekt jest demonstracyjny, dopisz w opisie słowo „demonstracyjny”.)
 
 NA KONIEC

@@ -44,14 +44,21 @@
     if (items.length < 2) return;
     title.classList.add('has-rotator');
     var i = 0;
-    function measure() {
-      var h = items[i].offsetHeight;
-      if (h) box.style.setProperty('--rot-h', h + 'px');
+    // Wysokość = najwyższa z fraz (np. gdy któraś łamie się na dwie linie na telefonie),
+    // dzięki temu tekst pod nagłówkiem nie przesuwa się przy każdej zmianie słowa.
+    var lastW = 0;
+    function measure(force) {
+      var w = box.offsetWidth;
+      if (!force && w === lastW) return;
+      lastW = w;
+      var max = 0;
+      for (var k = 0; k < items.length; k++) max = Math.max(max, items[k].offsetHeight);
+      if (max) box.style.setProperty('--rot-h', max + 'px');
     }
     items[0].classList.add('is-active');
-    measure();
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
-    window.addEventListener('resize', measure);
+    measure(true);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { measure(true); });
+    window.addEventListener('resize', function () { measure(false); });
     setInterval(function () {
       if (document.hidden) return;
       var prev = items[i];
@@ -60,7 +67,6 @@
       prev.classList.add('is-leaving');
       items[i].classList.remove('is-leaving');
       items[i].classList.add('is-active');
-      measure();
       setTimeout(function () { prev.classList.remove('is-leaving'); }, 600);
     }, 2600);
   }

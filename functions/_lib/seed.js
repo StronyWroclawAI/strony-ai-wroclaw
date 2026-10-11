@@ -35,11 +35,11 @@ export const SEED = {
    "sort_order": 6003
   },
   {
-   "key": "hero.eyebrow",
+   "key": "hero.h1",
    "section": "Pierwszy ekran",
-   "label": "Nad nagłówkiem (mały tekst)",
+   "label": "Nagłówek H1 (najważniejszy dla Google — o czym jest strona)",
    "kind": "text",
-   "value": "Z Wrocławia — dla firm z całej Polski",
+   "value": "Tworzenie stron internetowych dla firm we Wrocławiu",
    "sort_order": 1004
   },
   {
@@ -63,7 +63,7 @@ export const SEED = {
    "section": "Pierwszy ekran",
    "label": "Opis pod nagłówkiem",
    "kind": "long",
-   "value": "Projektuję i tworzę nowoczesne strony internetowe dla małych firm usługowych. Buduję portfolio, dlatego wybranym firmom wykonuję stronę bezpłatnie.",
+   "value": "Projektuję nowoczesne strony internetowe dla małych firm, usługodawców i lokalnych biznesów z Wrocławia i całej Polski. Każda strona powstaje indywidualnie, działa wygodnie na telefonach i komputerach i jest przygotowana tak, aby dobrze prezentować firmę w internecie. Buduję portfolio, dlatego wybranym firmom wykonuję stronę bezpłatnie.",
    "sort_order": 1007
   },
   {
@@ -127,7 +127,7 @@ export const SEED = {
    "section": "Korzyści",
    "label": "Nagłówek sekcji",
    "kind": "text",
-   "value": "Co zyskuje firma dzięki dobrej stronie",
+   "value": "Co zyskuje firma dzięki dobrej stronie internetowej",
    "sort_order": 2015
   },
   {
@@ -287,7 +287,7 @@ export const SEED = {
    "section": "Przebieg współpracy",
    "label": "Nagłówek sekcji",
    "kind": "text",
-   "value": "Od pierwszej rozmowy do działającej strony",
+   "value": "Jak powstaje strona WWW — od pierwszej rozmowy do publikacji",
    "sort_order": 5035
   },
   {
@@ -599,7 +599,7 @@ export const SEED = {
    "section": "Portfolio – nagłówek",
    "label": "Nagłówek sekcji",
    "kind": "text",
-   "value": "Realizacje",
+   "value": "Realizacje i projekty stron internetowych",
    "sort_order": 8074
   },
   {

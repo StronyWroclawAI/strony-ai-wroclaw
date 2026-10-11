@@ -2,7 +2,7 @@
 // Gdy baza jest niedostępna lub nieskonfigurowana, strona pokazuje treści domyślne z pliku HTML.
 
 import { ensureSchema, hasDb, mediaUrl } from './db.js';
-import { withSecurityHeaders, siteOrigin } from './http.js';
+import { withSecurityHeaders, siteOrigin, contactEmail } from './http.js';
 import {
   renderIndustries,
   renderIndustryOptions,
@@ -12,6 +12,55 @@ import {
   renderPortfolio,
 } from './render.js';
 import { recordVisit } from './stats.js';
+
+/**
+ * Dane strukturalne (schema.org) — wyłącznie informacje widoczne na stronie:
+ * nazwa, adres strony, e-mail, obszar działania, autor. Bez adresu, telefonu, NIP-u i ocen.
+ */
+export function structuredData(origin, email) {
+  const org = `${origin}/#organizacja`;
+  const graph = [
+    {
+      '@type': 'WebSite',
+      '@id': `${origin}/#strona`,
+      url: `${origin}/`,
+      name: 'Strony AI Wrocław',
+      alternateName: 'Strony, które budują wizerunek',
+      inLanguage: 'pl-PL',
+      publisher: { '@id': org },
+    },
+    {
+      '@type': 'ProfessionalService',
+      '@id': org,
+      name: 'Strony AI Wrocław',
+      url: `${origin}/`,
+      logo: `${origin}/assets/img/icon-512.png`,
+      image: `${origin}/assets/img/og-image.png`,
+      description:
+        'Tworzenie nowoczesnych stron internetowych dla firm z Wrocławia i całej Polski: indywidualny projekt, wersja mobilna, formularz kontaktowy, mapa, galeria i pomoc przy wdrożeniu.',
+      ...(email ? { email } : {}),
+      founder: { '@type': 'Person', name: 'Grzegorz' },
+      areaServed: [
+        { '@type': 'City', name: 'Wrocław' },
+        { '@type': 'Country', name: 'Polska' },
+      ],
+      knowsAbout: ['Tworzenie stron internetowych', 'Projektowanie stron WWW', 'Strony internetowe dla firm'],
+    },
+    {
+      '@type': 'Service',
+      '@id': `${origin}/#usluga`,
+      serviceType: 'Tworzenie stron internetowych',
+      name: 'Tworzenie stron internetowych dla firm',
+      provider: { '@id': org },
+      areaServed: [
+        { '@type': 'City', name: 'Wrocław' },
+        { '@type': 'Country', name: 'Polska' },
+      ],
+      url: `${origin}/`,
+    },
+  ];
+  return JSON.stringify({ '@context': 'https://schema.org', '@graph': graph }).replace(/</g, '\\u003c');
+}
 
 const PRIVACY_REQUIRED = ['privacy.controller_name', 'privacy.db_region', 'privacy.retention', 'privacy.updated', 'privacy.transfer_check'];
 
@@ -27,7 +76,7 @@ export async function loadContent(context) {
       db.prepare(`SELECT name, description FROM industries WHERE is_published = 1 ORDER BY sort_order, created_at`),
       db.prepare(`SELECT title, description, size FROM capabilities WHERE is_published = 1 ORDER BY sort_order, created_at`),
       db.prepare(`SELECT question, answer FROM faq_items WHERE is_published = 1 ORDER BY sort_order, created_at`),
-      db.prepare(`SELECT id, title, industry, description, site_url, slug, tags, is_demo, card_ver, card_cover FROM portfolio_projects WHERE status = 'published' ORDER BY sort_order, created_at DESC`),
+      db.prepare(`SELECT id, title, industry, description, site_url, slug, tags, is_demo, card_ver, card_cover, seo_for FROM portfolio_projects WHERE status = 'published' ORDER BY sort_order, created_at DESC`),
       db.prepare(`SELECT pi.project_id, m.kv_key, m.alt, m.width, m.height FROM portfolio_images pi
                   JOIN media m ON m.id = pi.media_id
                   JOIN portfolio_projects p ON p.id = pi.project_id AND p.status = 'published'
@@ -92,6 +141,12 @@ export async function renderPage(context) {
         el.setAttribute('data-language', 'pl');
         el.setAttribute('data-theme', 'light');
         el.setAttribute('data-size', 'flexible');
+      },
+    })
+    // Dane strukturalne dla Google (tylko strona główna ma ten element)
+    .on('script#ld-json', {
+      element(el) {
+        el.setInnerContent(structuredData(origin, (data && data.contactEmail) || contactEmail(env)), { html: true });
       },
     })
     .on('head', {

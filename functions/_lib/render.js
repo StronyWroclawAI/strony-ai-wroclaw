@@ -98,9 +98,12 @@ export function renderPortfolio(projects) {
     .map((p, i) => {
       const imgs = (p.images || []).filter((im) => im.url);
       const hasCard = Boolean(p.card_ver && p.slug);
+      const forWhom = String(p.seo_for || '').trim();
+      // Opis dla czytników ekranu i Google: „projekt strony internetowej dla warsztatu samochodowego”
+      const about = forWhom ? `projekt strony internetowej dla ${forWhom}` : `projekt strony internetowej — ${p.title}`;
       const cardHref = hasCard ? `/portfolio/${encodeURIComponent(p.slug)}/` : null;
       const cover = hasCard && p.card_cover
-        ? { url: `/portfolio/${encodeURIComponent(p.slug)}/${p.card_cover.split('/').map(encodeURIComponent).join('/')}`, alt: `Zrzut ekranu projektu ${p.title}` }
+        ? { url: `/portfolio/${encodeURIComponent(p.slug)}/${p.card_cover.split('/').map(encodeURIComponent).join('/')}`, alt: `Zrzut ekranu: ${about}${forWhom ? ` (${p.title})` : ''}` }
         : imgs[0];
       const rest = (hasCard && p.card_cover ? imgs : imgs.slice(1)).slice(0, 4);
       const link = safeUrl(p.site_url);
@@ -144,7 +147,7 @@ export function renderPortfolio(projects) {
     ${
       cardHref || link
         ? `<div class="work__actions">${
-            cardHref ? `<a class="btn btn--primary btn--sm" href="${esc(cardHref)}">Zobacz projekt<span class="visually-hidden"> ${esc(p.title)}</span> →</a>` : ''
+            cardHref ? `<a class="btn btn--primary btn--sm" href="${esc(cardHref)}">Zobacz projekt<span class="visually-hidden">: ${esc(about)}${forWhom ? ` (${esc(p.title)})` : ''}</span> →</a>` : ''
           }${
             link
               ? `<a class="link-arrow" href="${esc(link)}" target="_blank" rel="noopener">${p.is_demo ? 'Wersja demonstracyjna' : 'Strona na żywo'}<span class="visually-hidden"> ${esc(p.title)} (otwiera się w nowej karcie)</span></a>`

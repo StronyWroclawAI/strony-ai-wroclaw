@@ -138,3 +138,93 @@ export async function deleteCardFiles(env, projectId, keepVer = null) {
 }
 
 export const cardUrl = (slug, path = '') => `/portfolio/${slug}/${path}`;
+
+// ---------- SEO kart projektów ----------
+// Google ma widzieć kartę jako „projekt strony internetowej dla [branży]” wykonany przez Strony AI Wrocław,
+// a nie jako stronę prawdziwej firmy. Wygląd karty się nie zmienia — podmieniamy tylko znaczniki w <head>.
+
+const escAttr = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const clip = (s, n) => {
+  const t = String(s || '').replace(/\s+/g, ' ').trim();
+  if (t.length <= n) return t;
+  const cut = t.slice(0, n - 1);
+  return `${cut.slice(0, Math.max(cut.lastIndexOf(' '), n - 20)).replace(/[\s,.;:—–-]+$/, '')}…`;
+};
+
+/** Teksty SEO dla karty projektu. p: { title, industry, description, is_demo, seo_for, slug, card_cover } */
+export function cardSeo(p, origin) {
+  const forWhom = String(p.seo_for || '').replace(/\s+/g, ' ').trim();
+  const branch = String(p.industry || '').split(/\s*[·•|]\s*/)[0].trim();
+  const subject = forWhom ? `Projekt strony internetowej dla ${forWhom}` : branch ? `Projekt strony internetowej: ${branch}` : `Projekt strony internetowej — ${String(p.title || '').trim() || 'portfolio'}`;
+  const title = clip(`${subject} | Strony AI Wrocław`, 90);
+  const lead = p.is_demo ? `Przykładowa realizacja Strony AI Wrocław: ${subject.charAt(0).toLowerCase()}${subject.slice(1)}.` : `Realizacja Strony AI Wrocław: ${subject.charAt(0).toLowerCase()}${subject.slice(1)}.`;
+  const tail = p.is_demo ? ' Projekt demonstracyjny — firma i dane są fikcyjne.' : '';
+  const desc = clip(`${lead} ${clip(p.description, 240 - lead.length - tail.length)}`.trim(), 240 - tail.length) + tail;
+  const url = `${origin}/portfolio/${p.slug}/`;
+  const image = p.card_cover ? `${url}${String(p.card_cover).split('/').map(encodeURIComponent).join('/')}` : `${origin}/assets/img/og-image.png`;
+  return { title, description: desc, url, image, subject };
+}
+
+/** Dane strukturalne karty: CreativeWork wykonany przez Strony AI Wrocław. */
+function cardJsonLd(p, seo, origin) {
+  const data = {
+    '@context': 'https://schema.org',
+    '@type': 'CreativeWork',
+    name: seo.subject,
+    headline: seo.title.replace(/\s*\|\s*Strony AI Wrocław$/, ''),
+    description: seo.description,
+    url: seo.url,
+    image: seo.image,
+    inLanguage: 'pl-PL',
+    genre: p.is_demo ? 'Projekt demonstracyjny strony internetowej' : 'Realizacja strony internetowej',
+    creator: { '@type': 'Organization', '@id': `${origin}/#organizacja`, name: 'Strony AI Wrocław', url: `${origin}/` },
+    isPartOf: { '@type': 'WebSite', '@id': `${origin}/#strona`, url: `${origin}/` },
+  };
+  return JSON.stringify(data).replace(/</g, '\\u003c');
+}
+
+/** Podmienia tytuł, opis, canonical, Open Graph i Twitter w <head> karty projektu. */
+export function rewriteCardHead(response, p, origin) {
+  const seo = cardSeo(p, origin);
+  const remove = { element: (el) => el.remove() };
+  const head = [
+    `<title>${escAttr(seo.title)}</title>`,
+    `<meta name="description" content="${escAttr(seo.description)}">`,
+    `<link rel="canonical" href="${escAttr(seo.url)}">`,
+    '<meta property="og:type" content="article">',
+    '<meta property="og:locale" content="pl_PL">',
+    '<meta property="og:site_name" content="Strony AI Wrocław">',
+    `<meta property="og:title" content="${escAttr(seo.title)}">`,
+    `<meta property="og:description" content="${escAttr(seo.description)}">`,
+    `<meta property="og:url" content="${escAttr(seo.url)}">`,
+    `<meta property="og:image" content="${escAttr(seo.image)}">`,
+    '<meta name="twitter:card" content="summary_large_image">',
+    `<meta name="twitter:title" content="${escAttr(seo.title)}">`,
+    `<meta name="twitter:description" content="${escAttr(seo.description)}">`,
+    `<meta name="twitter:image" content="${escAttr(seo.image)}">`,
+    `<script type="application/ld+json">${cardJsonLd(p, seo, origin)}</script>`,
+  ].join('\n');
+  let added = false;
+  return new HTMLRewriter()
+    .on('head title', remove)
+    .on('head meta[name="description"]', remove)
+    .on('head link[rel="canonical"]', remove)
+    .on('head meta[property^="og:"]', remove)
+    .on('head meta[name^="twitter:"]', remove)
+    .on('head', {
+      element(el) {
+        added = true;
+        el.append(head, { html: true });
+      },
+    })
+    .on('body', {
+      element(el) {
+        // Karta bez <head> (rzadkie) — znaczniki trafiają na początek dokumentu
+        if (!added) {
+          added = true;
+          el.before(head, { html: true });
+        }
+      },
+    })
+    .transform(response);
+}

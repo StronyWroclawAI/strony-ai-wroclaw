@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Podgląd na urządzeniach — Strony AI Wrocław</title>
+<!-- PODGLĄD LOKALNY: otwórz dwuklikiem. Plik pokazuje podglad-strony.html w rozmiarach telefonów, tabletów i komputerów.
+     Wszystkie pliki z folderu „podglad” muszą leżeć obok siebie. Nie wgrywaj tego folderu na serwer. -->
+<style>
+  :root { --bg: #0b1d36; --panel: #132a4a; --line: #2a4670; --text: #eef3fa; --muted: #a9b8cf; --accent: #ffb547; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; background: var(--bg); color: var(--text); }
+  header { position: sticky; top: 0; z-index: 2; background: var(--panel); border-bottom: 1px solid var(--line); padding: 12px 16px; display: grid; gap: 10px; }
+  h1 { font-size: 1.05rem; margin: 0; }
+  h1 small { font-weight: 400; color: var(--muted); }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  button, select { font: inherit; color: var(--text); background: transparent; border: 1.5px solid var(--line); border-radius: 9px; padding: 6px 11px; cursor: pointer; }
+  button[aria-pressed="true"] { border-color: var(--accent); background: rgba(255, 181, 71, .14); }
+  button:focus-visible, select:focus-visible, input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  label { color: var(--muted); display: inline-flex; gap: 8px; align-items: center; }
+  input[type=range] { width: 180px; }
+  .hint { color: var(--muted); font-size: .85rem; margin: 0; }
+  main { padding: 20px 16px 40px; }
+  .stage { display: flex; flex-wrap: wrap; gap: 28px; justify-content: center; align-items: flex-start; }
+  figure { margin: 0; display: grid; gap: 8px; justify-items: center; }
+  figcaption { color: var(--muted); font-size: .85rem; text-align: center; }
+  .device { position: relative; background: #000; border-radius: 22px; padding: 10px; box-shadow: 0 30px 60px -30px rgba(0, 0, 0, .8); overflow: hidden; }
+  .device--desk { border-radius: 12px; padding: 26px 8px 8px; background: #22324a; }
+  .device--desk::before { content: "● ● ●"; position: absolute; top: 5px; left: 12px; font-size: 10px; letter-spacing: 2px; color: #8aa0bf; }
+  .viewport { overflow: hidden; border-radius: 12px; background: #fff; }
+  .device--desk .viewport { border-radius: 4px; }
+  iframe { border: 0; display: block; transform-origin: 0 0; background: #fff; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Podgląd strony na urządzeniach <small>— tylko na Twoim komputerze, nic nie jest publikowane</small></h1>
+  <div class="row" role="group" aria-label="Wybierz widok">
+    <button type="button" data-set="phones" aria-pressed="true">Telefony</button>
+    <button type="button" data-set="landscape">Telefony poziomo</button>
+    <button type="button" data-set="tablets">Tablety</button>
+    <button type="button" data-set="desktops">Komputery</button>
+    <button type="button" data-set="all">Wszystko naraz</button>
+    <label>Własna szerokość <input type="range" min="280" max="1920" step="10" value="390" data-custom aria-describedby="cw"> <output id="cw">390 px</output></label>
+    <label>Strona
+      <select data-page>
+        <option value="podglad-strony.html">Strona główna</option>
+        <option value="podglad-polityka-prywatnosci.html">Polityka prywatności</option>
+        <option value="podglad-brief.html">Brief (ankieta)</option>
+      </select>
+    </label>
+  </div>
+  <p class="hint">Każde okno to prawdziwa strona — możesz w nim przewijać i klikać. Rozmiary odpowiadają popularnym urządzeniom (szerokość × wysokość ekranu w pikselach CSS).</p>
+</header>
+<main><div class="stage" data-stage></div></main>
+<script>
+(function () {
+  var SETS = {
+    phones: [['iPhone SE', 375, 667], ['Samsung Galaxy S', 360, 780], ['iPhone 15 / 16', 393, 852], ['iPhone Pro Max', 430, 932], ['Mały telefon', 320, 640]],
+    landscape: [['iPhone poziomo', 852, 393], ['Android poziomo', 780, 360], ['iPhone SE poziomo', 667, 375]],
+    tablets: [['iPad', 820, 1180], ['iPad mini', 744, 1133], ['iPad poziomo', 1180, 820], ['Tablet Android', 800, 1280]],
+    desktops: [['Laptop 13"', 1280, 800], ['Laptop 15"', 1366, 768], ['Monitor Full HD', 1920, 1080], ['Monitor 1440p', 2560, 1440]],
+  };
+  SETS.all = [SETS.phones[2], SETS.phones[4], SETS.landscape[0], SETS.tablets[0], SETS.desktops[1], SETS.desktops[2]];
+  var stage = document.querySelector('[data-stage]');
+  var pageSel = document.querySelector('[data-page]');
+  var custom = document.querySelector('[data-custom]');
+  var out = document.getElementById('cw');
+  var current = 'phones';
+
+  function frame(name, w, h) {
+    var avail = Math.min(window.innerWidth - 60, 1400);
+    var maxH = Math.max(420, window.innerHeight - 200);
+    var scale = Math.min(1, avail / w, maxH / h);
+    var fig = document.createElement('figure');
+    var dev = document.createElement('div');
+    dev.className = 'device' + (w >= 1000 ? ' device--desk' : '');
+    var vp = document.createElement('div');
+    vp.className = 'viewport';
+    vp.style.width = Math.round(w * scale) + 'px';
+    vp.style.height = Math.round(h * scale) + 'px';
+    var ifr = document.createElement('iframe');
+    ifr.title = 'Podgląd: ' + name + ' ' + w + '×' + h;
+    ifr.width = w; ifr.height = h;
+    ifr.style.width = w + 'px'; ifr.style.height = h + 'px';
+    ifr.style.transform = 'scale(' + scale + ')';
+    ifr.loading = 'lazy';
+    ifr.src = pageSel.value;
+    vp.appendChild(ifr); dev.appendChild(vp); fig.appendChild(dev);
+    var cap = document.createElement('figcaption');
+    cap.textContent = name + ' — ' + w + ' × ' + h + (scale < 1 ? ' (pomniejszone do ' + Math.round(scale * 100) + '%)' : '');
+    fig.appendChild(cap);
+    return fig;
+  }
+  function render() {
+    stage.replaceChildren();
+    var list = current === 'custom' ? [['Własna szerokość', +custom.value, 800]] : SETS[current];
+    list.forEach(function (d) { stage.appendChild(frame(d[0], d[1], d[2])); });
+  }
+  document.querySelectorAll('[data-set]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      current = b.getAttribute('data-set');
+      document.querySelectorAll('[data-set]').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+      render();
+    });
+  });
+  custom.addEventListener('input', function () {
+    out.textContent = custom.value + ' px';
+    current = 'custom';
+    document.querySelectorAll('[data-set]').forEach(function (x) { x.setAttribute('aria-pressed', 'false'); });
+    render();
+  });
+  pageSel.addEventListener('change', render);
+  var t; window.addEventListener('resize', function () { clearTimeout(t); t = setTimeout(render, 200); });
+  render();
+})();
+</script>
+</body>
+</html>
