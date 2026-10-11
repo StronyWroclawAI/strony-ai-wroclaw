@@ -141,6 +141,8 @@ export async function renderPage(context) {
         el.setAttribute('data-language', 'pl');
         el.setAttribute('data-theme', 'light');
         el.setAttribute('data-size', 'flexible');
+        // widżet pojawia się tylko wtedy, gdy Cloudflare potrzebuje dodatkowego potwierdzenia (formularz jest krótszy)
+        el.setAttribute('data-appearance', 'interaction-only');
       },
     })
     // Teksty zakładek portfolio są tylko w bazie/panelu — kontener z nimi nie trafia na stronę

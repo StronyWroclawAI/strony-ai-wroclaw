@@ -895,16 +895,18 @@ button { font: inherit; }
 .section[id] { scroll-margin-top: calc(24px - var(--section-y)); }
 
 /* ===== Formularz zgłoszeniowy — zwarty, cały widoczny na ekranie komputera ===== */
-.contact .form-card { padding: clamp(18px, 2.4vw, 30px); }
+.contact .form-card { padding: 22px clamp(18px, 2vw, 26px) 20px; }
 .lead-form .form-row--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .lead-form .form-row { align-items: end; }
 .lead-form .field { margin-bottom: 12px; }
 .lead-form .field label { font-size: .875rem; margin-bottom: 4px; line-height: 1.35; }
 .lead-form .opt { font-size: .8125rem; }
-.lead-form .field input, .lead-form .field select { min-height: 44px; padding: 9px 12px; }
+.lead-form .field input, .lead-form .field select { min-height: 42px; padding: 8px 12px; }
+.lead-form .field { margin-bottom: 10px; }
+.lead-form .form-more > summary { padding: 4px 0; }
 .lead-form .field__hint { font-size: .8125rem; line-height: 1.45; margin: 0 0 6px; }
 /* Wiadomość dopasowuje wysokość do ekranu, żeby przycisk „Wyślij zgłoszenie” był widoczny bez przewijania */
-.lead-form .field textarea { min-height: 120px; height: clamp(120px, calc(100vh - 640px), 300px); height: clamp(120px, calc(100svh - 640px), 300px); padding: 10px 12px; font-size: .9375rem; line-height: 1.5; }
+.lead-form .field textarea { min-height: 90px; height: clamp(90px, calc(100vh - 530px), 260px); height: clamp(90px, calc(100svh - 530px), 260px); padding: 10px 12px; font-size: .9375rem; line-height: 1.5; }
 .lead-form .form-privacy { font-size: .8125rem; line-height: 1.45; margin: 2px 0 12px; }
 .lead-form .btn--lg { min-height: 50px; padding: 12px 22px; }
 .contact__aside { top: calc(var(--header-h) + 20px); }
@@ -925,9 +927,6 @@ button { font: inherit; }
 .form-more > summary::-webkit-details-marker { display: none; }
 .form-more > summary::before { content: "+"; margin-right: 8px; vertical-align: middle; display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 6px; background: var(--gray-50); border: 1px solid var(--gray-200); font-weight: 800; }
 .form-more[open] > summary::before { content: "−"; }
-@media (min-width: 981px) {
-  .form-more[open] > summary { display: none; }
-}
 @media (max-width: 980px) {
   /* jedna kolumna: nagłówek → formularz → informacje dodatkowe pod formularzem */
   .contact__grid { gap: 0; }

@@ -113,7 +113,7 @@
     const select = h('select', { 'data-industry-select': '' }, h('option', { value: '', text: '— wybierz branżę —' }));
     (S ? S.industries : []).forEach((g) => {
       if (g.items[0] && g.items[0].v === 'inna') select.append(h('option', { value: 'Inna', text: 'Inna branża (wpiszę poniżej)' }));
-      else select.append(h('optgroup', { label: g.l }, ...g.items.map((i) => h('option', { value: i.l, text: i.l }))));
+      else select.append(h('optgroup', { label: g.l }, ...g.items.map((i) => h('option', { value: i.l, text: i.l, 'data-k': (i.k || []).join(' ') }))));
     });
     const other = h('input', { type: 'text', maxlength: '90', placeholder: 'np. pracownia ceramiki', 'data-industry-other': '' });
     const otherBox = field('Jaka to branża?', other);
@@ -125,6 +125,8 @@
     const sync = () => (otherBox.hidden = select.value !== 'Inna');
     select.addEventListener('change', sync);
     sync();
+    // wyszukiwarka (wpisz pierwsze litery) — po wstawieniu formularza na stronę
+    setTimeout(() => { if (window.IndustryCombo) window.IndustryCombo.enhance(select, { other }); }, 0);
     return {
       select,
       otherBox,

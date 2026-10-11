@@ -798,8 +798,8 @@ export const SEED = {
    "key": "contact.message_hint",
    "section": "Kontakt i formularz",
    "label": "Formularz: podpowiedź nad wiadomością",
-   "kind": "long",
-   "value": "Poniżej jest gotowy szkic — uzupełnij go lub napisz po swojemu. Wystarczy kilka zdań: resztę ustalimy w krótkim briefie, który wyślę po pierwszym kontakcie.",
+   "kind": "text",
+   "value": "Uzupełnij szkic albo napisz po swojemu — wystarczy kilka zdań.",
    "sort_order": 11099
   },
   {

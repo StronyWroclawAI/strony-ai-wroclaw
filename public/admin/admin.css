@@ -53,7 +53,7 @@ code { background: var(--gray-100); padding: 1px 6px; border-radius: 4px; font-s
 /* Formularze */
 .field { margin-bottom: 14px; }
 .field label, .field .label { display: block; font-weight: 700; font-size: 13px; margin-bottom: 5px; color: var(--navy-900); }
-.field input[type=text], .field input[type=email], .field input[type=url], .field input[type=password], .field input[type=search], .field select, .field textarea, .input {
+.field input[type=text], .field input[type=email], .field input[type=url], .field input[type=password], .field input[type=search], .field input[type=tel], .field input[type=number], .field select, .field textarea, .input {
   width: 100%; font: inherit; color: var(--text); background: var(--white); border: 1.5px solid var(--gray-300); border-radius: 9px; padding: 9px 11px; min-height: 42px;
 }
 .field textarea { min-height: 90px; resize: vertical; line-height: 1.5; }

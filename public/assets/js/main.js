@@ -24,9 +24,7 @@
   /* ---------- Formularz: na komputerze linki opcjonalne od razu rozwinięte;
      na telefonie i tablecie przycisk „Zgłoś swoją firmę” przewija prosto do formularza ---------- */
   function initContactJump() {
-    var more = document.querySelector('[data-form-more]');
     var wide = window.matchMedia ? window.matchMedia('(min-width: 981px)') : { matches: true };
-    if (more && wide.matches) more.open = true;
     var card = document.querySelector('#kontakt .form-card:not([hidden])');
     if (!card) return;
     function jump(smooth) {
@@ -279,6 +277,8 @@
     var submitBtn = form.querySelector('[data-submit]');
     var industry = form.elements.industry;
     var otherWrap = form.querySelector('[data-other-industry]');
+    // wyszukiwarka branży (wpisz pierwsze litery)
+    if (industry && window.IndustryCombo) window.IndustryCombo.enhance(industry, { other: form.elements.industry_other });
     var submissionId = newId();
     var sending = false;
 
