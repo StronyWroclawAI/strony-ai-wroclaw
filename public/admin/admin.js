@@ -473,6 +473,7 @@
     };
     const ind = industryPicker('');
     const pur = purposePicker('firma');
+    const logoIn = h('input', { type: 'file', multiple: true, accept: '.svg,.pdf,.png,.jpg,.jpeg,.webp', 'data-manual-logo': '' });
     const btn = h('button', { class: 'btn btn--primary', type: 'submit', text: 'Zapisz zgłoszenie' });
     const form = h(
       'form',
@@ -493,8 +494,13 @@
           payload.site_purpose = pur.get();
           busy(btn, true);
           const { data, error } = await q(api('leads', { method: 'POST', body: payload }));
+          if (error) { busy(btn, false); return toast(errMsg(error), 'error'); }
+          if (logoIn.files.length) {
+            busy(btn, true, 'Wgrywam logo…');
+            const up = await uploadLeadFiles(data.id, 'logo', logoIn.files);
+            if (up.errors.length) toast(`Zgłoszenie zapisane, ale logo nie zostało wgrane: ${up.errors.join('; ')}`, 'error');
+          }
           busy(btn, false);
-          if (error) return toast(errMsg(error), 'error');
           toast('Zgłoszenie dodane. Możesz teraz utworzyć brief.');
           location.hash = `#zgloszenie/${data.id}`;
         },
@@ -504,6 +510,7 @@
       pur.el,
       h('div', { class: 'grid-2' }, field('Nazwa firmy *', f.company_name), field('Osoba kontaktowa *', f.contact_name), field('E-mail *', f.email), field('Telefon', f.phone), field('Branża', ind.select), ind.otherBox, field('Obecna strona', f.website_url)),
       field('Opis / jak nawiązano kontakt', f.message),
+      field('Logo klienta (opcjonalnie)', logoIn, 'Jeśli klient przysłał swoje logo (np. e-mailem): SVG, PDF, PNG, JPG lub WebP, do 20 MB. Możesz wybrać kilka wersji. Później pobierzesz je w zgłoszeniu.'),
       h('div', { class: 'actions' }, btn, h('button', { class: 'btn', type: 'button', text: 'Anuluj', onclick: () => { form.reset(); form.hidden = true; } }))
     );
     pur.bind(f.company_name, ind.select);
@@ -520,6 +527,7 @@
     const logoSource = ['merged', 'logo', 'pelny', 'strona'].map((k) => leadBriefs.filter((x) => (k === 'merged' ? x.merged_at : !x.merged_at && x.kind === k)).pop()).find(Boolean) || null;
     const leadLogo = res.data ? res.data.logo : null;
     const leadEmails = res.data ? res.data.emails || [] : [];
+    const leadFiles = res.data ? res.data.files || [] : [];
     const mail = (res.data && res.data.mail) || { gmail: false, from: null };
     const mailer = leadMailer(lead, leadEmails, mail);
     if (!lead) {
@@ -727,6 +735,7 @@
         h('button', { class: 'btn btn--primary', type: 'button', text: 'Napisz e-mail', onclick: () => mailer.compose('wlasna', `Strona internetowa dla ${lead.company_name}`, `Dzień dobry,\n\n\n\n${SIGN}`) })
       ),
       leadBriefHub(lead, leadBriefs, leadLogo, mailer),
+      leadFilesSection(lead, leadFiles, leadBriefs),
       h(
         'div',
         { class: 'detail-grid' },
@@ -1030,6 +1039,201 @@
     logo: 'Krótki formularz tylko o logo, haśle i kolorach (ok. 5–8 min).',
   };
   const briefName = (b) => (b.merged_at ? 'Brief połączony (strona + logo i hasło)' : `Brief: ${KIND_NAME[b.kind] || KIND_NAME.pelny}`);
+
+  // =========================================================
+  // PLIKI OD KLIENTA (logo, zdjęcia)
+  // =========================================================
+  const fileUrl = (f, opts = '') => `/api/admin/files/${f.id}${opts}`;
+  const fmtBytes = (b) => (b > 1048576 ? `${(b / 1048576).toFixed(1).replace('.', ',')} MB` : `${Math.max(1, Math.round(b / 1024))} KB`);
+
+  /** Prosty ZIP (bez kompresji — zdjęcia i tak są skompresowane). */
+  const CRC_TABLE = (() => {
+    const t = new Uint32Array(256);
+    for (let n = 0; n < 256; n++) {
+      let c = n;
+      for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+      t[n] = c >>> 0;
+    }
+    return t;
+  })();
+  function crc32(u8) {
+    let c = 0xffffffff;
+    for (let i = 0; i < u8.length; i++) c = CRC_TABLE[(c ^ u8[i]) & 0xff] ^ (c >>> 8);
+    return (c ^ 0xffffffff) >>> 0;
+  }
+  function makeZip(entries) {
+    const enc = new TextEncoder();
+    const parts = [];
+    const central = [];
+    let offset = 0;
+    entries.forEach(({ name, data }) => {
+      const nb = enc.encode(name);
+      const crc = crc32(data);
+      const lh = new DataView(new ArrayBuffer(30));
+      lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true); lh.setUint16(8, 0, true);
+      lh.setUint32(14, crc, true); lh.setUint32(18, data.length, true); lh.setUint32(22, data.length, true); lh.setUint16(26, nb.length, true);
+      parts.push(new Uint8Array(lh.buffer), nb, data);
+      const ch = new DataView(new ArrayBuffer(46));
+      ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true); ch.setUint16(8, 0x0800, true);
+      ch.setUint32(16, crc, true); ch.setUint32(20, data.length, true); ch.setUint32(24, data.length, true); ch.setUint16(28, nb.length, true); ch.setUint32(42, offset, true);
+      central.push(new Uint8Array(ch.buffer), nb);
+      offset += 30 + nb.length + data.length;
+    });
+    const csize = central.reduce((n, p) => n + p.length, 0);
+    const end = new DataView(new ArrayBuffer(22));
+    end.setUint32(0, 0x06054b50, true); end.setUint16(8, entries.length, true); end.setUint16(10, entries.length, true); end.setUint32(12, csize, true); end.setUint32(16, offset, true);
+    return new Blob([...parts, ...central, new Uint8Array(end.buffer)], { type: 'application/zip' });
+  }
+  function saveBlob(blob, name) {
+    const url = URL.createObjectURL(blob);
+    const a = h('a', { href: url, download: name });
+    document.body.append(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  }
+  const slugName = (t) => String(t || 'klient').toLowerCase().replace(/ł/g, 'l').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'klient';
+
+  /** Zdjęcie przed wysłaniem: do 2560 px (JPEG) + miniatura 480 px. Logo — bez zmian. */
+  async function prepUpload(kind, file) {
+    if (kind !== 'photo' || !window.createImageBitmap) return { main: file };
+    const bmp = await createImageBitmap(file);
+    const draw = (max, q) => {
+      const sc = Math.min(1, max / Math.max(bmp.width, bmp.height));
+      const c = document.createElement('canvas');
+      c.width = Math.round(bmp.width * sc);
+      c.height = Math.round(bmp.height * sc);
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, c.width, c.height);
+      ctx.drawImage(bmp, 0, 0, c.width, c.height);
+      return new Promise((res) => c.toBlob((b) => res({ b, w: c.width, h: c.height }), 'image/jpeg', q));
+    };
+    const m = await draw(2560, 0.85);
+    const t = await draw(480, 0.75);
+    return { main: m.b, thumb: t.b, w: m.w, h: m.h };
+  }
+  /** Wysyła pliki do zgłoszenia. Zwraca { done, errors }. */
+  async function uploadLeadFiles(leadId, kind, list, onProgress) {
+    let done = 0;
+    const errors = [];
+    const arr = [...list];
+    for (let i = 0; i < arr.length; i++) {
+      const file = arr[i];
+      if (onProgress) onProgress(i + 1, arr.length);
+      try {
+        const p = await prepUpload(kind, file);
+        const fd = new FormData();
+        fd.append('kind', kind);
+        fd.append('name', file.name);
+        fd.append('file', p.main, file.name);
+        if (p.thumb) fd.append('thumb', p.thumb, 'thumb.jpg');
+        if (p.w) { fd.append('width', String(p.w)); fd.append('height', String(p.h)); }
+        const r = await fetch(`/api/admin/leads/${leadId}/files`, { method: 'POST', body: fd, credentials: 'same-origin', headers: { 'X-Panel': '1', Accept: 'application/json' } });
+        const d = await r.json().catch(() => ({}));
+        if (!r.ok || !d.ok) throw new Error(d.message || `błąd ${r.status}`);
+        done++;
+      } catch (e) {
+        errors.push(`${file.name}: ${/decode|source|bitmap/i.test(String(e.message)) ? 'nie mogę odczytać tego formatu (zapisz jako JPG)' : e.message}`);
+      }
+    }
+    return { done, errors };
+  }
+
+  function leadFilesSection(lead, files, briefs) {
+    const logos = files.filter((f) => f.kind === 'logo');
+    const photos = files.filter((f) => f.kind === 'photo');
+    const hasLogoAnswer = briefs.some((b) => b.answers && ['tak_wektor', 'tak_obraz', 'odswiezenie'].includes(b.answers.logo));
+    const status = h('p', { class: 'small', 'aria-live': 'polite' });
+    const picker = (kind, label) => {
+      const inp = h('input', { type: 'file', multiple: true, hidden: true, accept: kind === 'logo' ? '.svg,.pdf,.png,.jpg,.jpeg,.webp' : 'image/jpeg,image/png,image/webp', 'data-admin-upload': kind });
+      const btn = h('button', { class: 'btn btn--sm', type: 'button', text: label, onclick: () => inp.click() });
+      inp.addEventListener('change', async () => {
+        if (!inp.files.length) return;
+        busy(btn, true, 'Wgrywam…');
+        const r = await uploadLeadFiles(lead.id, kind, inp.files, (i, n) => (status.textContent = `Wgrywam ${i} z ${n}…`));
+        busy(btn, false);
+        inp.value = '';
+        status.textContent = r.errors.length ? `Nie wgrano: ${r.errors.join('; ')}` : '';
+        if (r.done) { toast(kind === 'logo' ? 'Logo dodane do zgłoszenia.' : `Dodano zdjęcia: ${r.done}.`); route(); }
+      });
+      return [inp, btn];
+    };
+    const del = (f) =>
+      h('button', {
+        class: 'btn btn--sm btn--danger-outline', type: 'button', text: 'Usuń', 'aria-label': `Usuń plik ${f.name}`,
+        onclick: async () => {
+          if (!(await confirmDialog({ title: 'Usunąć plik?', text: `Plik „${f.name}” zostanie trwale usunięty.`, ok: 'Usuń' }))) return;
+          const { error } = await q(api(`files/${f.id}`, { method: 'DELETE' }));
+          if (error) return toast(errMsg(error), 'error');
+          toast('Plik usunięty.');
+          route();
+        },
+      });
+    const src = (f) => (f.source === 'admin' ? 'dodane w panelu' : 'od klienta (brief)');
+    const logoCards = logos.map((f) =>
+      h(
+        'figure',
+        { class: 'file-logo', 'data-file': f.id },
+        /^image\//.test(f.content_type)
+          ? h('div', { class: 'file-logo__previews' }, h('div', { class: 'file-logo__light' }, h('img', { src: fileUrl(f), alt: `Logo klienta: ${f.name}` })), h('div', { class: 'file-logo__dark' }, h('img', { src: fileUrl(f), alt: '' })))
+          : h('div', { class: 'file-logo__pdf', text: 'PDF' }),
+        h('figcaption', null, h('strong', { text: f.name }), h('span', { class: 'small muted', text: ` ${fmtBytes(f.size_bytes)} · ${src(f)} · ${fmtDate(f.created_at)}` })),
+        h('div', { class: 'actions' }, h('a', { class: 'btn btn--sm btn--primary', href: fileUrl(f, '?download=1'), download: f.name, 'data-download': f.id, text: 'Pobierz plik' }), del(f))
+      )
+    );
+    const zipBtn = h('button', {
+      class: 'btn btn--sm btn--primary', type: 'button', text: `Pobierz wszystkie zdjęcia (ZIP, ${photos.length})`, 'data-photos-zip': '',
+      onclick: async () => {
+        busy(zipBtn, true, 'Przygotowuję ZIP…');
+        try {
+          const used = new Set();
+          const entries = [];
+          for (const f of photos) {
+            const r = await fetch(fileUrl(f, '?download=1'), { credentials: 'same-origin' });
+            if (!r.ok) throw new Error(`Nie pobrano ${f.name}`);
+            let n = f.name;
+            for (let i = 2; used.has(n); i++) n = f.name.replace(/(\.[a-z0-9]+)$/i, `-${i}$1`);
+            used.add(n);
+            entries.push({ name: n, data: new Uint8Array(await r.arrayBuffer()) });
+          }
+          saveBlob(makeZip(entries), `zdjecia-${slugName(lead.company_name)}.zip`);
+        } catch (e) {
+          toast(e.message, 'error');
+        }
+        busy(zipBtn, false);
+      },
+    });
+    return h(
+      'section',
+      { class: 'panel files-panel', id: 'pliki-zgloszenia', 'aria-labelledby': 'files-title' },
+      h('div', { class: 'brief-sec__head' }, h('h2', { id: 'files-title', text: 'Logo i zdjęcia od klienta' }), h('span', { class: 'small muted', text: `${logos.length} logo · ${photos.length} zdjęć` })),
+      h('h3', { text: 'Logo' }),
+      logos.length
+        ? h('div', { class: 'file-logos' }, logoCards)
+        : h('p', { class: 'small muted', text: hasLogoAnswer ? 'Klient zaznaczył w briefie, że ma logo, ale jeszcze go nie wgrał. Jeśli przysłał je e-mailem — dodaj je tutaj.' : 'Brak logo. Klient może je wgrać w briefie, a Ty możesz dodać je tutaj (np. gdy przyśle je e-mailem).' }),
+      h('div', { class: 'actions' }, ...picker('logo', logos.length ? '+ Dodaj kolejny plik logo' : '+ Dodaj logo')),
+      h('h3', { text: 'Zdjęcia' }),
+      photos.length
+        ? h(
+            'ul',
+            { class: 'file-photos' },
+            photos.map((f) =>
+              h('li', { 'data-file': f.id },
+                h('a', { href: fileUrl(f), target: '_blank', rel: 'noopener', 'aria-label': `Otwórz zdjęcie ${f.name}` }, h('img', { src: fileUrl(f, f.has_thumb ? '?thumb=1' : ''), alt: `Zdjęcie od klienta: ${f.name}`, loading: 'lazy', decoding: 'async' })),
+                h('div', { class: 'file-photos__bar' },
+                  h('span', { class: 'small', text: `${fmtBytes(f.size_bytes)}${f.width ? ` · ${f.width}×${f.height}` : ''}` }),
+                  h('a', { class: 'link-btn', href: fileUrl(f, '?download=1'), download: f.name, text: 'Pobierz' }),
+                  h('button', { class: 'link-btn link-btn--danger', type: 'button', text: 'Usuń', onclick: () => del(f).click() })
+                )
+              )
+            )
+          )
+        : h('p', { class: 'small muted', text: 'Brak zdjęć. Klient może je wgrać w briefie (do 40 zdjęć). Większe paczki i filmy — przez link do folderu (Google Drive, Dropbox, WeTransfer) w briefie.' }),
+      h('div', { class: 'actions' }, photos.length ? zipBtn : null, ...picker('photo', '+ Dodaj zdjęcia')),
+      status
+    );
+  }
 
   /** Wybór logo klienta (strona wyboru) jako dane do polecenia dla AI. */
   function logoChoice(logo) {

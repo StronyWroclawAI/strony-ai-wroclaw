@@ -201,3 +201,27 @@
 .bf-logo-card p { font-size: .875rem; color: var(--muted); }
 .bf-logo-card .btn { justify-self: start; margin-top: 4px; }
 @media (max-width: 640px) { .bf-logo-grid { grid-template-columns: 1fr; } }
+
+/* ===== Wgrywanie plików (logo, zdjęcia) ===== */
+.bf-upload__zone { position: relative; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px 14px; padding: 18px; border: 2px dashed #c5cedb; border-radius: 14px; background: #f7f9fc; text-align: center; transition: border-color .2s, background-color .2s; }
+.bf-upload__zone:hover, .bf-upload__zone.is-drag { border-color: #1f5fbf; background: #eef4fd; }
+.bf-upload__zone:focus-within { outline: 3px solid #1f5fbf; outline-offset: 2px; }
+.bf-upload__zone.is-disabled { opacity: .55; }
+.bf-upload__input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.bf-upload__input:disabled { cursor: not-allowed; }
+.bf-upload__btn { display: inline-flex; align-items: center; min-height: 42px; padding: 8px 16px; border-radius: 10px; background: #142e50; color: #fff; font-weight: 700; }
+.bf-upload__or { color: #4d5a70; font-size: .9375rem; }
+.bf-upload__status { margin: 8px 0 0; font-size: .875rem; color: #4d5a70; min-height: 1em; }
+.bf-upload__status:empty { display: none; }
+.bf-files { list-style: none; margin: 10px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.bf-files:empty { display: none; }
+.bf-file { position: relative; display: grid; gap: 6px; padding: 8px; border: 1px solid #dde3ec; border-radius: 12px; background: #fff; min-width: 0; }
+.bf-file img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 8px; background: #f0f3f7; }
+.bf-file--logo img { object-fit: contain; padding: 8px; background: repeating-conic-gradient(#f0f3f7 0 25%, #fff 0 50%) 50% / 16px 16px; }
+.bf-file__pdf { display: grid; place-items: center; aspect-ratio: 4 / 3; border-radius: 8px; background: #fde8e6; color: #b42318; font-weight: 800; }
+.bf-file__meta { display: grid; min-width: 0; }
+.bf-file__name { font-size: .8125rem; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bf-file__size { font-size: .75rem; color: #4d5a70; }
+.bf-file__del { position: absolute; top: 4px; right: 4px; width: 32px; height: 32px; border: 0; border-radius: 50%; background: rgba(11, 29, 54, .78); color: #fff; font-size: 20px; line-height: 1; cursor: pointer; }
+.bf-file__del:hover { background: #b42318; }
+.bf-file__del:focus-visible { outline: 3px solid #1f5fbf; outline-offset: 2px; }

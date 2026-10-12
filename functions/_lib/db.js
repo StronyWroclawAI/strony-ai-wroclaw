@@ -4,7 +4,7 @@
 
 import { SEED } from './seed.js';
 
-export const SCHEMA_VERSION = '15';
+export const SCHEMA_VERSION = '16';
 
 // Każda instrukcja w osobnym elemencie (D1 wykonuje je w jednej transakcji przez batch()).
 export const SCHEMA = [
@@ -130,6 +130,13 @@ export const MIGRATIONS = [
   `ALTER TABLE briefs ADD COLUMN merged_at TEXT`,
   // v15: rodzaj strony w zgłoszeniu: firma (oferta) / wizerunkowa (klub, szkoła, organizacja)
   `ALTER TABLE leads ADD COLUMN site_purpose TEXT NOT NULL DEFAULT 'firma'`,
+  // v16: pliki od klienta (logo, zdjęcia) — z briefu albo dodane w panelu
+  `CREATE TABLE IF NOT EXISTS lead_files (
+    id TEXT PRIMARY KEY, lead_id TEXT, brief_id TEXT, kind TEXT NOT NULL CHECK (kind IN ('logo','photo')),
+    source TEXT NOT NULL DEFAULT 'klient', name TEXT NOT NULL, content_type TEXT NOT NULL, size_bytes INTEGER NOT NULL DEFAULT 0,
+    width INTEGER, height INTEGER, kv_key TEXT NOT NULL, has_thumb INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL)`,
+  `CREATE INDEX IF NOT EXISTS lead_files_lead_idx ON lead_files (lead_id, kind, created_at)`,
+  `CREATE INDEX IF NOT EXISTS lead_files_brief_idx ON lead_files (brief_id)`,
 ];
 
 // v10 (SEO): stare teksty domyślne zamieniane na nowe — TYLKO gdy nie były zmieniane w panelu.

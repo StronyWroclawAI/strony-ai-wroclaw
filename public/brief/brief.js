@@ -88,6 +88,7 @@
         if (!d.ok) return fail(d.message || 'Nie udało się wczytać briefu.');
         applyKind(d.kind);
         answers = d.answers || {};
+        loadFiles();
         applyDefaults();
         guessIndustry();
         var name = answers.company_name || d.company_name;
@@ -117,6 +118,8 @@
       .then(function (x) {
         if (x.status === 401) return fail('Zaloguj się do panelu administratora, a potem otwórz ten link ponownie.');
         if (!x.d.ok || !x.d.brief || x.d.brief.token !== token) return fail('Nie znaleziono briefu do edycji.');
+        ADMIN.leadId = x.d.brief.lead_id || null;
+        loadFiles();
         applyKind(x.d.brief.kind);
         answers = x.d.brief.answers || {};
         applyDefaults();
@@ -336,6 +339,8 @@
       wrap.appendChild(el('p', { class: 'bf-err', id: errId, 'aria-live': 'polite' }));
       return wrap;
     }
+
+    if (f.type === 'upload') return renderUpload(f, hintId, errId);
 
     if (f.type === 'radio' || f.type === 'checkbox') {
       wrap = el('fieldset', { class: 'bf-field', 'data-field': f.id, 'aria-describedby': describedBy });
@@ -593,6 +598,164 @@
     }
     updateVisibility();
     scheduleSave();
+  }
+
+  /* ---------- Pliki: logo i zdjęcia ----------
+     Klient: /api/brief/<token>/files, administrator (tryb poprawek): API panelu, podgląd: tylko lokalnie. */
+  var files = [];
+  var filesLoaded = false;
+  var FILE_ACCEPT = { logo: '.svg,.pdf,.png,.jpg,.jpeg,.webp,image/svg+xml,application/pdf,image/png,image/jpeg,image/webp', photo: 'image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp,.heic' };
+  var FILE_MAX = { logo: 6, photo: 40 };
+  function filesApi(path) {
+    if (ADMIN) return ADMIN.leadId ? (path === 'list' ? '/api/admin/leads/' + ADMIN.leadId : path === 'upload' ? '/api/admin/leads/' + ADMIN.leadId + '/files' : '/api/admin/files/' + path) : null;
+    if (DEMO || !token) return null;
+    return '/api/brief/' + token + '/files' + (path === 'list' || path === 'upload' ? '' : '/' + path);
+  }
+  function fileSrc(fl) {
+    if (fl.localUrl) return fl.localUrl;
+    var u = filesApi(fl.id);
+    return u ? u + (fl.has_thumb ? (u.indexOf('?') < 0 ? '?' : '&') + 'thumb=1' : '') : '';
+  }
+  function loadFiles() {
+    var u = filesApi('list');
+    if (!u) { filesLoaded = true; return; }
+    fetch(u, { headers: { Accept: 'application/json', 'X-Panel': ADMIN ? '1' : '' }, credentials: 'same-origin' })
+      .then(function (r) { return r.json(); })
+      .then(function (d) { files = (d && d.files) || []; filesLoaded = true; refreshUploads(); })
+      .catch(function () { filesLoaded = true; });
+  }
+  function countOf(kind) { return files.filter(function (x) { return x.kind === kind; }).length; }
+  function syncFileAnswers() {
+    S.steps.forEach(function (st) {
+      st.fields.forEach(function (f) {
+        if (f.type !== 'upload') return;
+        var n = countOf(f.upload);
+        var txt = n ? (f.upload === 'logo' ? 'Wgrane pliki logo: ' + n : 'Wgrane zdjęcia: ' + n) : '';
+        if ((answers[f.id] || '') !== txt) {
+          if (txt) answers[f.id] = txt; else delete answers[f.id];
+          if (!ADMIN || true) scheduleSave();
+        }
+      });
+    });
+  }
+  function fmtSize(b) { return b > 1048576 ? (b / 1048576).toFixed(1).replace('.', ',') + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB'; }
+  function refreshUploads() {
+    Array.prototype.forEach.call(document.querySelectorAll('[data-upload-list]'), function (ul) { drawFileList(ul, ul.getAttribute('data-upload-list')); });
+  }
+  function drawFileList(ul, kind) {
+    ul.replaceChildren();
+    files.filter(function (x) { return x.kind === kind; }).forEach(function (fl) {
+      var isImg = /^image\//.test(fl.content_type);
+      var canDelete = !locked && (ADMIN || fl.source === 'klient' || fl.localUrl);
+      ul.appendChild(el('li', { class: 'bf-file' + (kind === 'logo' ? ' bf-file--logo' : '') },
+        isImg ? el('img', { src: fileSrc(fl), alt: kind === 'logo' ? 'Podgląd logo: ' + fl.name : 'Zdjęcie: ' + fl.name, loading: 'lazy', decoding: 'async' }) : el('span', { class: 'bf-file__pdf', 'aria-hidden': 'true', text: 'PDF' }),
+        el('span', { class: 'bf-file__meta' }, el('span', { class: 'bf-file__name', text: fl.name }), el('span', { class: 'bf-file__size', text: fmtSize(fl.size_bytes || 0) + (fl.source === 'admin' ? ' · dodane przez Grzegorza' : '') })),
+        canDelete ? el('button', { type: 'button', class: 'bf-file__del', 'aria-label': 'Usuń plik ' + fl.name, text: '×', onclick: function () { removeFile(fl); } }) : null
+      ));
+    });
+  }
+  function removeFile(fl) {
+    if (fl.localUrl) { files = files.filter(function (x) { return x !== fl; }); refreshUploads(); syncFileAnswers(); return; }
+    var u = filesApi(fl.id);
+    if (!u) return;
+    fetch(u, { method: 'DELETE', headers: { 'X-Brief': '1', 'X-Panel': '1', Accept: 'application/json' }, credentials: 'same-origin' })
+      .then(function (r) { return r.json().then(function (d) { return { ok: r.ok && d.ok, d: d }; }); })
+      .then(function (x) {
+        if (!x.ok) throw new Error((x.d && x.d.message) || 'Nie usunięto pliku.');
+        files = files.filter(function (y) { return y.id !== fl.id; });
+        refreshUploads();
+        syncFileAnswers();
+      })
+      .catch(function (e) { alert(e.message); });
+  }
+  /** Zdjęcie: zmniejszenie do 2560 px (JPEG) + miniatura 480 px. */
+  function prepPhoto(file) {
+    if (!window.createImageBitmap) return Promise.resolve({ main: file, thumb: null, w: 0, h: 0 });
+    return createImageBitmap(file).then(function (bmp) {
+      function draw(max, q) {
+        var sc = Math.min(1, max / Math.max(bmp.width, bmp.height));
+        var c = document.createElement('canvas');
+        c.width = Math.round(bmp.width * sc); c.height = Math.round(bmp.height * sc);
+        var ctx = c.getContext('2d');
+        ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height);
+        ctx.drawImage(bmp, 0, 0, c.width, c.height);
+        return new Promise(function (res) { c.toBlob(function (b) { res({ blob: b, w: c.width, h: c.height }); }, 'image/jpeg', q); });
+      }
+      return draw(2560, 0.85).then(function (m) { return draw(480, 0.75).then(function (t) { return { main: m.blob, thumb: t.blob, w: m.w, h: m.h }; }); });
+    });
+  }
+  function uploadFiles(kind, list, status) {
+    var arr = Array.prototype.slice.call(list);
+    if (!arr.length) return;
+    var room = FILE_MAX[kind] - countOf(kind);
+    if (room <= 0) { status.textContent = kind === 'logo' ? 'Dodano już maksymalną liczbę plików logo.' : 'Dodano już 40 zdjęć — więcej prześlij linkiem do folderu (np. Google Drive).'; return; }
+    if (arr.length > room) { arr = arr.slice(0, room); }
+    var done = 0, failed = [];
+    var api = filesApi('upload');
+    function nextFile(i) {
+      if (i >= arr.length) {
+        status.textContent = (done ? 'Wgrano: ' + done + '. ' : '') + (failed.length ? 'Nie udało się: ' + failed.join('; ') : '');
+        refreshUploads();
+        syncFileAnswers();
+        return;
+      }
+      var file = arr[i];
+      status.textContent = 'Wgrywam ' + (i + 1) + ' z ' + arr.length + '…';
+      var prep = kind === 'photo' ? prepPhoto(file) : Promise.resolve({ main: file, thumb: null, w: 0, h: 0 });
+      prep.then(function (p) {
+        if (!api) {
+          // podgląd — pliki zostają tylko w tej karcie przeglądarki
+          files.push({ id: 'local' + Date.now() + i, kind: kind, name: file.name, content_type: kind === 'photo' ? 'image/jpeg' : file.type || 'application/octet-stream', size_bytes: p.main.size, localUrl: URL.createObjectURL(p.main), source: 'klient' });
+          done++;
+          return;
+        }
+        var fd = new FormData();
+        fd.append('kind', kind);
+        fd.append('name', file.name);
+        fd.append('file', p.main, file.name);
+        if (p.thumb) fd.append('thumb', p.thumb, 'thumb.jpg');
+        if (p.w) { fd.append('width', String(p.w)); fd.append('height', String(p.h)); }
+        return fetch(api, { method: 'POST', body: fd, credentials: 'same-origin', headers: { 'X-Brief': '1', 'X-Panel': '1', Accept: 'application/json' } })
+          .then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { return { ok: r.ok && d.ok, d: d }; }); })
+          .then(function (x) {
+            if (!x.ok) throw new Error((x.d && x.d.message) || 'błąd wysyłania');
+            files.push(x.d.file);
+            done++;
+            refreshUploads();
+          });
+      }).catch(function (e) {
+        failed.push(file.name + ' (' + (e && e.message && !/decode|source|bitmap/i.test(e.message) ? e.message : 'nie mogę odczytać tego formatu — zapisz jako JPG') + ')');
+      }).then(function () { nextFile(i + 1); });
+    }
+    nextFile(0);
+  }
+  function renderUpload(f, hintId, errId) {
+    var id = 'f_' + f.id;
+    var wrap = el('div', { class: 'bf-field bf-upload', 'data-field': f.id });
+    wrap.appendChild(el('label', { class: 'bf-label', for: id }, f.label));
+    if (f.hint) wrap.appendChild(el('p', { class: 'bf-hint', id: hintId, text: f.hint }));
+    var status = el('p', { class: 'bf-upload__status', 'aria-live': 'polite' });
+    var input = el('input', { type: 'file', id: id, class: 'bf-upload__input', accept: FILE_ACCEPT[f.upload], multiple: true, 'aria-describedby': [hintId, id + '_st'].filter(Boolean).join(' ') });
+    status.id = id + '_st';
+    input.addEventListener('change', function () { uploadFiles(f.upload, input.files, status); input.value = ''; });
+    var zone = el('div', { class: 'bf-upload__zone' },
+      input,
+      el('span', { class: 'bf-upload__btn', 'aria-hidden': 'true', text: f.upload === 'logo' ? 'Wybierz plik logo' : 'Wybierz zdjęcia' }),
+      el('span', { class: 'bf-upload__or', 'aria-hidden': 'true', text: 'albo przeciągnij tutaj' })
+    );
+    ['dragenter', 'dragover'].forEach(function (ev) { zone.addEventListener(ev, function (e) { e.preventDefault(); zone.classList.add('is-drag'); }); });
+    ['dragleave', 'drop'].forEach(function (ev) { zone.addEventListener(ev, function (e) { e.preventDefault(); zone.classList.remove('is-drag'); }); });
+    zone.addEventListener('drop', function (e) { if (e.dataTransfer && e.dataTransfer.files) uploadFiles(f.upload, e.dataTransfer.files, status); });
+    if (locked) { input.disabled = true; zone.classList.add('is-disabled'); }
+    if (DEMO) status.textContent = 'Tryb podglądu: pliki zostaną tylko w tej karcie przeglądarki.';
+    else if (ADMIN && !ADMIN.leadId) status.textContent = 'Ten brief nie jest przypięty do zgłoszenia — pliki dodasz e-mailem.';
+    wrap.appendChild(zone);
+    wrap.appendChild(status);
+    var ul = el('ul', { class: 'bf-files', 'data-upload-list': f.upload, 'aria-label': f.upload === 'logo' ? 'Wgrane pliki logo' : 'Wgrane zdjęcia' });
+    wrap.appendChild(ul);
+    drawFileList(ul, f.upload);
+    wrap.appendChild(el('p', { class: 'bf-err', id: errId, 'aria-live': 'polite' }));
+    return wrap;
   }
 
   /* ---------- Walidacja ---------- */

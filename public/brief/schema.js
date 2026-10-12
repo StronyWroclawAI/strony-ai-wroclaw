@@ -1131,6 +1131,7 @@
             id: 'brand_tone', type: 'radio', label: 'Jak zwracać się do klientów na stronie?',
             options: O('ty|Na „Ty” — bezpośrednio i przyjaźnie', 'pan_pani|Na „Pan / Pani” — oficjalnie', 'bezosobowo|Bezosobowo / „Państwo”', 'nie_wiem|Nie wiem — proszę o rekomendację'),
           },
+          { id: 'logo_files_current', type: 'upload', upload: 'logo', kinds: ['logo'], label: 'Masz już logo? Wgraj je (opcjonalnie)', hint: 'Jeśli chcesz je odświeżyć albo zachować jego elementy — wgraj obecną wersję (SVG, PDF, PNG lub JPG).' },
           { id: 'logo_current', type: 'textarea', kinds: ['logo'], label: 'Masz już logo lub hasło? Co z nich zachować?', hint: 'Jeśli tak — prześlij obecne logo e-mailem i napisz, co Ci się w nim podoba, a co chcesz zmienić. Jeśli zaczynamy od zera — zostaw puste.', max: 1500 },
           {
             id: 'tagline', type: 'radio', label: 'Hasło firmowe (slogan)', required: true,
@@ -1153,7 +1154,7 @@
               { v: 'nie', l: 'Nie mam i na razie nie potrzebuję — wystarczy nazwa firmy' },
             ],
           },
-          { id: 'logo_send_info', type: 'info', showIf: { f: 'logo', in: ['tak_wektor', 'tak_obraz', 'odswiezenie'] }, text: 'Obecne logo prześlij mi e-mailem w najlepszej jakości, jaką masz (najlepiej SVG, PDF lub PNG z przezroczystym tłem).' },
+          { id: 'logo_files', type: 'upload', upload: 'logo', label: 'Wgraj swoje logo', showIf: { f: 'logo', in: ['tak_wektor', 'tak_obraz', 'odswiezenie'] }, hint: 'Najlepiej w najwyższej jakości, jaką masz: SVG lub PDF (wektor), ewentualnie PNG z przezroczystym tłem. Możesz dodać kilka wersji (np. poziomą, pionową, na ciemne tło). Jeśli nie masz pliku pod ręką — prześlij go później e-mailem.' },
           { id: 'logo_split_info', type: 'info', kinds: ['strona'], showIf: { f: 'logo', in: ['odswiezenie', 'zrobic'] }, text: 'Szczegóły nowego logo (napis, charakter, symbole, inspiracje) zbieram w osobnym, krótkim briefie „Logo i hasło”. Jeśli jeszcze go nie masz — napisz do mnie, wyślę link.' },
           { id: 'logo_keep', type: 'textarea', label: 'Co zachować z obecnego logo, a co zmienić?', hint: 'np. „zostawić kolor i liść, zmienić krój pisma na nowocześniejszy”.', showIf: { f: 'logo', eq: 'odswiezenie' }, max: 1500 },
           { id: 'logo_text', type: 'text', label: 'Jaki napis ma być w logo?', placeholder: 'np. pełna nazwa „Salon Ola”, skrót „SO”, nazwa + „Wrocław”', showIf: { f: 'logo', in: ['odswiezenie', 'zrobic'] }, max: 150 },
@@ -1250,6 +1251,7 @@
               { v: 'sesja', l: 'Planuję sesję zdjęciową' },
             ],
           },
+          { id: 'photo_files', type: 'upload', upload: 'photo', label: 'Wgraj zdjęcia (opcjonalnie)', showIf: { f: 'photos', in: ['profesjonalne', 'wlasne', 'sesja'] }, hint: 'Do 40 zdjęć (JPG, PNG, WebP) — przed wysłaniem zmniejszę je automatycznie, więc możesz wgrać zdjęcia prosto z telefonu. Więcej zdjęć albo filmy? Wklej link do folderu (Google Drive, Dropbox, WeTransfer) w polu poniżej.' },
           { id: 'sources', type: 'textarea', label: 'Skąd mogę wziąć materiały?', hint: 'Wskaż konkretne miejsca: folder na dysku (link), obecna strona, konkretne albumy. Linki do social mediów podałeś już w kroku „Kontakt i rezerwacje”.', max: 2000 },
           { id: 'excluded', type: 'textarea', label: 'Materiały, których NIE chcesz używać', hint: 'np. „zdjęcia od fotografa X”, „stare zdjęcia lokalu sprzed remontu”, „opinie z Facebooka”.', max: 1500 },
           {
@@ -1413,7 +1415,7 @@
     fields: {
       show_address: SITE, style: SITE, theme: SITE, inspirations: SITE,
       // w briefie „Logo i hasło” nie pytamy, czy klient chce logo i hasło — to wynika z rodzaju briefu
-      tagline: SITE, logo: SITE, logo_send_info: SITE,
+      tagline: SITE, logo: SITE, logo_files: SITE,
       tagline_style: ['pelny', 'logo'], tagline_words: ['pelny', 'logo'], logo_keep: ['pelny', 'logo'], logo_text: ['pelny', 'logo'], logo_type: ['pelny', 'logo'],
       logo_feel: ['pelny', 'logo'], logo_symbols: ['pelny', 'logo'], logo_avoid: ['pelny', 'logo'], logo_uses: ['pelny', 'logo'], logo_inspirations: ['pelny', 'logo'],
     },

@@ -52,7 +52,7 @@ ${isOrg(a) ? 'TO STRONA WIZERUNKOWA (bez sprzedaży): w panelu pomiń cennik, pr
 
 === 1. ZASADA DZIAŁANIA ===
 - Wszystkie treści strony, które ma edytować klient (teksty, listy, zdjęcia, cennik, godziny), są przechowywane w jednym obiekcie danych (state) z wartościami początkowymi wpisanymi w kodzie.
-- Strona renderuje te sekcje z danych. Każda zmiana w panelu od razu odświeża stronę (podgląd na żywo) i zapisuje się automatycznie.
+- Strona renderuje te sekcje z danych. Zmiany w formularzu edycji widać od razu w podglądzie sekcji (patrz punkt 3a); po kliknięciu „Zapisz” trafiają na stronę i zapisują się automatycznie.
 - Zapis: IndexedDB w przeglądarce, z awaryjnym localStorage. Przy starcie strona wczytuje zapisane dane i scala je z danymi początkowymi, żeby nowe pola dodane w kodzie nie znikały.
 - To wersja demonstracyjna/portfolio: dane zapisują się tylko w przeglądarce osoby edytującej, a login i hasło są w kodzie. Zaznacz to w komentarzu w kodzie.
 - Panel ma własne style z unikalnym prefiksem klas (np. .cmsp-), żeby nie kolidował ze stylami strony. Kolory panelu dopasuj do marki: ${colors(a)}.
@@ -63,6 +63,20 @@ ${isOrg(a) ? 'TO STRONA WIZERUNKOWA (bez sprzedaży): w panelu pomiń cennik, pr
 - Po zalogowaniu sesja trwa do zamknięcia karty (sessionStorage). Kłódka zmienia się w przycisk „Panel”, który otwiera panel bez ponownego logowania.
 - Zmiana hasła: w Ustawieniach panelu formularz „obecne hasło / nowe hasło / powtórz”; nowe hasło zapisuje się razem z danymi w przeglądarce i od tej chwili obowiązuje przy logowaniu.
 - Escape zamyka okno, focus wraca do przycisku.
+
+=== 3a. PODGLĄD SEKCJI PRZED ZMIANĄ TREŚCI (obowiązkowo) ===
+Klient zawsze ma wiedzieć, KTÓREJ części strony dotyczy zmiana, zanim cokolwiek zmieni:
+- Każda podstrona panelu i każde pole tekstowe/zdjęcie ma przypisaną sekcję strony (np. „Pierwszy ekran”, „O nas”, „Cennik”, „Stopka”).
+- Na początku każdej podstrony panelu jest karta „Ta zmiana dotyczy sekcji: [nazwa]” z miniaturą tej sekcji (podgląd na żywo: zmniejszony fragment strony w ramce, z podświetleniem pola, które jest właśnie edytowane) oraz przycisk „Pokaż na stronie”, który zamyka panel, przewija stronę do sekcji i na 2–3 sekundy ją podświetla.
+- Okno edycji elementu listy (modal) ma dwie kolumny: po lewej formularz, po prawej podgląd na żywo tej sekcji z wprowadzanymi zmianami (na telefonie podgląd nad formularzem, zwijany). Zmiany trafiają na stronę dopiero po kliknięciu „Zapisz”; „Anuluj” przywraca poprzednią wersję.
+- Najechanie myszą lub fokus na polu formularza podświetla odpowiadający mu element w podglądzie.
+- Na pulpicie i w liście „Sekcje strony” każda sekcja ma miniaturę i przycisk „Edytuj tę sekcję”.
+
+=== 3b. WERSJE JĘZYKOWE — WŁĄCZANIE I WYŁĄCZANIE (obowiązkowo, także gdy dziś strona ma tylko PL) ===
+- W Ustawieniach panelu lista wersji językowych z przełącznikiem „włączona / wyłączona” dla każdego języka poza polskim (polski jest zawsze włączony) oraz możliwością dodania kolejnego języka.
+- Wyłączona wersja znika ze strony: z przełącznika języka w nagłówku, z menu, z linków hreflang i z sitemap.xml; przełącznik języka chowa się całkowicie, gdy włączony jest tylko jeden język.
+- Treści w wyłączonym języku NIE są kasowane — zostają w panelu i wracają po ponownym włączeniu. Pola wyłączonego języka w formularzach są zwinięte z adnotacją „wersja wyłączona”.
+- Osoba, która ma zapamiętany wyłączony język, widzi stronę po polsku.
 
 === 3. WYGLĄD PANELU ===
 - Pełnoekranowa nakładka nad stroną.
@@ -147,6 +161,17 @@ Na koniec przetestuj: logowanie (złe i dobre hasło), zmianę hasła (stare prz
   }
 
   const isOrg = (a) => a && a.site_purpose === 'wizerunkowa';
+  /** Logo i zdjęcia wgrane przez klienta w briefie (pliki są w panelu, w zgłoszeniu). */
+  const clientMaterials = (a) => {
+    const lines = [];
+    const logo = a.logo_files || a.logo_files_current;
+    if (logo) lines.push(`- Własne logo klienta (${logo}) — dołączam pliki. Użyj go bez przerysowywania, dobierz do niego kolory i przygotuj z niego favicon.`);
+    if (a.photo_files) lines.push(`- ${a.photo_files} od klienta — dołączam je. Użyj ich w pierwszej kolejności (WebP, opisowe nazwy plików i atrybuty alt).`);
+    return lines.length ? `MATERIAŁY OD KLIENTA
+${lines.join('\n')}
+
+` : '';
+  };
 
   /* ---------- Strona wizerunkowa (klub, szkoła, akademia, organizacja) ---------- */
   function orgSpec(a) {
@@ -229,7 +254,7 @@ Klient prosi o: ${what}. Powstają w osobnym kroku (strona wyboru z 4 opcjami, k
 - Jeśli do tej wiadomości dołączam wybrane ${what} — użyj ich i dopasuj do nich kolory oraz typografię strony.
 - Jeśli nie dołączam — użyj tymczasowego logotypu z nazwy firmy i oznacz miejsca [LOGO DO PODMIANY] / [HASŁO DO PODMIANY].
 ` : '')}
-${isOrg(a) ? `${orgSpec(a)}
+${clientMaterials(a)}${isOrg(a) ? `${orgSpec(a)}
 
 ` : ''}${layoutTask(a)}
 

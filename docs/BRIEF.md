@@ -4,6 +4,13 @@ Brief to szczegółowy kwestionariusz, który klient wypełnia online przed rozp
 
 **Każdy brief jest przypięty do zgłoszenia.** Najpierw jest kontakt (formularz na stronie albo Twój e-mail), a gdy klient zgodzi się na współpracę — tworzysz brief w jego zgłoszeniu i tam widzisz pełne odpowiedzi.
 
+## Logo i zdjęcia od klienta
+
+- **W briefie:** gdy klient zaznaczy, że ma logo, pojawia się pole „Wgraj swoje logo” (SVG, PDF, PNG, JPG, WebP; do 20 MB, do 6 plików, np. różne wersje). W briefie „Logo i hasło” jest pole na obecne logo. W kroku „Treści i materiały” klient może wgrać do 40 zdjęć — telefon/przeglądarka zmniejsza je przed wysłaniem do 2560 px, więc zdjęcia prosto z telefonu wgrywają się szybko.
+- **W panelu (zgłoszenie → „Logo i zdjęcia od klienta”):** podgląd logo na jasnym i ciemnym tle, przycisk „Pobierz plik” (osobny plik w oryginalnej jakości), miniatury zdjęć z „Pobierz”, przycisk „Pobierz wszystkie zdjęcia (ZIP)”, usuwanie oraz dodawanie plików przez Ciebie (np. gdy klient przyśle logo e-mailem). Logo możesz dodać też od razu przy ręcznym dodawaniu zgłoszenia.
+- **Gdzie są pliki:** w tym samym magazynie Cloudflare KV co zdjęcia strony (darmowy plan: 1 GB miejsca i 1000 zapisów dziennie — wystarczy na kilkadziesiąt klientów; jedno zdjęcie to zwykle 0,3–1 MB). Pliki widzisz tylko Ty (po zalogowaniu) i klient przez swój link do briefu. Usunięcie zgłoszenia usuwa też jego pliki.
+- **Duże paczki i filmy:** klient wkleja link do folderu (Google Drive, Dropbox, WeTransfer) w polu „Skąd mogę wziąć materiały?”.
+
 ## Strona wizerunkowa (klub, szkoła, akademia, organizacja)
 
 W formularzu na stronie i przy ręcznym dodawaniu zgłoszenia można zaznaczyć **„Strona wizerunkowa”** — dla organizacji, które nie sprzedają usług (klub sportowy, akademia, szkoła, stowarzyszenie, instytucja, wydarzenie). Zgłoszenie dostaje plakietkę „Wizerunkowa”, a brief przejmuje to ustawienie (klient może je zmienić w pierwszym kroku).

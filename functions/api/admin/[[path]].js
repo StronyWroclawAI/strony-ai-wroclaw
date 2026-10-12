@@ -8,6 +8,7 @@ import { sendEmail, notifyAboutLead, emailConfigured, sendClientEmail } from '..
 import { gmailConfigured, gmailAddress } from '../../_lib/smtp.js';
 import { normalizeUrl } from '../../_lib/validate.js';
 import { newToken, cleanAnswers, BRIEF_KINDS } from '../../_lib/brief.js';
+import { saveUpload, serveFile, deleteFileRow, publicFile } from '../../_lib/files.js';
 import { readStats } from '../../_lib/stats.js';
 import { SLUG_RE, VER_RE, PATH_RE, MAX_FILE, MAX_TOTAL, MAX_FILES, CARD_TYPES, extOf, isImagePath, sniffOk, slugify, deleteCardFiles, cardUrl } from '../../_lib/card.js';
 
@@ -159,7 +160,8 @@ export async function onRequest(context) {
           }
         }
         const emails = await all(env, `SELECT id, kind, to_email, subject, body, status, error, created_at FROM lead_emails WHERE lead_id = ? ORDER BY created_at DESC LIMIT 100`, lead.id);
-        return json({ ok: true, lead, notes, brief: brief || null, briefs, logo: logo || null, emails, mail: { gmail: gmailConfigured(env), from: gmailConfigured(env) ? gmailAddress(env) : null } });
+        const files = (await all(env, `SELECT * FROM lead_files WHERE lead_id = ? ORDER BY kind, created_at`, lead.id)).map(publicFile);
+        return json({ ok: true, lead, notes, brief: brief || null, briefs, files, logo: logo || null, emails, mail: { gmail: gmailConfigured(env), from: gmailConfigured(env) ? gmailAddress(env) : null } });
       }
       case 'PATCH /leads/:id': {
         const b = await body(request);
@@ -200,6 +202,7 @@ export async function onRequest(context) {
         const id = checkId(seg[1]);
         const oldLogo = await first(env, `SELECT kv_key FROM logo_proposals WHERE lead_id = ?`, id);
         if (oldLogo && env.MEDIA) await env.MEDIA.delete(oldLogo.kv_key);
+        for (const f of await all(env, `SELECT * FROM lead_files WHERE lead_id = ?`, id)) await deleteFileRow(env, f);
         await env.DB.batch([
           env.DB.prepare(`DELETE FROM lead_notes WHERE lead_id = ?`).bind(id),
           env.DB.prepare(`DELETE FROM briefs WHERE lead_id = ?`).bind(id),
@@ -207,6 +210,32 @@ export async function onRequest(context) {
           env.DB.prepare(`DELETE FROM logo_proposals WHERE lead_id = ?`).bind(id),
           env.DB.prepare(`DELETE FROM leads WHERE id = ?`).bind(id),
         ]);
+        return json({ ok: true });
+      }
+      // ----- Pliki od klienta (logo, zdjęcia) -----
+      case 'POST /leads/:id/files': {
+        const lead = await first(env, `SELECT id FROM leads WHERE id = ?`, checkId(seg[1]));
+        if (!lead) throw notFound();
+        let form;
+        try {
+          form = await request.formData();
+        } catch {
+          throw bad('Nieprawidłowe dane pliku.');
+        }
+        const r = await saveUpload(env, { leadId: lead.id, briefId: null, source: 'admin', form });
+        if (!r.ok) throw new HttpError(r.status, r.message);
+        return json({ ok: true, file: r.file }, 201);
+      }
+      case 'GET /files/:id': {
+        const row = await first(env, `SELECT * FROM lead_files WHERE id = ?`, checkId(seg[1]));
+        if (!row) throw notFound('Nie znaleziono pliku.');
+        const sp = new URL(request.url).searchParams;
+        return serveFile(env, row, { thumb: sp.get('thumb') === '1', download: sp.get('download') === '1' });
+      }
+      case 'DELETE /files/:id': {
+        const row = await first(env, `SELECT * FROM lead_files WHERE id = ?`, checkId(seg[1]));
+        if (!row) throw notFound('Nie znaleziono pliku.');
+        await deleteFileRow(env, row);
         return json({ ok: true });
       }
       // ----- E-mail do klienta (z konta Gmail) -----
