@@ -4,6 +4,17 @@ Brief to szczegółowy kwestionariusz, który klient wypełnia online przed rozp
 
 **Każdy brief jest przypięty do zgłoszenia.** Najpierw jest kontakt (formularz na stronie albo Twój e-mail), a gdy klient zgodzi się na współpracę — tworzysz brief w jego zgłoszeniu i tam widzisz pełne odpowiedzi.
 
+## Strona wizerunkowa (klub, szkoła, akademia, organizacja)
+
+W formularzu na stronie i przy ręcznym dodawaniu zgłoszenia można zaznaczyć **„Strona wizerunkowa”** — dla organizacji, które nie sprzedają usług (klub sportowy, akademia, szkoła, stowarzyszenie, instytucja, wydarzenie). Zgłoszenie dostaje plakietkę „Wizerunkowa”, a brief przejmuje to ustawienie (klient może je zmienić w pierwszym kroku).
+
+Brief strony wizerunkowej (12 kroków zamiast 14):
+- **znikają:** pytania branżowe, „Cel strony”, „Oferta i cennik”, rezerwacje, „Kim są Twoi klienci”;
+- **dochodzi krok „Organizacja i cel strony”:** rodzaj organizacji, historia i misja, osiągnięcia, odbiorcy (rodzice, zawodnicy, kibice, sponsorzy…), cele strony (wizerunek, nabór, sponsorzy, wsparcie 1,5%…), sekcje (aktualności, kalendarz, terminarz i wyniki, tabela ligowa, drużyny, kadra, osiągnięcia, galeria, nabór, informacje dla rodziców, obiekty, sponsorzy, współpraca dla sponsorów, wesprzyj nas, dokumenty, dla mediów, sklep, FAQ, dane organizacji), drużyny/grupy, źródło wyników, zasady naboru, informacje formalne (KRS, statut, RODO, deklaracja dostępności, dofinansowanie, OPP) i informacja o zgodach na zdjęcia dzieci;
+- etykiety mówią o organizacji, a nie o firmie.
+
+Polecenie dla AI na stronę wizerunkową: bez cennika i języka sprzedaży, wezwania do działania typu „Zapisz dziecko”, „Najbliższe wydarzenia”, „Zostań partnerem”, dane strukturalne SportsClub / School / NGO / Event / NewsArticle, a w panelu zamiast cennika i promocji: aktualności, kalendarz, terminarz i wyniki, drużyny, kadra, sponsorzy, dokumenty, nabór.
+
 ## Trzy rodzaje briefu
 
 W zgłoszeniu wybierasz, jaki brief wysłać klientowi:

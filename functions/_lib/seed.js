@@ -811,12 +811,20 @@ export const SEED = {
    "sort_order": 11100
   },
   {
+   "key": "contact.message_template_org",
+   "section": "Kontakt i formularz",
+   "label": "Formularz: szkic wiadomości dla strony wizerunkowej (klub, szkoła, akademia)",
+   "kind": "long",
+   "value": "Dzień dobry,\nchcę zamówić stronę wizerunkową dla naszej organizacji.\n\nKim jesteśmy (klub / szkoła / akademia / stowarzyszenie): \nCo chcemy pokazać (np. aktualności, drużyny, kadra, terminarz, nabór, sponsorzy): \nCzy mamy herb / logo i zdjęcia: \nNa kiedy strona byłaby potrzebna: \n\nProszę o kontakt w sprawie dalszych kroków.",
+   "sort_order": 11101
+  },
+  {
    "key": "contact.success_title",
    "section": "Kontakt i formularz",
    "label": "Po wysłaniu – nagłówek",
    "kind": "text",
    "value": "Dziękuję — zgłoszenie zostało zapisane",
-   "sort_order": 11101
+   "sort_order": 11102
   },
   {
    "key": "contact.success_text",
@@ -824,7 +832,7 @@ export const SEED = {
    "label": "Po wysłaniu – treść",
    "kind": "long",
    "value": "Przeczytam je i odpiszę na podany adres e-mail. Jeśli chcesz coś dodać, napisz bezpośrednio na stronywroclawai@gmail.com.",
-   "sort_order": 11102
+   "sort_order": 11103
   },
   {
    "key": "contact.closed_title",
@@ -832,7 +840,7 @@ export const SEED = {
    "label": "Nabór wyłączony – nagłówek",
    "kind": "text",
    "value": "Nabór jest chwilowo wstrzymany",
-   "sort_order": 11103
+   "sort_order": 11104
   },
   {
    "key": "contact.closed_text",
@@ -840,7 +848,7 @@ export const SEED = {
    "label": "Nabór wyłączony – treść",
    "kind": "text",
    "value": "Obecnie realizuję przyjęte projekty. Możesz napisać do mnie, aby zapytać o kolejny termin.",
-   "sort_order": 11104
+   "sort_order": 11105
   },
   {
    "key": "footer.location",
@@ -848,7 +856,7 @@ export const SEED = {
    "label": "Stopka – lokalizacja",
    "kind": "text",
    "value": "Z Wrocławia — dla firm z całej Polski",
-   "sort_order": 12105
+   "sort_order": 12106
   },
   {
    "key": "footer.author",
@@ -856,7 +864,7 @@ export const SEED = {
    "label": "Stopka – informacja o autorze",
    "kind": "text",
    "value": "Strony AI Wrocław to projekt Grzegorza — twórcy stron internetowych z Wrocławia.",
-   "sort_order": 12106
+   "sort_order": 12107
   },
   {
    "key": "privacy.updated",

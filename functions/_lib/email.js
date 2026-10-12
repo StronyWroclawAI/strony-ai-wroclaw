@@ -68,6 +68,7 @@ export async function sendEmail(env, { subject, text, html, replyTo, idempotency
 export function leadEmail(lead, origin) {
   const rows = [
     ['Firma', lead.company_name],
+    ['Rodzaj strony', lead.site_purpose === 'wizerunkowa' ? 'wizerunkowa (bez sprzedaży usług)' : 'strona firmy'],
     ['Branża', lead.industry],
     ['Osoba kontaktowa', lead.contact_name],
     ['E-mail', lead.email],

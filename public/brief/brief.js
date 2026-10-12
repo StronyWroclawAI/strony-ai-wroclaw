@@ -174,7 +174,16 @@
     else delete answers.industry_label;
   }
 
-  function applyDefaults() {
+  /** Charakter strony (firma / wizerunkowa) zmienia listę kroków i pytań. */
+  function syncPurpose() {
+    S.setKind(S.kind, answers);
+    applyDefaults(true);
+    var sc = $('[data-steps-count]');
+    if (sc) sc.textContent = S.steps.length + ' krótkich kroków';
+  }
+
+  function applyDefaults(noPurpose) {
+    if (!noPurpose && S.setKind && answers) S.setKind(S.kind, answers);
     if (H.applyKindDefaults) H.applyKindDefaults(answers, S.kind);
     S.steps.forEach(function (st) {
       st.fields.forEach(function (f) {
@@ -186,6 +195,8 @@
         }
       });
     });
+    var sc = $('[data-steps-count]');
+    if (sc) sc.textContent = S.steps.length + ' krótkich kroków';
   }
 
   function bindStatic() {
@@ -570,6 +581,16 @@
     if (value === '' || (Array.isArray(value) && !value.length)) delete answers[key];
     else answers[key] = value;
     if (key === 'industry_type' || key === 'industry') syncIndustryLabel();
+    if (key === 'site_purpose') {
+      syncPurpose();
+      if ($('[data-steps-list]')) buildStepsNav();
+      renderStep();
+      refreshStepsNav();
+      var r = $('[data-step-form] input[name="site_purpose"]:checked');
+      if (r) r.focus();
+      scheduleSave();
+      return;
+    }
     updateVisibility();
     scheduleSave();
   }

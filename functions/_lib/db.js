@@ -4,7 +4,7 @@
 
 import { SEED } from './seed.js';
 
-export const SCHEMA_VERSION = '14';
+export const SCHEMA_VERSION = '15';
 
 // Każda instrukcja w osobnym elemencie (D1 wykonuje je w jednej transakcji przez batch()).
 export const SCHEMA = [
@@ -128,6 +128,8 @@ export const MIGRATIONS = [
   // v11: rodzaje briefu (pelny / strona / logo) i brief połączony z dwóch
   `ALTER TABLE briefs ADD COLUMN kind TEXT NOT NULL DEFAULT 'pelny'`,
   `ALTER TABLE briefs ADD COLUMN merged_at TEXT`,
+  // v15: rodzaj strony w zgłoszeniu: firma (oferta) / wizerunkowa (klub, szkoła, organizacja)
+  `ALTER TABLE leads ADD COLUMN site_purpose TEXT NOT NULL DEFAULT 'firma'`,
 ];
 
 // v10 (SEO): stare teksty domyślne zamieniane na nowe — TYLKO gdy nie były zmieniane w panelu.

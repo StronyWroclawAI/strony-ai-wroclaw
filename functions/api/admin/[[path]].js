@@ -131,7 +131,7 @@ export async function onRequest(context) {
           ok: true,
           items: await all(
             env,
-            `SELECT l.id, l.created_at, l.company_name, l.industry, l.contact_name, l.email, l.status, l.notification_status, l.source,
+            `SELECT l.id, l.created_at, l.company_name, l.industry, l.contact_name, l.email, l.status, l.notification_status, l.source, l.site_purpose,
                     (SELECT b.status FROM briefs b WHERE b.lead_id = l.id ORDER BY b.created_at DESC LIMIT 1) AS brief_status,
                     (SELECT lp.status FROM logo_proposals lp WHERE lp.lead_id = l.id) AS logo_status
              FROM leads l ORDER BY l.created_at DESC LIMIT 1000`
@@ -187,9 +187,10 @@ export async function onRequest(context) {
           urls[k] = u.value;
         }
         const message = str(b.message, [1, 5000], 'Opis / oczekiwania');
+        const purpose = b.site_purpose === 'wizerunkowa' ? 'wizerunkowa' : 'firma';
         const t = nowIso();
         await env.DB.batch([
-          env.DB.prepare(`UPDATE leads SET company_name = ?, industry = ?, contact_name = ?, email = ?, phone = ?, website_url = ?, facebook_url = ?, instagram_url = ?, message = ?, updated_at = ? WHERE id = ?`).bind(company, industry, contact, email, phone, urls.website_url, urls.facebook_url, urls.instagram_url, message, t, id),
+          env.DB.prepare(`UPDATE leads SET company_name = ?, industry = ?, contact_name = ?, email = ?, phone = ?, website_url = ?, facebook_url = ?, instagram_url = ?, message = ?, site_purpose = ?, updated_at = ? WHERE id = ?`).bind(company, industry, contact, email, phone, urls.website_url, urls.facebook_url, urls.instagram_url, message, purpose, t, id),
           // adres do wysyłki briefu idzie za zgłoszeniem (odpowiedzi klienta w briefie zostają bez zmian)
           env.DB.prepare(`UPDATE briefs SET contact_email = ?, updated_at = ? WHERE lead_id = ? AND (contact_email IS NULL OR contact_email = ?)`).bind(email, t, id, old.email),
         ]);
@@ -327,9 +328,9 @@ export async function onRequest(context) {
         const id = uuid();
         await run(
           env,
-          `INSERT INTO leads (id, submission_id, created_at, updated_at, company_name, industry, contact_name, email, phone, website_url, message, status, notification_status, source)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'kontakt', 'skipped', 'reczne')`,
-          id, uuid(), t, t, company, industry, contact, email, phone, site.value, message
+          `INSERT INTO leads (id, submission_id, created_at, updated_at, company_name, industry, contact_name, email, phone, website_url, message, status, notification_status, source, site_purpose)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'kontakt', 'skipped', 'reczne', ?)`,
+          id, uuid(), t, t, company, industry, contact, email, phone, site.value, message, b.site_purpose === 'wizerunkowa' ? 'wizerunkowa' : 'firma'
         );
         return json({ ok: true, id });
       }
@@ -347,6 +348,7 @@ export async function onRequest(context) {
           contact_name: lead.contact_name,
           contact_email: lead.email,
           industry: String(lead.industry || '').replace(/^Inna:\s*/, ''),
+          site_purpose: lead.site_purpose === 'wizerunkowa' ? 'wizerunkowa' : 'firma',
           languages: ['pl'],
         };
         if (lead.phone) pre.contact_phone = lead.phone;

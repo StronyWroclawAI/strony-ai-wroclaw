@@ -1028,6 +1028,22 @@ button { font: inherit; }
   .lead-form .field input, .lead-form .field select, .lead-form .field textarea { font-size: 16px; }
 }
 
+/* ===== Formularz: strona wizerunkowa (klub, szkoła, akademia) — jedna linia ===== */
+.purpose-check { display: flex; align-items: flex-start; gap: 8px; margin: -4px 0 10px; font-size: .8125rem; line-height: 1.35; color: var(--muted); cursor: pointer; }
+.purpose-check input { flex: none; width: 18px; height: 18px; margin: 0; accent-color: var(--navy); cursor: pointer; }
+.purpose-check strong { color: var(--navy-900); }
+.purpose-check:has(input:checked) strong { color: var(--navy-600); }
+@media (min-width: 981px) and (max-height: 680px) { .purpose-check { margin: -6px 0 6px; } }
+.purpose-check__short { display: none; }
+@media (max-width: 640px) {
+  .purpose-check__long, .form-privacy__long { display: none; }
+  .purpose-check__short { display: inline; }
+  .purpose-check { margin: -4px 0 8px; }
+  .lead-form .field label { line-height: 1.2; }
+  .lead-form .field input, .lead-form .field select { min-height: 40px; padding-top: 6px; padding-bottom: 6px; }
+  .contact .form-card { padding-top: 14px; }
+}
+
 
 .preview-bar{position:fixed;left:12px;right:12px;bottom:16px;margin:0 auto;width:fit-content;z-index:90;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;max-width:calc(100vw - 24px);padding:10px 12px 10px 16px;border-radius:14px;background:#fff;color:#0b1d36;font-size:.875rem;box-shadow:0 20px 50px -18px rgba(0,0,0,.55);border:2px solid transparent;background-image:linear-gradient(#fff,#fff),linear-gradient(90deg,#ff6b5a,#ffb547,#19c2b0,#8b7cf6);background-origin:border-box;background-clip:padding-box,border-box}
 .preview-bar span{color:#4d5a70}
@@ -1368,8 +1384,32 @@ button { font: inherit; }
       if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitMessage);
       fitMessage();
     }
+    // Rodzaj strony: firma / wizerunkowa (klub, szkoła, akademia) — zmienia etykiety i szkic wiadomości
+    var tplFirm = tplText;
+    var orgTplEl = document.querySelector('[data-tpl-org]');
+    var tplOrg = orgTplEl ? orgTplEl.value.replace(/^\n+|\s+$/g, '') : '';
+    var norm = function (t) { return String(t || '').replace(/\s+/g, ' ').trim(); };
+    function applyPurpose() {
+      var org = Boolean(form.querySelector('input[name="site_purpose"]:checked'));
+      var cl = form.querySelector('[data-company-label]');
+      if (cl) cl.textContent = org ? 'Nazwa organizacji' : 'Nazwa firmy';
+      var il = form.querySelector('[data-industry-label]');
+      if (il) il.textContent = org ? 'Rodzaj organizacji' : 'Branża';
+      var ci = form.querySelector('.ic__input');
+      if (ci) ci.placeholder = org ? 'Wpisz, np. klub sportowy, szkoła…' : 'Wpisz, np. fryzjer…';
+      // szkic podmieniamy tylko wtedy, gdy klient nic w nim jeszcze nie zmienił
+      if (msgEl && tplOrg) {
+        var cur = norm(msgEl.value);
+        if (!cur || cur === norm(tplFirm) || cur === norm(tplOrg)) msgEl.value = org ? tplOrg : tplFirm;
+        tplText = org ? tplOrg : tplFirm;
+        fitMessage();
+      }
+    }
+    Array.prototype.forEach.call(form.querySelectorAll('input[name="site_purpose"]'), function (r) { r.addEventListener('change', applyPurpose); });
+
     // wyszukiwarka branży (wpisz pierwsze litery)
     if (industry && window.IndustryCombo) window.IndustryCombo.enhance(industry, { other: form.elements.industry_other });
+    applyPurpose();
     var submissionId = newId();
     var sending = false;
 
@@ -1442,6 +1482,7 @@ button { font: inherit; }
       var tokenInput = form.querySelector('[name="cf-turnstile-response"]');
       return {
         submission_id: submissionId,
+        site_purpose: form.querySelector('input[name="site_purpose"]:checked') ? 'wizerunkowa' : 'firma',
         company_name: val(f.company_name),
         industry: val(f.industry),
         industry_other: val(f.industry_other),

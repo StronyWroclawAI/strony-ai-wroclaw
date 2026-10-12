@@ -1022,6 +1022,22 @@ button { font: inherit; }
   .lead-form .field input, .lead-form .field select, .lead-form .field textarea { font-size: 16px; }
 }
 
+/* ===== Formularz: strona wizerunkowa (klub, szkoła, akademia) — jedna linia ===== */
+.purpose-check { display: flex; align-items: flex-start; gap: 8px; margin: -4px 0 10px; font-size: .8125rem; line-height: 1.35; color: var(--muted); cursor: pointer; }
+.purpose-check input { flex: none; width: 18px; height: 18px; margin: 0; accent-color: var(--navy); cursor: pointer; }
+.purpose-check strong { color: var(--navy-900); }
+.purpose-check:has(input:checked) strong { color: var(--navy-600); }
+@media (min-width: 981px) and (max-height: 680px) { .purpose-check { margin: -6px 0 6px; } }
+.purpose-check__short { display: none; }
+@media (max-width: 640px) {
+  .purpose-check__long, .form-privacy__long { display: none; }
+  .purpose-check__short { display: inline; }
+  .purpose-check { margin: -4px 0 8px; }
+  .lead-form .field label { line-height: 1.2; }
+  .lead-form .field input, .lead-form .field select { min-height: 40px; padding-top: 6px; padding-bottom: 6px; }
+  .contact .form-card { padding-top: 14px; }
+}
+
 </style>
 <style>
 /* Brief projektowy — korzysta z kolorów i czcionek z /assets/css/style.css */
@@ -1447,6 +1463,12 @@ button { font: inherit; }
     ] },
     { l: 'Organizacje i kultura', items: [
       I('fundacja', 'Fundacja / stowarzyszenie', 'ngo', ['fundac', 'stowarzysz', 'organizac pozarzad', 'ngo']),
+      I('szkola', 'Szkoła (podstawowa / średnia) / placówka oświatowa', 'edukacja', ['szkol podstaw', 'liceum', 'technikum', 'szkol branz', 'placowk oswiat', 'zespol szkol']),
+      I('uczelnia', 'Uczelnia / akademia / instytut', 'edukacja', ['uczelni', 'uniwersyt', 'politechnik', 'instytut', 'wydzial']),
+      I('instytucja', 'Instytucja publiczna / urząd / gmina', 'ngo', ['urzad', 'gmin', 'instytucj', 'samorzad', 'starostw', 'osrodek pomoc']),
+      I('parafia', 'Parafia / wspólnota religijna', 'ngo', ['parafi', 'kosciol', 'wspolnot']),
+      I('zespol_artystyczny', 'Zespół muzyczny / chór / grupa artystyczna', 'ngo', ['zespol muzycz', 'chor', 'orkiestr', 'grupa teatr', 'kapel']),
+      I('wydarzenie', 'Wydarzenie / festiwal / turniej / inicjatywa', 'ngo', ['festiwal', 'wydarzen', 'turniej', 'inicjatyw', 'konferencj']),
       I('kultura', 'Dom kultury / galeria / teatr / muzeum', 'ngo', ['dom kultur', 'galeri sztuk', 'teatr', 'muzeum', 'kino']),
     ] },
     { l: 'Inne', items: [I('inna', 'Inna branża (opiszę poniżej)', '_brak', [])] },
@@ -2002,6 +2024,13 @@ button { font: inherit; }
         title: 'O firmie',
         intro: 'Kilka podstawowych informacji, żeby strona dobrze oddawała charakter Twojej firmy.',
         fields: [
+          {
+            id: 'site_purpose', type: 'radio', label: 'Jaki charakter ma mieć strona?', required: true, default: 'firma',
+            options: [
+              { v: 'firma', l: 'Strona firmy', h: 'Prezentacja oferty: usługi lub produkty, cennik, rezerwacje, kontakt z klientami.' },
+              { v: 'wizerunkowa', l: 'Strona wizerunkowa (bez sprzedaży usług)', h: 'Prezentacja organizacji: klub sportowy, szkoła, akademia, stowarzyszenie, instytucja — aktualności, drużyny lub zajęcia, kadra, wydarzenia, osiągnięcia, nabór, partnerzy.' },
+            ],
+          },
           { id: 'company_name', type: 'text', label: 'Nazwa firmy (tak, jak ma się pojawić na stronie)', required: true, max: 150 },
           { id: 'contact_name', type: 'text', label: 'Imię i nazwisko osoby do kontaktu', required: true, max: 120 },
           { id: 'contact_email', type: 'email', label: 'E-mail do kontaktu w sprawie projektu', required: true, max: 254 },
@@ -2045,6 +2074,51 @@ button { font: inherit; }
               { v: 'nie', l: 'Nie' },
             ],
           },
+        ],
+      },
+
+      /* ---------------------------------------------------- 2W (tylko strona wizerunkowa) */
+      {
+        id: 'wizerunek',
+        title: 'Organizacja i cel strony',
+        intro: 'Strona wizerunkowa buduje zaufanie i pokazuje, kim jesteście — bez cennika i sprzedaży. Zaznacz, co ma się na niej znaleźć.',
+        fields: [
+          {
+            id: 'org_type', type: 'radio', label: 'Czym jest Wasza organizacja?', required: true, other: true,
+            options: O('klub|Klub sportowy / drużyna', 'akademia|Akademia / szkółka sportowa', 'szkola|Szkoła / przedszkole / placówka oświatowa', 'uczelnia|Uczelnia / instytut', 'ngo|Stowarzyszenie / fundacja', 'instytucja|Instytucja publiczna / urząd / jednostka samorządu', 'kultura|Zespół / grupa artystyczna / instytucja kultury', 'wydarzenie|Wydarzenie / festiwal / turniej'),
+          },
+          { id: 'org_history', type: 'textarea', label: 'Historia i misja', hint: 'Rok założenia, najważniejsze momenty, po co istniejecie i jakie wartości są dla Was ważne. To podstawa sekcji „O nas”.', max: 3000 },
+          { id: 'org_achievements', type: 'textarea', label: 'Najważniejsze osiągnięcia', hint: 'np. awanse, medale, wyniki uczniów, nagrody, certyfikaty, znani wychowankowie. Wpisz tylko prawdziwe informacje — to buduje wiarygodność.', max: 3000 },
+          {
+            id: 'org_audience', type: 'checkbox', label: 'Do kogo przede wszystkim kierujemy stronę?', required: true, other: true,
+            options: O('rodzice|Rodzice', 'uczniowie|Uczniowie / zawodnicy / podopieczni', 'kandydaci|Kandydaci (nabór nowych osób)', 'kibice|Kibice / sympatycy', 'sponsorzy|Sponsorzy i partnerzy', 'czlonkowie|Członkowie / absolwenci', 'mieszkancy|Mieszkańcy / lokalna społeczność', 'wolontariusze|Wolontariusze i darczyńcy', 'media|Media'),
+          },
+          {
+            id: 'org_goals', type: 'checkbox', label: 'Co strona ma osiągnąć?', required: true, other: true,
+            options: O('wizerunek|Budować wizerunek i zaufanie', 'informowac|Informować o aktualnościach i wydarzeniach', 'nabor|Zachęcać do zapisów / naboru', 'sponsorzy|Pozyskiwać sponsorów i partnerów', 'wsparcie|Zbierać wsparcie (darowizny, 1,5% podatku, wolontariat)', 'czlonkowie|Przyciągać nowych członków', 'archiwum|Pokazywać historię i osiągnięcia', 'media|Ułatwiać kontakt mediom (informacje prasowe, logotypy)'),
+          },
+          {
+            id: 'org_sections', type: 'checkbox', label: 'Jakie sekcje mają się znaleźć na stronie?', required: true, other: true,
+            hint: 'Zaznaczyłem najczęściej wybierane — zmień według potrzeb.',
+            default: ['o_nas', 'aktualnosci', 'kadra', 'galeria', 'kontakt'],
+            options: O('o_nas|O nas — historia, misja, wartości', 'aktualnosci|Aktualności', 'kalendarz|Kalendarz wydarzeń', 'terminarz|Terminarz i wyniki (mecze, zawody, konkursy)', 'tabela|Tabela ligowa / klasyfikacje (link lub widżet)', 'druzyny|Drużyny / grupy / klasy / sekcje', 'kadra|Kadra — trenerzy, nauczyciele, zarząd', 'osiagniecia|Osiągnięcia i historia sukcesów', 'galeria|Galeria zdjęć i wideo', 'nabor|Nabór / zapisy (z formularzem)', 'rodzice|Informacje dla rodziców i uczestników (plan zajęć, dojazd, wyposażenie)', 'obiekty|Obiekty i lokalizacja (boisko, hala, sale)', 'sponsorzy|Sponsorzy i partnerzy (logotypy)', 'wspolpraca|Współpraca dla sponsorów (pakiety, kontakt)', 'wsparcie|Wesprzyj nas (darowizny, 1,5% podatku)', 'dokumenty|Dokumenty do pobrania (statut, regulaminy, RODO)', 'media|Dla mediów (informacje, logotypy, kontakt prasowy)', 'sklep|Sklep / gadżety (link do zewnętrznego sklepu)', 'faq|Najczęstsze pytania', 'kontakt|Kontakt i dane organizacji (KRS, NIP)'),
+          },
+          { id: 'org_teams', type: 'textarea', label: 'Drużyny / grupy / klasy / sekcje', hint: 'np. „seniorzy (IV liga), juniorzy U17, trampkarze U13, żaki” albo „klasy 1–8, świetlica, koła zainteresowań”.', showIf: { f: 'org_sections', has: 'druzyny' }, max: 2000 },
+          {
+            id: 'org_results', type: 'radio', label: 'Skąd brać terminarz i wyniki?', other: true, showIf: { f: 'org_sections', has: 'terminarz' },
+            options: O('panel|Wpisujemy sami w panelu strony', 'link|Link do zewnętrznego serwisu (np. 90minut.pl, Łączy nas piłka, związek sportowy)', 'widzet|Widżet / tabela z zewnętrznego serwisu, jeśli jest dostępny', 'nie_wiem|Nie wiem — proszę o rekomendację'),
+          },
+          { id: 'org_results_link', type: 'url', label: 'Link do rozgrywek / wyników', showIf: { f: 'org_results', in: ['link', 'widzet'] }, max: 500 },
+          {
+            id: 'org_recruitment', type: 'radio', label: 'Jak wygląda nabór / zapisy?', other: true, showIf: { f: 'org_sections', has: 'nabor' },
+            options: O('staly|Przez cały rok — formularz zgłoszeniowy na stronie', 'sezonowy|Sezonowo — w określonych terminach', 'zewnetrzny|Przez zewnętrzny system (np. elektroniczny nabór do szkół)', 'kontakt|Telefonicznie / e-mailowo'),
+          },
+          { id: 'org_recruitment_info', type: 'textarea', label: 'Szczegóły naboru', hint: 'Roczniki, terminy, wymagania, opłaty członkowskie (jeśli są), co zabrać na pierwszy trening / zajęcia.', showIf: { f: 'org_sections', has: 'nabor' }, max: 2000 },
+          {
+            id: 'org_formal', type: 'checkbox', label: 'Informacje formalne, które muszą być na stronie', other: true,
+            options: O('dane|Dane rejestrowe (KRS, NIP, REGON, numer konta)', 'statut|Statut i regulaminy', 'sprawozdania|Sprawozdania (finansowe / merytoryczne)', 'rodo|Klauzule RODO i polityka prywatności', 'dostepnosc|Deklaracja dostępności (obowiązkowa dla jednostek publicznych)', 'dofinansowanie|Informacja o dofinansowaniu (logotypy UE / ministerstwa / samorządu)', 'opp|Status OPP i numer KRS do przekazania 1,5% podatku'),
+          },
+          { id: 'org_kids_info', type: 'info', text: 'Zdjęcia, na których widać dzieci i młodzież, publikujemy wyłącznie za zgodą rodziców lub opiekunów. Jeśli takich zgód nie macie, zaplanujemy zdjęcia bez wizerunku dzieci (obiekty, sprzęt, ujęcia z daleka).' },
         ],
       },
 
@@ -2612,22 +2686,53 @@ button { font: inherit; }
     Object.keys(d).forEach(function (k) { answers[k] = d[k]; });
     return answers;
   }
+  /** Charakter strony: firma (oferta, cennik) albo wizerunkowa (klub, szkoła, organizacja — bez sprzedaży). */
+  var PURPOSE_RULES = {
+    firma: { hideSteps: ['wizerunek'] },
+    wizerunkowa: {
+      hideSteps: ['branza', 'cele', 'oferta'],
+      hideFields: ['audience', 'sections', 'booking', 'booksy_link', 'booking_system', 'booking_system_link', 'booking_embed', 'own_booking_needs'],
+      titles: { firma: 'O organizacji', kontakt: 'Kontakt', marka: 'Herb / logo i hasło', organizacja: 'Termin i współpraca' },
+      intros: { firma: 'Kilka podstawowych informacji, żeby strona dobrze oddawała charakter Waszej organizacji.', kontakt: 'Jak można się z Wami skontaktować i gdzie jesteście w internecie.' },
+      labels: {
+        company_name: 'Pełna nazwa organizacji (klubu, szkoły, akademii…)',
+        contact_name: 'Imię i nazwisko osoby do kontaktu w sprawie strony',
+        industry_type: 'Rodzaj organizacji (wybierz najbliższy)',
+        description: 'Czym zajmuje się Wasza organizacja?',
+        strengths: 'Co Was wyróżnia?',
+        opening_hours: 'Godziny pracy biura / sekretariatu (jeśli są)',
+        seo: 'Po jakich hasłach ludzie mogą Was szukać w Google?',
+        logo: 'Czy macie herb / logo?',
+        sections_notes: 'Uwagi do sekcji',
+      },
+      hints: {
+        description: 'Kim jesteście, od kiedy działacie i dla kogo (np. dzieci i młodzież, mieszkańcy, kibice).',
+        strengths: 'Tradycja, osiągnięcia, kadra, obiekty, atmosfera, wartości.',
+        industry_type: 'Jeśli Waszej organizacji nie ma na liście, wybierz „Inna branża” i opisz ją poniżej.',
+        sections_notes: 'np. „drużyny seniorów i juniorów osobno”, „galeria podzielona na sezony”, „sponsorzy w trzech kategoriach”.',
+        seo: 'np. „klub piłkarski Wrocław Krzyki”, „akademia piłkarska dla dzieci Wrocław”, „szkoła podstawowa nr 5 Wrocław”.',
+      },
+    },
+  };
+  function purposeOf(answers) { return answers && answers.site_purpose === 'wizerunkowa' ? 'wizerunkowa' : 'firma'; }
   var ALL_STEPS = BRIEF.steps;
   function inKind(list, kind) { return !list || list.indexOf(kind) !== -1; }
   function copy(o) { var r = {}; for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) r[k] = o[k]; return r; }
   function pick(map, id, kind, fallback) { return map[id] && map[id][kind] ? map[id][kind] : fallback; }
   /** Kroki i pytania dla danego rodzaju briefu. */
-  function stepsFor(kind) {
+  function stepsFor(kind, purpose) {
     var R = KIND_RULES;
-    return ALL_STEPS.filter(function (st) { return inKind(R.steps[st.id], kind); }).map(function (st) {
+    var P = PURPOSE_RULES[purpose] || PURPOSE_RULES.firma;
+    var pp = function (map, id, fallback) { return P[map] && P[map][id] !== undefined ? P[map][id] : fallback; };
+    return ALL_STEPS.filter(function (st) { return inKind(R.steps[st.id] || (st.id === 'wizerunek' ? SITE : null), kind) && (P.hideSteps || []).indexOf(st.id) === -1; }).map(function (st) {
       var c = copy(st);
-      c.title = pick(R.titles, st.id, kind, st.title);
-      c.intro = pick(R.intros, st.id, kind, st.intro);
-      c.fields = st.fields.filter(function (f) { return inKind(f.kinds || R.fields[f.id], kind); }).map(function (f) {
-        if (!R.labels[f.id] && !R.hints[f.id] && !R.options[f.id]) return f;
+      c.title = pp('titles', st.id, pick(R.titles, st.id, kind, st.title));
+      c.intro = pp('intros', st.id, pick(R.intros, st.id, kind, st.intro));
+      c.fields = st.fields.filter(function (f) { return inKind(f.kinds || R.fields[f.id], kind) && (P.hideFields || []).indexOf(f.id) === -1; }).map(function (f) {
+        if (!R.labels[f.id] && !R.hints[f.id] && !R.options[f.id] && !pp('labels', f.id) && !pp('hints', f.id)) return f;
         var g = copy(f);
-        g.label = pick(R.labels, f.id, kind, f.label);
-        g.hint = pick(R.hints, f.id, kind, f.hint);
+        g.label = pp('labels', f.id, pick(R.labels, f.id, kind, f.label));
+        g.hint = pp('hints', f.id, pick(R.hints, f.id, kind, f.hint));
         if (R.options[f.id] && f.options) g.options = f.options.filter(function (o) { return inKind(R.options[f.id][o.v], kind); });
         return g;
       });
@@ -2635,10 +2740,11 @@ button { font: inherit; }
     });
   }
   /** Ustawia rodzaj briefu: od tej chwili BRIEF.steps i pomocnicze funkcje dotyczą tego rodzaju. */
-  function setKind(kind) {
+  function setKind(kind, answers) {
     kind = KINDS[kind] ? kind : 'pelny';
     BRIEF.kind = kind;
-    BRIEF.steps = stepsFor(kind);
+    BRIEF.purpose = purposeOf(answers);
+    BRIEF.steps = stepsFor(kind, BRIEF.purpose);
     BRIEF.title = KINDS[kind].title;
     return BRIEF;
   }
@@ -2887,6 +2993,7 @@ button { font: inherit; }
     needsTagline: needsTagline,
     brandFieldIds: brandFieldIds,
     applyKindDefaults: applyKindDefaults,
+    purposeOf: purposeOf,
     mergeAnswers: mergeAnswers,
   };
   setKind('pelny');
@@ -3072,7 +3179,16 @@ button { font: inherit; }
     else delete answers.industry_label;
   }
 
-  function applyDefaults() {
+  /** Charakter strony (firma / wizerunkowa) zmienia listę kroków i pytań. */
+  function syncPurpose() {
+    S.setKind(S.kind, answers);
+    applyDefaults(true);
+    var sc = $('[data-steps-count]');
+    if (sc) sc.textContent = S.steps.length + ' krótkich kroków';
+  }
+
+  function applyDefaults(noPurpose) {
+    if (!noPurpose && S.setKind && answers) S.setKind(S.kind, answers);
     if (H.applyKindDefaults) H.applyKindDefaults(answers, S.kind);
     S.steps.forEach(function (st) {
       st.fields.forEach(function (f) {
@@ -3084,6 +3200,8 @@ button { font: inherit; }
         }
       });
     });
+    var sc = $('[data-steps-count]');
+    if (sc) sc.textContent = S.steps.length + ' krótkich kroków';
   }
 
   function bindStatic() {
@@ -3468,6 +3586,16 @@ button { font: inherit; }
     if (value === '' || (Array.isArray(value) && !value.length)) delete answers[key];
     else answers[key] = value;
     if (key === 'industry_type' || key === 'industry') syncIndustryLabel();
+    if (key === 'site_purpose') {
+      syncPurpose();
+      if ($('[data-steps-list]')) buildStepsNav();
+      renderStep();
+      refreshStepsNav();
+      var r = $('[data-step-form] input[name="site_purpose"]:checked');
+      if (r) r.focus();
+      scheduleSave();
+      return;
+    }
     updateVisibility();
     scheduleSave();
   }

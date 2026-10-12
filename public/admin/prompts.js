@@ -48,7 +48,7 @@
   function panelSpec(a, standalone) {
     const scope = val('panel_scope', a);
     return `${standalone ? 'Dodaj do mojej strony panel administracyjny (CMS) według poniższej specyfikacji.' : 'Dodaj do tej strony panel administracyjny (CMS) według poniższej specyfikacji.'} Strona to statyczne pliki HTML (czysty HTML/CSS/JS, bez frameworków i bez serwera). Panel ma być wbudowany w stronę (w pliku index.html), cały interfejs po polsku, treści strony w językach: ${langs(a)}. Ma być w nim również możliwość zmiany hasła do logowania się do panelu administracyjnego.
-Dopasuj panel do branży klienta i do sekcji, które faktycznie są na stronie: pomiń podstrony panelu dla elementów, których strona nie ma, a nazwy grup i list dostosuj do branży (np. „Menu” zamiast „Oferta” w restauracji, „Pokoje” w hotelu).${scope ? ` Klient chce samodzielnie zmieniać przede wszystkim: ${scope}.` : ''}
+${isOrg(a) ? 'TO STRONA WIZERUNKOWA (bez sprzedaży): w panelu pomiń cennik, promocje, usługi, rezerwacje i opinie klientów. Zamiast nich: Aktualności, Kalendarz wydarzeń, Terminarz i wyniki (mecz/zawody: data, godzina, przeciwnik/opis, miejsce, wynik), Drużyny/grupy (z kadrą zawodników lub uczestników, jeśli klient chce), Kadra (trenerzy, nauczyciele, zarząd), Osiągnięcia, Sponsorzy i partnerzy (logo, link, kategoria), Dokumenty do pobrania (PDF), Nabór (włącz/wyłącz, terminy, opis), Galeria. Na pulpicie pokaż najbliższe wydarzenia i mecze zamiast promocji. ' : ''}Dopasuj panel do branży klienta i do sekcji, które faktycznie są na stronie: pomiń podstrony panelu dla elementów, których strona nie ma, a nazwy grup i list dostosuj do branży (np. „Menu” zamiast „Oferta” w restauracji, „Pokoje” w hotelu).${scope ? ` Klient chce samodzielnie zmieniać przede wszystkim: ${scope}.` : ''}
 
 === 1. ZASADA DZIAŁANIA ===
 - Wszystkie treści strony, które ma edytować klient (teksty, listy, zdjęcia, cennik, godziny), są przechowywane w jednym obiekcie danych (state) z wartościami początkowymi wpisanymi w kodzie.
@@ -146,6 +146,26 @@ W tekstach działa proste formatowanie: *kursywa* (w kolorze akcentu), **pogrubi
 Na koniec przetestuj: logowanie (złe i dobre hasło), zmianę hasła (stare przestaje działać, nowe działa po odświeżeniu), dodanie promocji zaplanowanej (nie ma jej na stronie) i aktywnej (jest na stronie i na pasku), usunięcie, zmianę kolejności, ukrycie, zmianę godzin w niedzielę, dodanie dnia specjalnego, wyłączenie sekcji, zmianę tekstu nagłówka oraz to, czy wszystko zostaje po odświeżeniu strony.`;
   }
 
+  const isOrg = (a) => a && a.site_purpose === 'wizerunkowa';
+
+  /* ---------- Strona wizerunkowa (klub, szkoła, akademia, organizacja) ---------- */
+  function orgSpec(a) {
+    const type = val('org_type', a);
+    const sections = val('org_sections', a);
+    const goals = val('org_goals', a);
+    const aud = val('org_audience', a);
+    return `CHARAKTER STRONY: WIZERUNKOWA (${type || 'organizacja'}) — to NIE jest strona sprzedażowa
+- Cel: budować wizerunek, zaufanie i dumę, informować i angażować społeczność. Bez cennika, koszyka, promocji i języka sprzedaży.
+- Odbiorcy: ${aud || 'z briefu'}. Cele strony: ${goals || 'z briefu'}.
+- Sekcje wybrane w briefie (zrealizuj je wszystkie, w logicznej kolejności): ${sections || 'z briefu'}.
+- Pierwszy ekran: nazwa i herb/logo, krótkie hasło lub misja, mocne zdjęcie (drużyna, uczniowie, obiekt — tylko z materiałów klienta), 1–2 przyciski dopasowane do celów (np. „Zapisz dziecko”, „Najbliższe wydarzenia”, „Zostań partnerem”).
+- Wezwania do działania zamiast „kup/zarezerwuj”: zapisy/nabór, kontakt, kalendarz, wsparcie (darowizny, 1,5% podatku), współpraca dla sponsorów.
+- Sekcje dynamiczne (aktualności, wydarzenia, terminarz i wyniki, drużyny, kadra, sponsorzy, dokumenty) muszą dać się łatwo aktualizować w panelu — to one sprawiają, że strona żyje.
+- Wiarygodność: historia, osiągnięcia i kadra wyłącznie z briefu (bez dopisywania wyników i nagród), dane rejestrowe (KRS/NIP) i dokumenty w stopce lub w sekcji „Dokumenty”.
+- Dzieci i młodzież: zdjęcia z wizerunkiem dzieci tylko za zgodą rodziców — przygotuj miejsca na zdjęcia tak, by dało się użyć ujęć bez twarzy.
+- Jeśli organizacja jest jednostką publiczną: deklaracja dostępności i pełna zgodność z WCAG 2.1 AA (obowiązek prawny).`;
+  }
+
   /* ---------- SEO (wymagania dla każdej strony) ---------- */
   function seoSpec(a, meta) {
     const n = name(a, meta);
@@ -156,7 +176,7 @@ Na koniec przetestuj: logowanie (złe i dobre hasło), zmianę hasła (stare prz
     const area = val('area', a);
     return `ZADANIE: PROFESJONALNE SEO (strona ma być od razu gotowa do pozycjonowania w Google)
 Zanim zaczniesz kodować, przygotuj krótki PLAN SEO i pokaż go na początku odpowiedzi:
-- 1 główna fraza i 3–6 fraz pobocznych dla ${multi ? 'każdej podstrony' : 'strony'} — naturalne zapytania klientów tej branży (${branch}${city ? `, ${city}` : ''}${area ? `, obszar: ${area}` : ''}), np. „[usługa] ${city || '[miasto]'}”, „[usługa] cennik”. Bez upychania słów kluczowych.
+- 1 główna fraza i 3–6 fraz pobocznych dla ${multi ? 'każdej podstrony' : 'strony'} — naturalne zapytania ${isOrg(a) ? 'osób szukających tej organizacji (np. „klub piłkarski [miasto]”, „nabór do akademii [miasto]”, „[nazwa] terminarz”)' : 'klientów tej branży'} (${branch}${city ? `, ${city}` : ''}${area ? `, obszar: ${area}` : ''}), np. „[usługa] ${city || '[miasto]'}”, „[usługa] cennik”. Bez upychania słów kluczowych.
 - Mapa stron/sekcji z przypisanymi frazami i proponowanymi adresami URL.
 
 Wymagania techniczne i treściowe (wykonaj wszystkie):
@@ -165,7 +185,7 @@ Wymagania techniczne i treściowe (wykonaj wszystkie):
 3. Dokładnie jeden <h1> na stronę (z frazą główną), pod nim logiczna hierarchia <h2>/<h3> — bez przeskakiwania poziomów i bez nagłówków użytych tylko dla wyglądu.
 4. <link rel="canonical"> z pełnym adresem (adres domeny z briefu; jeśli go nie ma — https://[DOMENA] do podmiany w jednym miejscu w kodzie).
 5. Open Graph i Twitter Card: og:title, og:description, og:url, og:image (1200×630, przygotuj plik og-image lub oznacz [OG-IMAGE DO PODMIANY]), og:type, og:locale pl_PL, twitter:card summary_large_image.
-6. Dane strukturalne JSON-LD: ${'LocalBusiness'} w najlepiej pasującym podtypie schema.org dla branży (np. HairSalon, AutoRepair, Restaurant, Dentist), z WYŁĄCZNIE prawdziwymi danymi z briefu: nazwa, adres (tylko jeśli ma być widoczny), telefon, e-mail, godziny otwarcia, obszar działania, link do map i profili społecznościowych (sameAs), logo. Do tego WebSite oraz — jeśli są — FAQPage (z pytań FAQ widocznych na stronie)${multi ? ' i BreadcrumbList na podstronach' : ''}. NIE dodawaj ocen, liczby opinii ani recenzji, których nie ma na stronie. Dane w JSON-LD muszą być identyczne z widocznymi (NAP: nazwa, adres, telefon — wszędzie tak samo).
+6. Dane strukturalne JSON-LD: ${isOrg(a) ? 'typ organizacji w najlepiej pasującym podtypie schema.org (np. SportsClub / SportsTeam / SportsOrganization, School / EducationalOrganization / CollegeOrUniversity, NGO, GovernmentOrganization, PerformingGroup), a dla wydarzeń z kalendarza — Event / SportsEvent, dla aktualności — NewsArticle' : 'LocalBusiness w najlepiej pasującym podtypie schema.org dla branży (np. HairSalon, AutoRepair, Restaurant, Dentist)'}, z WYŁĄCZNIE prawdziwymi danymi z briefu: nazwa, adres (tylko jeśli ma być widoczny), telefon, e-mail, ${isOrg(a) ? 'dane rejestrowe, ' : 'godziny otwarcia, '}obszar działania, link do map i profili społecznościowych (sameAs), logo. Do tego WebSite oraz — jeśli są — FAQPage (z pytań FAQ widocznych na stronie)${multi ? ' i BreadcrumbList na podstronach' : ''}. NIE dodawaj ocen, liczby opinii ani recenzji, których nie ma na stronie. Dane w JSON-LD muszą być identyczne z widocznymi (NAP: nazwa, adres, telefon — wszędzie tak samo).
 7. Treść początkowa ma być w HTML w momencie wczytania strony (widoczna dla Google bez wykonywania JavaScriptu). Panel administracyjny może ją nadpisywać zapisanymi zmianami, ale nie może być jedynym źródłem treści. Przy zmianach z panelu aktualizuj też <title>, opis i JSON-LD, jeśli dotyczą zmienionych danych.
 8. Obrazy: opisowe atrybuty alt (co przedstawia zdjęcie, naturalnie z kontekstem branży — bez upychania fraz), width i height (zero przeskakiwania układu), loading="lazy" poza pierwszym ekranem, główny obraz pierwszego ekranu z fetchpriority="high"; format WebP/AVIF; opisowe nazwy plików (np. strzyzenie-damskie-wroclaw.webp).
 9. Szybkość (Core Web Vitals): LCP < 2,5 s, CLS < 0,1, INP < 200 ms. Krytyczny CSS w <head>, skrypty z defer, czcionki z preload i font-display: swap (maksymalnie 2 kroje), brak ciężkich bibliotek, mapa Google ładowana dopiero po kliknięciu lub przewinięciu (z obrazkiem zastępczym).
@@ -195,7 +215,7 @@ LOGO I HASŁO — WYBRANE PRZEZ KLIENTA (gotowe, nie projektuj nowych)
     const what = [H.needsLogo(a) ? 'logo' : '', H.needsTagline(a) ? 'hasło' : ''].filter(Boolean).join(' i ');
     const brand = chosenBrand(choice);
     return `Jesteś doświadczonym projektantem stron internetowych, specjalistą SEO, UX/UI designerem, copywriterem i programistą front-end.
-Na podstawie briefu klienta (na końcu tej wiadomości) przygotuj kompletną stronę internetową firmy „${name(a, meta)}” z wbudowanym panelem administracyjnym, od razu przygotowaną pod profesjonalne SEO.
+Na podstawie briefu klienta (na końcu tej wiadomości) przygotuj kompletną ${isOrg(a) ? 'stronę wizerunkową organizacji' : 'stronę internetową firmy'} „${name(a, meta)}” z wbudowanym panelem administracyjnym, od razu przygotowaną pod profesjonalne SEO.
 
 ZASADY OGÓLNE
 - Nie wymyślaj faktów, opinii klientów, liczb, nagród ani certyfikatów, których nie ma w briefie — brakujące informacje oznacz jako [DO UZUPEŁNIENIA].
@@ -209,7 +229,9 @@ Klient prosi o: ${what}. Powstają w osobnym kroku (strona wyboru z 4 opcjami, k
 - Jeśli do tej wiadomości dołączam wybrane ${what} — użyj ich i dopasuj do nich kolory oraz typografię strony.
 - Jeśli nie dołączam — użyj tymczasowego logotypu z nazwy firmy i oznacz miejsca [LOGO DO PODMIANY] / [HASŁO DO PODMIANY].
 ` : '')}
-${layoutTask(a)}
+${isOrg(a) ? `${orgSpec(a)}
+
+` : ''}${layoutTask(a)}
 
 ZADANIE 1: STRONA
 - Czysty HTML/CSS/JS (bez frameworków i bez serwera), gotowy do wgrania na hosting statyczny (np. Cloudflare Pages). Strona główna w index.html${a.site_type === 'podstrony' ? ', podstrony jako osobne pliki HTML' : ''}; wszystkie pliki spakuj do ZIP.
@@ -336,7 +358,7 @@ ${H.toMarkdown(a, meta)}`;
       'wersja na telefon',
       Array.isArray(a.languages) && a.languages.length > 1 ? 'wersje językowe' : '',
     ].filter(Boolean).join(', ');
-    const sections = val('sections', a);
+    const sections = isOrg(a) ? val('org_sections', a) : val('sections', a);
     const features = [sections ? `sekcje: ${sections}` : '', val('booking', a) ? `rezerwacje: ${val('booking', a)}` : '', val('integrations', a) ? `dodatki: ${val('integrations', a)}` : ''].filter(Boolean).join('; ') || '[lista]';
     const live = a.domain_name ? `[https://${String(a.domain_name).split(/[\s—-]+/)[0].replace(/^https?:\/\//, '')}] (sprawdź adres)` : '[https://…] (jeśli brak — pomiń przycisk)';
     return `Przygotuj mi KOMPLETNY PLIK ZIP z kartą projektu do portfolio na mojej stronie „Strony AI Wrocław”

@@ -292,8 +292,32 @@
       if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitMessage);
       fitMessage();
     }
+    // Rodzaj strony: firma / wizerunkowa (klub, szkoła, akademia) — zmienia etykiety i szkic wiadomości
+    var tplFirm = tplText;
+    var orgTplEl = document.querySelector('[data-tpl-org]');
+    var tplOrg = orgTplEl ? orgTplEl.value.replace(/^\n+|\s+$/g, '') : '';
+    var norm = function (t) { return String(t || '').replace(/\s+/g, ' ').trim(); };
+    function applyPurpose() {
+      var org = Boolean(form.querySelector('input[name="site_purpose"]:checked'));
+      var cl = form.querySelector('[data-company-label]');
+      if (cl) cl.textContent = org ? 'Nazwa organizacji' : 'Nazwa firmy';
+      var il = form.querySelector('[data-industry-label]');
+      if (il) il.textContent = org ? 'Rodzaj organizacji' : 'Branża';
+      var ci = form.querySelector('.ic__input');
+      if (ci) ci.placeholder = org ? 'Wpisz, np. klub sportowy, szkoła…' : 'Wpisz, np. fryzjer…';
+      // szkic podmieniamy tylko wtedy, gdy klient nic w nim jeszcze nie zmienił
+      if (msgEl && tplOrg) {
+        var cur = norm(msgEl.value);
+        if (!cur || cur === norm(tplFirm) || cur === norm(tplOrg)) msgEl.value = org ? tplOrg : tplFirm;
+        tplText = org ? tplOrg : tplFirm;
+        fitMessage();
+      }
+    }
+    Array.prototype.forEach.call(form.querySelectorAll('input[name="site_purpose"]'), function (r) { r.addEventListener('change', applyPurpose); });
+
     // wyszukiwarka branży (wpisz pierwsze litery)
     if (industry && window.IndustryCombo) window.IndustryCombo.enhance(industry, { other: form.elements.industry_other });
+    applyPurpose();
     var submissionId = newId();
     var sending = false;
 
@@ -366,6 +390,7 @@
       var tokenInput = form.querySelector('[name="cf-turnstile-response"]');
       return {
         submission_id: submissionId,
+        site_purpose: form.querySelector('input[name="site_purpose"]:checked') ? 'wizerunkowa' : 'firma',
         company_name: val(f.company_name),
         industry: val(f.industry),
         industry_other: val(f.industry_other),

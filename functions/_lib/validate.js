@@ -40,13 +40,15 @@ export function validateLead(body) {
   const submission_id = String(b.submission_id || '');
   if (!UUID_RE.test(submission_id)) errors.form = 'Nieprawidłowe dane formularza. Odśwież stronę i spróbuj ponownie.';
 
+  const site_purpose = b.site_purpose === 'wizerunkowa' ? 'wizerunkowa' : 'firma';
+  const org = site_purpose === 'wizerunkowa';
   const company_name = oneLine(b.company_name, 150);
-  if (!company_name) errors.company_name = 'Podaj nazwę firmy.';
+  if (!company_name) errors.company_name = org ? 'Podaj nazwę organizacji.' : 'Podaj nazwę firmy.';
   else if (company_name.length > 150) errors.company_name = 'Nazwa firmy może mieć maksymalnie 150 znaków.';
 
   let industry = oneLine(b.industry, 100);
   const industryOther = oneLine(b.industry_other, 100);
-  if (!industry) errors.industry = 'Wybierz branżę.';
+  if (!industry) errors.industry = org ? 'Wybierz rodzaj organizacji.' : 'Wybierz branżę.';
   else if (industry.length > 100) errors.industry = 'Nieprawidłowa branża.';
   else if (industry === 'Inna') {
     if (!industryOther) errors.industry_other = 'Wpisz, czym zajmuje się firma.';
@@ -86,6 +88,7 @@ export function validateLead(body) {
     errors,
     data: {
       submission_id,
+      site_purpose,
       company_name,
       industry,
       contact_name,

@@ -107,6 +107,41 @@
     return h('div', { class: 'field' }, h('label', { for: id, text: label }), input, hint ? h('p', { class: 'hint', text: hint }) : null);
   }
 
+  /** Rodzaj strony: firma (oferta, cennik) albo wizerunkowa (klub, szkoła, organizacja — bez sprzedaży). */
+  function purposePicker(initial) {
+    const name = `purpose-${Math.random().toString(36).slice(2, 8)}`;
+    const firm = h('input', { type: 'radio', name, value: 'firma', checked: initial !== 'wizerunkowa' });
+    const org = h('input', { type: 'radio', name, value: 'wizerunkowa', checked: initial === 'wizerunkowa' });
+    const el = h(
+      'fieldset',
+      { class: 'kind-pick purpose-pick', 'data-purpose-pick': '' },
+      h('legend', { text: 'Rodzaj strony' }),
+      h('label', { class: 'check' }, firm, h('span', null, h('strong', { text: 'Strona firmy' }), ' — oferta, usługi, cennik, rezerwacje')),
+      h('label', { class: 'check' }, org, h('span', null, h('strong', { text: 'Strona wizerunkowa' }), ' — klub, szkoła, akademia, stowarzyszenie, instytucja (bez sprzedaży usług)'))
+    );
+    // etykiety pól dopasowane do rodzaju strony (firma / organizacja)
+    const labels = { company: null, industry: null };
+    const sync = () => {
+      const form = el.closest('form');
+      if (!form) return;
+      const isOrg = org.checked;
+      if (labels.company) { const l = form.querySelector(`label[for="${labels.company.id}"]`); if (l) l.textContent = isOrg ? 'Nazwa organizacji (klubu, szkoły, akademii) *' : 'Nazwa firmy *'; }
+      if (labels.industry) {
+        const l = form.querySelector(`label[for="${labels.industry.id}-szukaj"], label[for="${labels.industry.id}"]`);
+        if (l) l.textContent = isOrg ? 'Rodzaj organizacji' : 'Branża';
+        const ci = form.querySelector('.ic__input');
+        if (ci) ci.placeholder = isOrg ? 'Wpisz, np. klub sportowy, szkoła…' : 'Wpisz, np. fryzjer…';
+      }
+    };
+    [firm, org].forEach((i) => i.addEventListener('change', sync));
+    return {
+      el,
+      get: () => (org.checked ? 'wizerunkowa' : 'firma'),
+      inputs: [firm, org],
+      bind(company, industry) { labels.company = company; labels.industry = industry; setTimeout(sync, 30); },
+    };
+  }
+
   /** Wybór branży — ta sama lista co w formularzu zgłoszeniowym na stronie (z „Inna branża” i polem do wpisania). */
   function industryPicker(initial) {
     const S = window.BRIEF_SCHEMA;
@@ -395,6 +430,7 @@
                 h(
                   'div',
                   { class: 'lead-row__badges' },
+                  l.site_purpose === 'wizerunkowa' ? h('span', { class: 'status status--w_realizacji', text: 'Wizerunkowa' }) : null,
                   l.source === 'reczne' ? h('span', { class: 'status status--odrzucone', text: 'Dodane ręcznie' }) : null,
                   l.source !== 'reczne' && ['failed', 'skipped'].includes(l.notification_status) ? h('span', { class: `status status--${l.notification_status}`, text: NOTIF_LABEL[l.notification_status] }) : null,
                   l.logo_status ? h('span', { class: `status status--${l.logo_status === 'wybrana' ? 'zakonczone' : 'kontakt'}`, text: l.logo_status === 'wybrana' ? 'Logo: wybrane' : 'Logo: czeka na wybór' }) : null,
@@ -436,6 +472,7 @@
       message: h('textarea', { rows: '3', maxlength: '5000', placeholder: 'np. „Napisałem 3.10, odpowiedziała, że jest zainteresowana”' }),
     };
     const ind = industryPicker('');
+    const pur = purposePicker('firma');
     const btn = h('button', { class: 'btn btn--primary', type: 'submit', text: 'Zapisz zgłoszenie' });
     const form = h(
       'form',
@@ -453,6 +490,7 @@
           const payload = {};
           Object.keys(f).forEach((k) => (payload[k] = f[k].value.trim()));
           payload.industry = ind.get();
+          payload.site_purpose = pur.get();
           busy(btn, true);
           const { data, error } = await q(api('leads', { method: 'POST', body: payload }));
           busy(btn, false);
@@ -463,10 +501,12 @@
       },
       h('h2', { text: 'Dodaj zgłoszenie ręcznie' }),
       h('p', { class: 'small muted', text: 'Dla firm, z którymi kontakt nawiązałeś mailowo lub telefonicznie, a nie przez formularz na stronie. Dzięki temu wszyscy klienci i ich briefy są w jednym miejscu.' }),
+      pur.el,
       h('div', { class: 'grid-2' }, field('Nazwa firmy *', f.company_name), field('Osoba kontaktowa *', f.contact_name), field('E-mail *', f.email), field('Telefon', f.phone), field('Branża', ind.select), ind.otherBox, field('Obecna strona', f.website_url)),
       field('Opis / jak nawiązano kontakt', f.message),
       h('div', { class: 'actions' }, btn, h('button', { class: 'btn', type: 'button', text: 'Anuluj', onclick: () => { form.reset(); form.hidden = true; } }))
     );
+    pur.bind(f.company_name, ind.select);
     return form;
   }
 
@@ -494,6 +534,7 @@
       [
         ['Data', fmtDate(lead.created_at)],
         ['Firma', lead.company_name],
+        ['Rodzaj strony', lead.site_purpose === 'wizerunkowa' ? h('span', { class: 'status status--w_realizacji', text: 'Strona wizerunkowa (bez sprzedaży)' }) : 'Strona firmy'],
         ['Branża', lead.industry],
         ['Osoba kontaktowa', lead.contact_name],
         ['E-mail', h('a', { href: `mailto:${lead.email}`, text: lead.email })],
@@ -527,6 +568,8 @@
       f.message.value = lead.message || '';
       const ind = industryPicker(lead.industry);
       ind.select.addEventListener('change', () => (dirty = true));
+      const pur = purposePicker(lead.site_purpose);
+      pur.inputs.forEach((i) => i.addEventListener('change', () => (dirty = true)));
       Object.values(f).forEach((i) => i.addEventListener('input', () => (dirty = true)));
       const emsg = h('div', { 'aria-live': 'polite' });
       const save = h('button', { class: 'btn btn--primary', type: 'submit', text: 'Zapisz dane' });
@@ -542,6 +585,7 @@
               const payload = {};
               Object.keys(f).forEach((k) => (payload[k] = f[k].value.trim()));
               payload.industry = ind.get();
+              payload.site_purpose = pur.get();
               if (!payload.company_name || !payload.contact_name || !payload.email) return emsg.replaceChildren(h('div', { class: 'alert alert--error', text: 'Nazwa firmy, osoba kontaktowa i e-mail są wymagane.' }));
               busy(save, true);
               const { error } = await q(api(`leads/${lead.id}`, { method: 'PATCH', body: payload }));
@@ -552,6 +596,7 @@
               route();
             },
           },
+          pur.el,
           h('div', { class: 'grid-2' }, field('Nazwa firmy *', f.company_name), field('Branża', ind.select), ind.otherBox, field('Osoba kontaktowa *', f.contact_name), field('E-mail *', f.email), field('Telefon', f.phone), field('Obecna strona', f.website_url), field('Facebook', f.facebook_url), field('Instagram', f.instagram_url)),
           field('Oczekiwania / opis', f.message),
           h('p', { class: 'small muted', text: 'Zmieniasz dane zapisane w zgłoszeniu. Odpowiedzi klienta w briefie zostają bez zmian (popraw je przyciskiem „Popraw” przy briefie).' }),
@@ -559,6 +604,7 @@
           h('div', { class: 'actions' }, save, h('button', { class: 'btn', type: 'button', text: 'Anuluj', onclick: () => { dirty = false; drawData(false); } }))
         )
       );
+      pur.bind(f.company_name, ind.select);
       f.email.focus();
     }
     drawData(false);
@@ -899,7 +945,7 @@
     const promptBtn = P && a
       ? h('button', { class: 'btn btn--sm', type: 'button', text: 'Kopiuj polecenie dla AI (4 opcje + ZIP)', onclick: () => {
           const S = window.BRIEF_SCHEMA;
-          if (S && S.setKind) S.setKind(brief && !brief.merged_at ? brief.kind : 'pelny');
+          if (S && S.setKind) S.setKind(brief && !brief.merged_at ? brief.kind : 'pelny', a || {});
           try {
             copyText(P.logoPage(a, { company_name: lead.company_name }), 'Skopiowano polecenie: strona z propozycjami logo i hasła.');
           } finally {
@@ -995,7 +1041,7 @@
   /** Uruchamia funkcję z ustawionym rodzajem briefu (pytania zależą od rodzaju). */
   function withKind(b, fn) {
     const S = window.BRIEF_SCHEMA;
-    if (S && S.setKind) S.setKind(b && !b.merged_at ? b.kind || 'pelny' : 'pelny');
+    if (S && S.setKind) S.setKind(b && !b.merged_at ? b.kind || 'pelny' : 'pelny', (b && b.answers) || {});
     try {
       return fn();
     } finally {
@@ -1217,14 +1263,14 @@
     const kind = b.merged_at ? 'pelny' : b.kind || 'pelny';
     // Pytania i kroki zależą od rodzaju briefu — każde użycie schematu przełącza go na ten rodzaj
     const K = (fn) => (...args) => {
-      if (S && S.setKind) S.setKind(kind);
+      if (S && S.setKind) S.setKind(kind, b.answers || {});
       try {
         return fn(...args);
       } finally {
         if (S && S.setKind) S.setKind('pelny');
       }
     };
-    if (S && S.setKind) S.setKind(kind);
+    if (S && S.setKind) S.setKind(kind, b.answers || {});
     const kindLabel = b.merged_at ? 'połączony' : { pelny: 'strona + logo', strona: 'strona', logo: 'logo i hasło' }[kind];
     const isLogo = kind === 'logo';
     const mailWhat = isLogo ? 'przygotować logo i hasło' : 'przygotować stronę internetową';
