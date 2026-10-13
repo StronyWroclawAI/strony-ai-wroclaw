@@ -350,3 +350,30 @@ code { background: var(--gray-100); padding: 1px 6px; border-radius: 4px; font-s
 .file-photos__bar .small { flex: 1 1 100%; color: var(--muted); }
 .link-btn { border: 0; background: none; padding: 0; font: inherit; font-size: 13px; font-weight: 700; color: var(--navy-600, #1f4f8f); text-decoration: underline; cursor: pointer; }
 .link-btn--danger { color: #b42318; }
+
+/* ===== Podgląd polecenia dla AI ===== */
+.prompt-dialog { width: min(1040px, calc(100vw - 24px)); max-width: none; max-height: calc(100vh - 24px); max-height: calc(100dvh - 24px); padding: 18px 20px; display: none; flex-direction: column; gap: 10px; overflow: hidden; }
+.prompt-dialog[open] { display: flex; }
+.prompt-dialog__head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.prompt-dialog__head .dialog__title { margin: 0 0 2px; }
+.prompt-dialog__x { width: 40px; height: 40px; flex: none; border: 0; border-radius: 10px; background: var(--gray-50); font-size: 24px; line-height: 1; cursor: pointer; }
+.prompt-dialog__x:hover { background: #e5ebf3; }
+.prompt-note { margin: 0; flex: none; }
+.prompt-dialog__head, .prompt-dialog__actions { flex: none; }
+.prompt-toc { flex: none; display: flex; flex-wrap: wrap; gap: 6px; max-height: 112px; overflow: auto; padding: 2px 0; }
+.prompt-toc[hidden] { display: none; }
+.prompt-chip { border: 1px solid #c5cedb; background: #fff; border-radius: 999px; padding: 4px 10px; font: inherit; font-size: 12px; font-weight: 700; color: var(--navy-900); cursor: pointer; white-space: nowrap; }
+.prompt-chip:hover { border-color: var(--navy); background: #eef4fd; }
+.prompt-view { flex: 1 1 auto; min-height: 200px; overflow: auto; border: 1px solid #dde3ec; border-radius: 12px; background: #fbfcfe; padding: 14px 16px; position: relative; }
+.prompt-view[hidden] { display: none; }
+.prompt-pre { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; font: 13px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: #1d2b40; }
+.prompt-h { display: inline-block; margin-top: 6px; padding: 1px 6px; border-radius: 6px; background: #e8f0fc; color: #0f2544; font-weight: 800; transition: background-color .3s; }
+.prompt-h.is-flash { background: #ffe7b3; }
+.prompt-sep { color: #a3b0c2; }
+.prompt-edit { flex: 1 1 auto; min-height: 300px; width: 100%; resize: none; border: 1.5px solid var(--navy); border-radius: 12px; padding: 12px 14px; font: 13px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.prompt-edit[hidden] { display: none; }
+.prompt-dialog__actions { flex-wrap: wrap; margin-top: 4px; }
+@media (max-width: 640px) {
+  .prompt-dialog { padding: 14px; }
+  .prompt-dialog__actions .btn { flex: 1 1 auto; }
+}

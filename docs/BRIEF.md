@@ -4,6 +4,12 @@ Brief to szczegółowy kwestionariusz, który klient wypełnia online przed rozp
 
 **Każdy brief jest przypięty do zgłoszenia.** Najpierw jest kontakt (formularz na stronie albo Twój e-mail), a gdy klient zgodzi się na współpracę — tworzysz brief w jego zgłoszeniu i tam widzisz pełne odpowiedzi.
 
+## Polecenia dla AI — podgląd i układ strony
+
+- Każdy przycisk polecenia (w centrum briefów i przy briefie) otwiera **podgląd**: dokładnie ten tekst, który zostanie skopiowany, ze spisem sekcji (kliknięcie przewija do sekcji), licznikiem znaków, możliwością poprawienia treści, „Pobierz .txt” i „Kopiuj polecenie”.
+- Polecenie na stronę zawiera sekcję **UKŁAD STRONY** dopasowaną do wyboru klienta: zasada nadrzędna (funkcje stałe, układ decyduje tylko o formie, rdzeń zawsze wdrażany, moduły z briefu), reguły **tylko wybranego układu** (strona + ustawienia panelu), podział ONE_PAGE / WIELE_STRON z briefu oraz konflikty i uwagi. Przy „Nie mam preferencji” AI dostaje regułę wyboru i reguły wszystkich układów.
+- Panel w poleceniu: zapis na serwerze (Cloudflare Pages Functions + KV), hasło jako hash po stronie serwera, kopie ostatnich zapisów, podgląd sekcji przed zmianą treści, włączanie/wyłączanie wersji językowych.
+
 ## Logo i zdjęcia od klienta
 
 - **W briefie:** gdy klient zaznaczy, że ma logo, pojawia się pole „Wgraj swoje logo” (SVG, PDF, PNG, JPG, WebP; do 20 MB, do 6 plików, np. różne wersje). W briefie „Logo i hasło” jest pole na obecne logo. W kroku „Treści i materiały” klient może wgrać do 40 zdjęć — telefon/przeglądarka zmniejsza je przed wysłaniem do 2560 px, więc zdjęcia prosto z telefonu wgrywają się szybko.

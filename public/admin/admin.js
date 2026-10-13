@@ -89,6 +89,82 @@
     });
   }
 
+  /**
+   * Podgląd polecenia dla AI przed skopiowaniem: spis sekcji (skoki), czytelny widok,
+   * możliwość poprawienia treści, licznik znaków, „Kopiuj” i „Pobierz .txt”.
+   */
+  function promptPreview(title, text, okMsg) {
+    let current = String(text || '');
+    const isHead = (l) => /^={3}.*={3}$/.test(l.trim()) || /^\d\)\s+[A-ZĄĆĘŁŃÓŚŹŻ]/.test(l.trim()) || (/^[A-ZĄĆĘŁŃÓŚŹŻ0-9][A-ZĄĆĘŁŃÓŚŹŻ0-9 ():\-—–,.\/+'„”"]{5,}$/.test(l.trim()) && l.trim() === l.trim().toUpperCase() && /[A-ZĄĆĘŁŃÓŚŹŻ]{4}/.test(l));
+    const view = h('div', { class: 'prompt-view', tabindex: '0', 'aria-label': 'Treść polecenia' });
+    const toc = h('nav', { class: 'prompt-toc', 'aria-label': 'Sekcje polecenia' });
+    const edit = h('textarea', { class: 'prompt-edit', spellcheck: 'false', 'aria-label': 'Edycja treści polecenia', hidden: true });
+    const stats = h('span', { class: 'prompt-stats small muted' });
+    const note = h('p', { class: 'small muted prompt-note', text: 'To jest dokładnie ten tekst, który zostanie skopiowany. Możesz go poprawić przed skopiowaniem (zmiany nie zapisują się w briefie).' });
+    const render = () => {
+      view.replaceChildren();
+      toc.replaceChildren();
+      const pre = h('pre', { class: 'prompt-pre' });
+      let n = 0;
+      current.split('\n').forEach((line) => {
+        if (isHead(line)) {
+          const id = `pp-${++n}`;
+          pre.append(h('strong', { class: 'prompt-h', id, text: line }), '\n');
+          const label = line.replace(/^=+\s*|\s*=+$/g, '').replace(/^\d\)\s*/, '').trim();
+          if (!/:$/.test(label)) toc.append(h('button', { type: 'button', class: 'prompt-chip', text: label.length > 42 ? `${label.slice(0, 40)}…` : label, title: label, onclick: () => { const t = pre.querySelector(`#${id}`); if (t) { view.scrollTop = t.offsetTop - view.offsetTop - 8; t.classList.add('is-flash'); setTimeout(() => t.classList.remove('is-flash'), 900); } } }));
+        } else if (/^[─=]{10,}$/.test(line.trim())) {
+          pre.append(h('span', { class: 'prompt-sep', 'aria-hidden': 'true', text: line }), '\n');
+        } else pre.append(line, '\n');
+      });
+      view.append(pre);
+      const words = current.trim() ? current.trim().split(/\s+/).length : 0;
+      stats.textContent = `${current.length.toLocaleString('pl-PL')} znaków · ${words.toLocaleString('pl-PL')} słów · ok. ${Math.round(current.length / 3.6).toLocaleString('pl-PL')} tokenów`;
+    };
+    render();
+    const editBtn = h('button', { class: 'btn btn--sm', type: 'button', text: 'Edytuj treść', 'data-prompt-edit': '' });
+    editBtn.addEventListener('click', () => {
+      const editing = !edit.hidden;
+      if (editing) {
+        current = edit.value;
+        edit.hidden = true;
+        view.hidden = false;
+        toc.hidden = false;
+        editBtn.textContent = 'Edytuj treść';
+        render();
+      } else {
+        edit.value = current;
+        edit.hidden = false;
+        view.hidden = true;
+        toc.hidden = true;
+        editBtn.textContent = 'Gotowe — pokaż podgląd';
+        edit.focus();
+      }
+    });
+    edit.addEventListener('input', () => { current = edit.value; stats.textContent = `${current.length.toLocaleString('pl-PL')} znaków (edycja)`; });
+    const dlg = h('dialog', { class: 'dialog prompt-dialog', 'aria-labelledby': 'prompt-dlg-title', 'data-prompt-dialog': '' });
+    const close = () => dlg.close();
+    dlg.append(
+      h('div', { class: 'prompt-dialog__head' },
+        h('div', null, h('h2', { class: 'dialog__title', id: 'prompt-dlg-title', text: title }), stats),
+        h('button', { class: 'prompt-dialog__x', type: 'button', 'aria-label': 'Zamknij podgląd', text: '×', onclick: close })
+      ),
+      note,
+      toc,
+      view,
+      edit,
+      h('div', { class: 'dialog__actions prompt-dialog__actions' },
+        editBtn,
+        h('button', { class: 'btn btn--sm', type: 'button', text: 'Pobierz .txt', onclick: () => saveBlob(new Blob([current], { type: 'text/plain;charset=utf-8' }), `${slugName(title)}.txt`) }),
+        h('button', { class: 'btn', type: 'button', text: 'Zamknij', onclick: close }),
+        h('button', { class: 'btn btn--primary', type: 'button', 'data-prompt-copy': '', text: 'Kopiuj polecenie', onclick: async () => { if (!edit.hidden) current = edit.value; await copyText(current, okMsg || 'Polecenie skopiowane.'); close(); } })
+      )
+    );
+    dlg.addEventListener('close', () => dlg.remove());
+    document.body.append(dlg);
+    dlg.showModal();
+    view.focus();
+  }
+
   function busy(btn, on, label) {
     if (!btn) return;
     if (on) {
@@ -956,7 +1032,7 @@
           const S = window.BRIEF_SCHEMA;
           if (S && S.setKind) S.setKind(brief && !brief.merged_at ? brief.kind : 'pelny', a || {});
           try {
-            copyText(P.logoPage(a, { company_name: lead.company_name }), 'Skopiowano polecenie: strona z propozycjami logo i hasła.');
+            promptPreview('Polecenie: propozycje logo i hasła', P.logoPage(a, { company_name: lead.company_name }), 'Skopiowano polecenie: strona z propozycjami logo i hasła.');
           } finally {
             if (S && S.setKind) S.setKind('pelny');
           }
@@ -1379,12 +1455,12 @@
       const aiLogo = h('button', {
         class: 'btn btn--primary', type: 'button', 'data-hub-ai': 'logo', disabled: !needsBrand,
         text: 'Prompt: zaprojektuj logo i hasło',
-        onclick: () => withKind(brandSrc, () => copyText(P.logoPage(brandSrc.answers || {}, metaOf(brandSrc)), 'Skopiowano polecenie: projekt logo i hasła (4 opcje do wyboru + ZIP).')),
+        onclick: () => withKind(brandSrc, () => promptPreview('Polecenie: zaprojektuj logo i hasło', P.logoPage(brandSrc.answers || {}, metaOf(brandSrc)), 'Skopiowano polecenie: projekt logo i hasła (4 opcje do wyboru + ZIP).')),
       });
       const aiSite = h('button', {
         class: 'btn btn--primary', type: 'button', 'data-hub-ai': 'site', disabled: !siteSrc,
         text: choice ? 'Prompt: cała strona z wybranym logo + SEO' : 'Prompt: cała strona + SEO',
-        onclick: () => withKind(siteSrc, () => copyText(P.site(siteSrc.answers || {}, metaOf(siteSrc), choice), 'Skopiowano polecenie: cała strona z panelem i SEO.')),
+        onclick: () => withKind(siteSrc, () => promptPreview('Polecenie: cała strona z panelem i SEO', P.site(siteSrc.answers || {}, metaOf(siteSrc), choice), 'Skopiowano polecenie: cała strona z panelem i SEO.')),
       });
       const note = [];
       if (!needsBrand) note.push('Projekt logo i hasła: klient nie prosi o logo ani hasło albo brief nie jest jeszcze wypełniony.');
@@ -1395,7 +1471,7 @@
           'div',
           { class: 'hub-ai' },
           h('h3', { text: 'Polecenia dla AI (ChatGPT, Claude)' }),
-          h('p', { class: 'small muted', text: 'Przycisk kopiuje gotowe polecenie z odpowiedziami klienta — wklej je do czatu.' }),
+          h('p', { class: 'small muted', text: 'Przycisk otwiera podgląd gotowego polecenia z odpowiedziami klienta — przejrzyj je, w razie potrzeby popraw i skopiuj do czatu.' }),
           h(
             'div',
             { class: 'hub-ai__grid' },
@@ -1561,16 +1637,16 @@
             'div',
             { class: 'ai-box' },
             h('h3', { text: 'Teksty dla AI' }),
-            h('p', { class: 'small muted', text: 'Każdy przycisk kopiuje gotowe polecenie — wklej je do narzędzia AI (np. Claude). Zalecana kolejność od lewej.' }),
+            h('p', { class: 'small muted', text: 'Każdy przycisk otwiera podgląd gotowego polecenia (z możliwością poprawek) i kopiuje je do schowka — wklej je do narzędzia AI (np. ChatGPT, Claude). Zalecana kolejność od lewej.' }),
             h(
               'div',
               { class: 'actions' },
               H.needsLogo(a) || H.needsTagline(a)
-                ? h('button', { class: 'btn btn--primary', type: 'button', 'data-ai': 'logo', text: `1. Strona wyboru ${H.needsLogo(a) ? 'logo' : 'hasła'}${H.needsLogo(a) && H.needsTagline(a) ? ' i hasła' : ''} (4 opcje + ZIP)`, onclick: K(() => copyText(P.logoPage(a, meta), 'Skopiowano polecenie: strona wyboru dla klienta i ZIP z plikami.')) })
+                ? h('button', { class: 'btn btn--primary', type: 'button', 'data-ai': 'logo', text: `1. Strona wyboru ${H.needsLogo(a) ? 'logo' : 'hasła'}${H.needsLogo(a) && H.needsTagline(a) ? ' i hasła' : ''} (4 opcje + ZIP)`, onclick: K(() => promptPreview('Polecenie: strona wyboru logo i hasła', P.logoPage(a, meta), 'Skopiowano polecenie: strona wyboru dla klienta i ZIP z plikami.')) })
                 : null,
-              isLogo ? null : h('button', { class: 'btn btn--primary', type: 'button', 'data-ai': 'site', text: `${H.needsLogo(a) || H.needsTagline(a) ? '2. ' : '1. '}Strona z panelem administracyjnym`, onclick: K(() => copyText(P.site(a, meta, opts.choice), 'Skopiowano polecenie: strona z panelem i SEO.')) }),
-              isLogo ? null : h('button', { class: 'btn', type: 'button', 'data-ai': 'panel', text: 'Sam panel (do gotowej strony)', onclick: K(() => copyText(P.panel(a, meta), 'Skopiowano polecenie: panel administracyjny.')) }),
-              isLogo ? null : h('button', { class: 'btn', type: 'button', 'data-ai': 'portfolio', text: 'Karta do portfolio (ZIP)', onclick: K(() => copyText(P.portfolio(a, meta), 'Skopiowano polecenie: karta do portfolio.')) }),
+              isLogo ? null : h('button', { class: 'btn btn--primary', type: 'button', 'data-ai': 'site', text: `${H.needsLogo(a) || H.needsTagline(a) ? '2. ' : '1. '}Strona z panelem administracyjnym`, onclick: K(() => promptPreview('Polecenie: strona z panelem i SEO', P.site(a, meta, opts.choice), 'Skopiowano polecenie: strona z panelem i SEO.')) }),
+              isLogo ? null : h('button', { class: 'btn', type: 'button', 'data-ai': 'panel', text: 'Sam panel (do gotowej strony)', onclick: K(() => promptPreview('Polecenie: sam panel administracyjny', P.panel(a, meta), 'Skopiowano polecenie: panel administracyjny.')) }),
+              isLogo ? null : h('button', { class: 'btn', type: 'button', 'data-ai': 'portfolio', text: 'Karta do portfolio (ZIP)', onclick: K(() => promptPreview('Polecenie: karta do portfolio', P.portfolio(a, meta), 'Skopiowano polecenie: karta do portfolio.')) }),
               isLogo && !(H.needsLogo(a) || H.needsTagline(a)) ? h('p', { class: 'small muted', text: 'Klient ma logo i hasło — w tym briefie nie ma czego projektować.' }) : null
             )
           )

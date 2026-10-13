@@ -28,40 +28,217 @@
   };
   const colors = (a) => (a.colors === 'mam' && a.colors_list ? `kolory firmowe klienta: ${a.colors_list}` : 'kolory dobrane w projekcie strony (kolor główny, kolor akcentu, tło — podaj ich kody HEX w komentarzu w kodzie)');
 
-  /* ---------- Układ strony ---------- */
+  /* ---------- Układ strony: reguły dla każdego układu ---------- */
+  const SEP = '────────────────────────────────────────';
+  const LAYOUT_RULES = {
+    grid: {
+      n: 1, t: 'UKŁAD SIATKI (GRID)', d: 'uporządkowane kolumny i wiersze, rozbudowana oferta',
+      site: [
+        'Sekcje oparte na równej siatce 2–4 kolumn, karty tej samej wysokości.',
+        'Oferta/usługi/zespoły/produkty jako karty: zdjęcie lub ikona, tytuł, 2 linie opisu, przycisk.',
+        'Filtry kategorii nad siatką (zamiast zakładek), z licznikiem wyników.',
+        'Szczegóły elementu w popupie (dialog) lub na podstronie (przy WIELE_STRON).',
+        'Galeria jako równa siatka miniatur + lightbox.',
+        'Aktualności jako siatka kart z datą; sponsorzy/partnerzy jako siatka logotypów.',
+        'Historia: kafelki z rokiem w siatce, „czytaj więcej” w dialogu.',
+        'Formularz: 2 kolumny pól na desktopie.',
+      ],
+      panel: ['Liczba kolumn siatki (2/3/4) dla każdej sekcji.', 'Kategoria każdego elementu + włącz/wyłącz filtry.', 'Wybór: szczegóły w popupie / na podstronie.', 'Kolejność przeciąganiem.'],
+    },
+    f: {
+      n: 2, t: 'UKŁAD W KSZTAŁCIE LITERY F', d: 'nagłówki i tekst do lewej, dużo treści',
+      site: [
+        'Treść wyrównana do lewej, mocne śródtytuły, krótkie akapity, listy punktowane.',
+        'Spis treści / skróty na górze dłuższych sekcji (kotwice).',
+        'Elementy listowe (aktualności, oferta, zespoły) jako lista: miniatura po lewej, tekst po prawej.',
+        'Historia jako pionowa oś czasu po lewej stronie z przyklejoną nawigacją lat.',
+        'Długie teksty z „czytaj więcej” (zwijanie).',
+        'FAQ jako akordeon; tabele (cennik, terminarz) czytelne, przewijane poziomo na telefonie.',
+        'Formularz w jednej kolumnie, etykiety nad polami.',
+        'Obrazy mniejsze, nie przerywają ciągu czytania.',
+      ],
+      panel: ['Włącz/wyłącz spis treści w sekcji.', 'Limit znaków zajawki i próg zwijania tekstu.', 'Pozycja miniatury (lewo/brak).', 'Edytor z nagłówkami H2/H3 i listami.'],
+    },
+    z: {
+      n: 3, t: 'UKŁAD ZYGZAKOWY (Z-PATTERN)', d: 'tekst i zdjęcie na przemian, wyraźny przycisk',
+      site: [
+        'Hero: logo/nazwa lewa góra → menu/CTA prawa góra → po przekątnej treść → mocny przycisk prawy dół.',
+        'Sekcje naprzemiennie: tekst lewo/obraz prawo, potem odwrotnie.',
+        'Każdy blok kończy się przyciskiem CTA w miejscu, gdzie kończy się „Z”.',
+        'Historia jako oś czasu zygzakiem (zdjęcia na zmianę stron), z przyklejoną nawigacją lat.',
+        'Zespoły/grupy/oferta jako zakładki + karty w 2 kolumnach.',
+        'Kontakt w 2 kolumnach (dane | formularz), obie tej samej wysokości.',
+        'Osiągnięcia/liczby jako pas kafelków między blokami Z.',
+      ],
+      panel: ['Przy każdej sekcji i każdym elemencie historii: strona obrazu lewo / prawo / auto-naprzemiennie.', 'Tekst i cel przycisku CTA dla każdego bloku.', 'Kolejność sekcji (z zachowaniem naprzemienności).'],
+    },
+    onepage: {
+      n: 4, t: 'ONE PAGE', d: 'wszystko na jednej stronie, menu przewija do sekcji',
+      site: [
+        'Wszystkie sekcje na jednej stronie z kotwicami; menu przewija płynnie do sekcji.',
+        'Menu przyklejone, podświetla aktywną sekcję podczas przewijania.',
+        'Odświeżenie (F5) i przycisk „wstecz” wracają do tej samej sekcji.',
+        'Przycisk „do góry”; na telefonie pływający przycisk kontaktu/telefonu.',
+        'Długie listy skracane (zakładki, akordeony, karuzele), by strona nie była za długa.',
+        'Szczegóły (bio, polityka prywatności, opisy) w popupach zamiast podstron.',
+        'SEO: jedna mocna strona, JSON-LD z wszystkimi danymi, nagłówki H2 dla każdej sekcji.',
+      ],
+      panel: ['Kolejność sekcji w menu i na stronie (przeciąganie).', 'Widoczność sekcji, osobno widoczność pozycji w menu.', 'Etykieta sekcji w menu.'],
+      note: 'UWAGA: jeśli PODZIAŁ = WIELE_STRON, a wybrano One Page – wygrywa One Page; dopisz to w notatce.',
+    },
+    immersive: {
+      n: 5, t: 'UKŁAD PEŁNOEKRANOWY (IMMERSIVE)', d: 'duże zdjęcie lub film, liczy się klimat',
+      site: [
+        'Hero na cały ekran: zdjęcie lub wideo w tle, przyciemnienie, krótki slogan, 1 przycisk.',
+        'Kolejne sekcje także pełnoekranowe (100vh) z dużym tłem; kropki nawigacji z boku.',
+        'Mało tekstu na ekranie; dłuższe opisy w popupie „czytaj więcej”.',
+        'Historia jako pełnoekranowe rozdziały (rok + tytuł + zdjęcie w tle).',
+        'Galeria jako pełnoekranowy slider.',
+        'Wideo: wyciszone, z pauzą, zastępowane zdjęciem na telefonie i przy wolnym łączu.',
+        'Animacje wyłączane przy prefers-reduced-motion; kontrast tekstu na tle min. 4.5:1.',
+      ],
+      panel: ['Tło sekcji: zdjęcie / wideo / kolor + suwak przyciemnienia.', 'Kolor tekstu (jasny/ciemny).', 'Plakat (poster) dla wideo.', 'Włącz/wyłącz kropki nawigacji i animacje.'],
+    },
+    split: {
+      n: 6, t: 'PODZIAŁ EKRANU (SPLIT SCREEN)', d: 'połowa tekst i przyciski, połowa zdjęcie',
+      site: [
+        'Hero: dwie połowy – tekst i przyciski | zdjęcie; opcjonalnie dwie ścieżki (np. „Dla dzieci | Dla dorosłych”, „Kup | Wynajmij”).',
+        'W sekcjach jedna połowa przyklejona (zdjęcie/tytuł), druga przewija treść.',
+        'Zespoły/oferta/grupy rozdzielone na dwie kolumny wyboru.',
+        'Historia: zdjęcie przyklejone po jednej stronie zmienia się wraz z przewijanym tekstem.',
+        'Kontakt: mapa lub zdjęcie w jednej połowie, formularz w drugiej.',
+        'Na telefonie: zdjęcie nad tekstem (nie obok).',
+      ],
+      panel: ['Strona zdjęcia (lewo/prawo) dla każdej sekcji.', 'Przypisanie treści do lewej/prawej ścieżki.', 'Proporcja podziału (50/50, 40/60).', 'Włącz/wyłącz przyklejanie połowy.'],
+    },
+    bento: {
+      n: 7, t: 'UKŁAD BENTO', d: 'kafelki o różnych rozmiarach, większe bloki wyróżniają najważniejsze',
+      site: [
+        'Sekcje jako mozaika kafelków różnej wielkości (1×1, 2×1, 1×2, 2×2).',
+        'Najważniejsze elementy (główna oferta, najbliższy mecz/wydarzenie, nabór, najnowsza aktualność) w dużych kafelkach.',
+        'Kafelki mogą zawierać: liczby/osiągnięcia, zdjęcie, cytat/opinię, mini-galerię, social, CTA.',
+        'Szczegóły w popupie.',
+        'Historia i osiągnięcia jako kafelki z rokiem/ikoną.',
+        'Na telefonie kafelki w jednej kolumnie, duże zostają wyżej.',
+      ],
+      panel: ['Rozmiar kafelka dla każdego elementu (1×1 / 2×1 / 1×2 / 2×2).', 'Flaga „wyróżnij”.', 'Kolor/tło kafelka.', 'Kolejność przeciąganiem.', 'Podgląd mozaiki na żywo.'],
+    },
+  };
+  const AUTO_RULES = [
+    'Dużo treści/tekstów (kancelaria, instytucja, szkoła, poradnik) → Układ F.',
+    'Rozbudowana oferta / wiele produktów lub usług (sklep, hurtownia, salon) → Siatka (Grid).',
+    'Mało treści, mocne zdjęcia lub wideo (hotel, restauracja, fotograf, event) → Pełnoekranowy.',
+    'Dwie grupy odbiorców lub dwie ścieżki (dzieci/dorośli, kupno/wynajem) → Split Screen.',
+    'Wiele różnych krótkich informacji do wyróżnienia (studio, agencja, startup) → Bento.',
+    'Mała firma lokalna, klub sportowy, usługi, prosty przekaz → Z-pattern (domyślnie) lub One Page, gdy sekcji jest mniej niż 6.',
+    'Jeśli branża ma oznaczenie „Polecane” w briefie – wybierz polecany układ.',
+  ];
+  const ruleBlock = (id) => {
+    const R = LAYOUT_RULES[id];
+    return `${R.n}) ${R.t} – „${R.d}”
+STRONA:
+${R.site.map((x) => `- ${x}`).join('\n')}
+PANEL:
+${R.panel.map((x) => `- ${x}`).join('\n')}${R.note ? `\n${R.note}` : ''}`;
+  };
+  /** Podział na strony: ONE_PAGE / WIELE_STRON (z briefu). */
+  function splitOf(a) {
+    if (a.layout === 'onepage' || a.site_type === 'onepage') return 'ONE_PAGE';
+    if (a.site_type === 'podstrony') return 'WIELE_STRON';
+    return 'DO USTALENIA — wybierz ONE_PAGE, gdy sekcji jest mniej niż 6, w przeciwnym razie WIELE_STRON (i napisz to w notatce)';
+  }
+  /** Moduły wybrane w briefie (sekcje + funkcje). */
+  function modulesOf(a) {
+    const list = [];
+    const sec = isOrg(a) ? val('org_sections', a) : val('sections', a);
+    if (sec) list.push(sec);
+    const booking = val('booking', a);
+    if (booking && !/^Nie/i.test(booking)) list.push(`rezerwacje: ${booking}`);
+    const integ = val('integrations', a);
+    if (integ) list.push(`dodatki: ${integ}`);
+    return list.join('; ') || 'wg briefu';
+  }
+
+  /* ---------- Układ strony (sekcja polecenia) ---------- */
   function layoutTask(a) {
+    const id = LAYOUT_RULES[a.layout] ? a.layout : 'auto';
+    const L = id === 'auto' ? null : H.layoutById(id);
     const recs = H.recommendedLayouts(a).map((v) => H.layoutById(v)).filter(Boolean);
-    const recText = recs.length ? `Dla tej branży zwykle polecam: ${recs.map((l) => l.l).join(' lub ')}.` : '';
-    const L = a.layout && a.layout !== 'auto' ? H.layoutById(a.layout) : null;
-    if (L) {
-      return `UKŁAD STRONY (wybór klienta): ${L.l}
-- Jak ma wyglądać: ${L.how}
-- Zastosuj ten układ konsekwentnie na komputerze; na telefonie elementy układają się jedna pod drugą w logicznej kolejności.${a.layout !== 'onepage' && a.site_type ? `\n- Podział na strony: ${val('site_type', a)}.` : ''}${recs.length && !recs.some((l) => l.v === L.v) ? `\n- Uwaga dla mnie: ${recText} Jeśli wybrany układ wyraźnie utrudni pokazanie treści z briefu, napisz to na końcu i zaproponuj poprawkę — ale stronę wykonaj w układzie wybranym przez klienta.` : ''}`;
+    const split = id === 'onepage' ? 'ONE_PAGE' : splitOf(a);
+    const head = `UKŁAD STRONY: ${L ? L.l : 'Nie mam preferencji — dobierz układ (reguła 8)'}
+PODZIAŁ NA STRONY: ${split}${id === 'onepage' && a.site_type === 'podstrony' ? ' (klient zaznaczył też podstrony — wygrywa One Page, dopisz to w notatce)' : ''}
+
+ZASADA NADRZĘDNA
+Funkcje strony i panelu są stałe – układ decyduje tylko o tym, JAK je pokazać.
+Nigdy nie usuwaj funkcji z powodu układu; zmień jej formę zgodnie z regułami poniżej.
+Zawsze wdrażasz rdzeń: menu, kontakt + formularz z walidacją i antyspamem, polityka
+prywatności, SEO (title/description/OG/JSON-LD/sitemap/robots), WCAG AA, wersje językowe,
+panel z podglądem na żywo, zapis na serwerze, zmiana hasła, kopia zapasowa.
+Moduły branżowe (${modulesOf(a)}) dodajesz tylko te wybrane.
+
+W panelu pokazuj WYŁĄCZNIE ustawienia wybranego układu (opcje innych układów ukryj).
+Podgląd na żywo w panelu renderuje sekcję dokładnie w wybranym układzie.
+Na telefonie każdy układ przechodzi w jedną kolumnę w naturalnej kolejności czytania,
+menu hamburger, przyciski min. 44 px.`;
+    let body;
+    if (id === 'auto') {
+      body = `8) NIE MAM PREFERENCJI – „dobierz układ do branży, ilości treści i materiałów”
+Wybierz układ sam, według kolejności reguł:
+${AUTO_RULES.map((x) => `- ${x}`).join('\n')}
+${recs.length ? `Polecane w briefie dla tej branży: ${recs.map((l) => l.l).join(' lub ')}.\n` : ''}Na początku odpowiedzi napisz jednym zdaniem, jaki układ wybrałeś i dlaczego,
+a potem stosuj reguły tego układu (poniżej reguły wszystkich układów — zastosuj TYLKO wybrany).
+
+${Object.keys(LAYOUT_RULES).map(ruleBlock).join(`\n\n${SEP}\n`)}`;
+    } else {
+      body = ruleBlock(id);
+      if (recs.length && !recs.some((l) => l.v === id)) body += `\nUwaga dla mnie: dla tej branży zwykle polecam ${recs.map((l) => l.l).join(' lub ')}. Stronę wykonaj w układzie wybranym przez klienta; jeśli wyraźnie utrudni on pokazanie treści z briefu, dopisz to w notatce na końcu.`;
     }
-    return `UKŁAD STRONY: klient nie ma preferencji — dobierz układ najlepiej pasujący do branży, ilości treści i dostępnych materiałów.
-- Do wyboru: ${S.layouts.filter((l) => l.how).map((l) => l.l).join('; ')}.
-- ${recText || 'Wybierz na podstawie briefu.'}
-- Zanim zaczniesz kodować, napisz w 2–3 zdaniach, który układ wybierasz i dlaczego (to uzasadnienie przekażę klientowi).${a.site_type ? `\n- Podział na strony: ${val('site_type', a)}.` : ''}`;
+    return `${head}
+
+${SEP}
+${body}
+
+${SEP}
+KONFLIKTY I UWAGI
+- Jeśli moduł nie pasuje do układu, wybierz najbliższą działającą formę
+  (np. terminarz w Bento = kafelek „najbliższy mecz” + popup z pełną tabelą)
+  i dopisz na końcu krótką notatkę, co zmieniłeś i dlaczego.
+- Układ nie może łamać dostępności: kontrast, kolejność fokusu, alt dla zdjęć, etykiety pól.
+- Nie zmyślaj faktów – brakujące dane oznacz [DO UZUPEŁNIENIA].`;
+  }
+  /** Ustawienia panelu dla wybranego układu (do polecenia „Sam panel”). */
+  function layoutPanel(a) {
+    const R = LAYOUT_RULES[a.layout];
+    if (!R) return '';
+    return `\nUSTAWIENIA UKŁADU W PANELU (strona ma układ: ${R.t}) — pokazuj WYŁĄCZNIE te opcje układu, a podgląd na żywo renderuj w tym układzie:\n${R.panel.map((x) => `- ${x}`).join('\n')}\n`;
   }
 
   /* ---------- Panel administracyjny (specyfikacja) ---------- */
   function panelSpec(a, standalone) {
     const scope = val('panel_scope', a);
-    return `${standalone ? 'Dodaj do mojej strony panel administracyjny (CMS) według poniższej specyfikacji.' : 'Dodaj do tej strony panel administracyjny (CMS) według poniższej specyfikacji.'} Strona to statyczne pliki HTML (czysty HTML/CSS/JS, bez frameworków i bez serwera). Panel ma być wbudowany w stronę (w pliku index.html), cały interfejs po polsku, treści strony w językach: ${langs(a)}. Ma być w nim również możliwość zmiany hasła do logowania się do panelu administracyjnego.
+    return `${standalone ? 'Dodaj do mojej strony panel administracyjny (CMS) według poniższej specyfikacji.' : 'Dodaj do tej strony panel administracyjny (CMS) według poniższej specyfikacji.'} Strona to statyczne pliki HTML (czysty HTML/CSS/JS, bez frameworków) hostowane na Cloudflare Pages, a zapis danych panelu odbywa się na serwerze przez Cloudflare Pages Functions. Panel ma być wbudowany w stronę (w pliku index.html), cały interfejs po polsku, treści strony w językach: ${langs(a)}. Ma być w nim również możliwość zmiany hasła do logowania się do panelu administracyjnego.
 ${isOrg(a) ? 'TO STRONA WIZERUNKOWA (bez sprzedaży): w panelu pomiń cennik, promocje, usługi, rezerwacje i opinie klientów. Zamiast nich: Aktualności, Kalendarz wydarzeń, Terminarz i wyniki (mecz/zawody: data, godzina, przeciwnik/opis, miejsce, wynik), Drużyny/grupy (z kadrą zawodników lub uczestników, jeśli klient chce), Kadra (trenerzy, nauczyciele, zarząd), Osiągnięcia, Sponsorzy i partnerzy (logo, link, kategoria), Dokumenty do pobrania (PDF), Nabór (włącz/wyłącz, terminy, opis), Galeria. Na pulpicie pokaż najbliższe wydarzenia i mecze zamiast promocji. ' : ''}Dopasuj panel do branży klienta i do sekcji, które faktycznie są na stronie: pomiń podstrony panelu dla elementów, których strona nie ma, a nazwy grup i list dostosuj do branży (np. „Menu” zamiast „Oferta” w restauracji, „Pokoje” w hotelu).${scope ? ` Klient chce samodzielnie zmieniać przede wszystkim: ${scope}.` : ''}
 
 === 1. ZASADA DZIAŁANIA ===
 - Wszystkie treści strony, które ma edytować klient (teksty, listy, zdjęcia, cennik, godziny), są przechowywane w jednym obiekcie danych (state) z wartościami początkowymi wpisanymi w kodzie.
 - Strona renderuje te sekcje z danych. Zmiany w formularzu edycji widać od razu w podglądzie sekcji (patrz punkt 3a); po kliknięciu „Zapisz” trafiają na stronę i zapisują się automatycznie.
-- Zapis: IndexedDB w przeglądarce, z awaryjnym localStorage. Przy starcie strona wczytuje zapisane dane i scala je z danymi początkowymi, żeby nowe pola dodane w kodzie nie znikały.
-- To wersja demonstracyjna/portfolio: dane zapisują się tylko w przeglądarce osoby edytującej, a login i hasło są w kodzie. Zaznacz to w komentarzu w kodzie.
+- ZAPIS NA SERWERZE (obowiązkowo): przygotuj folder functions/ dla Cloudflare Pages Functions z API:
+  · GET /api/tresci — publiczny odczyt danych strony (JSON),
+  · PUT /api/tresci — zapis (tylko po zalogowaniu), dane w Cloudflare KV (powiązanie o nazwie TRESCI),
+  · POST /api/login, POST /api/logout, POST /api/haslo — logowanie, wylogowanie, zmiana hasła,
+  · POST /api/zdjecia — wgrywanie zdjęć z panelu (zmniejszanych w przeglądarce do ok. 1600 px, zapis w KV),
+  · GET /api/kopie i POST /api/kopie/przywroc — automatyczna kopia 10 ostatnich zapisów z możliwością przywrócenia.
+- Bezpieczeństwo: hasło przechowywane wyłącznie jako hash (PBKDF2 z solą) po stronie serwera — nigdy w kodzie przeglądarki; sesja w ciasteczku HttpOnly, Secure, SameSite=Strict; limit nieudanych prób logowania; zapis tylko z nagłówkiem chroniącym przed CSRF.
+- Przy starcie strona pokazuje treść zapisaną w HTML (ważne dla SEO), a następnie wczytuje dane z /api/tresci i scala je z danymi początkowymi, żeby nowe pola dodane w kodzie nie znikały.
+- Tryb awaryjny: gdy API nie odpowiada (np. plik otwarty z dysku), panel działa w trybie demonstracyjnym z zapisem w przeglądarce (IndexedDB) i wyraźnym paskiem „Tryb demonstracyjny — zmiany zapisują się tylko na tym komputerze”.
+- Dołącz krótką instrukcję wdrożenia: utworzenie KV, dodanie powiązania TRESCI, wygenerowanie hasha pierwszego hasła (mały skrypt) i ustawienie go jako zmiennej ADMIN_PASSWORD_HASH oraz SESSION_SECRET.
 - Panel ma własne style z unikalnym prefiksem klas (np. .cmsp-), żeby nie kolidował ze stylami strony. Kolory panelu dopasuj do marki: ${colors(a)}.
 
 === 2. LOGOWANIE ===
 - Mała ikonka kłódki przyklejona w lewym dolnym rogu strony (na telefonie nad dolnym paskiem przycisków) oraz link „Panel administratora” w stopce.
-- Kliknięcie otwiera okno logowania: login, hasło, przyciski „Zaloguj” i „Anuluj”, komunikat przy złych danych. Pod formularzem podpowiedź „Wersja demonstracyjna · login admin, hasło [krótkie hasło związane z branżą — wpisz je w podpowiedzi]”.
-- Po zalogowaniu sesja trwa do zamknięcia karty (sessionStorage). Kłódka zmienia się w przycisk „Panel”, który otwiera panel bez ponownego logowania.
-- Zmiana hasła: w Ustawieniach panelu formularz „obecne hasło / nowe hasło / powtórz”; nowe hasło zapisuje się razem z danymi w przeglądarce i od tej chwili obowiązuje przy logowaniu.
+- Kliknięcie otwiera okno logowania: hasło, przyciski „Zaloguj” i „Anuluj”, komunikat przy złym haśle i przy zbyt wielu próbach. Logowanie sprawdza serwer (POST /api/login).
+- Po zalogowaniu sesja trwa 8 godzin (ciasteczko serwera). Kłódka zmienia się w przycisk „Panel”, który otwiera panel bez ponownego logowania.
+- Zmiana hasła: w Ustawieniach panelu formularz „obecne hasło / nowe hasło / powtórz” (min. 10 znaków, wskaźnik siły); serwer zapisuje nowy hash i od tej chwili obowiązuje nowe hasło.
 - Escape zamyka okno, focus wraca do przycisku.
 
 === 3a. PODGLĄD SEKCJI PRZED ZMIANĄ TREŚCI (obowiązkowo) ===
@@ -362,6 +539,7 @@ ${H.toMarkdown(a, meta)}`;
   /* ---------- 3. Sam panel administracyjny ---------- */
   function panel(a, meta) {
     return `${panelSpec(a, true)}
+${layoutPanel(a)}
 
 Załączam plik strony (index.html), do którego ma zostać dodany panel.
 
