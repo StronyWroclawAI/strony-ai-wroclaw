@@ -75,7 +75,7 @@ Słowo „demonstracyjny” albo „fikcyjny” w opisie zaznacza automatycznie 
 Skopiuj poniższy tekst do narzędzia AI (np. Claude), uzupełnij nawiasy kwadratowe i dołącz zrzuty ekranu albo pliki projektu.
 
 ```
-Przygotuj KARTĘ PROJEKTU do mojego portfolio „Strony AI Wrocław” (Grzegorz, Wrocław, stronywroclawai@gmail.com).
+Przygotuj KARTĘ PROJEKTU do mojego portfolio „Strony AI Wrocław” (Grzegorz, Wrocław, stronyaiwroclaw@gmail.com).
 Karta to studium przypadku jednej strony, którą wykonałem. Zostanie wgrana jako ZIP do panelu mojej strony
 i wyświetlona pod adresem /portfolio/[adres-karty]/.
 
@@ -106,7 +106,7 @@ WYMAGANIA DLA PACZKI
    - panel administracyjny: co właściciel może zmieniać sam;
    - wersja na telefon;
    - technika i jakość: dostępność (WCAG 2.1 AA), szybkość, bezpieczeństwo;
-   - zakończenie: „Chcesz taką stronę dla swojej firmy?” + przycisk mailto:stronywroclawai@gmail.com
+   - zakończenie: „Chcesz taką stronę dla swojej firmy?” + przycisk mailto:stronyaiwroclaw@gmail.com
      i link powrotny do portfolio: <a href="/#portfolio">.
 6. Powiększanie zrzutów po kliknięciu (lightbox) dostępne z klawiatury (Esc, strzałki).
 7. Dostępność: kontrast WCAG AA, teksty alternatywne opisujące każdy zrzut, widoczny fokus,

@@ -6,7 +6,7 @@
   if (!S) return;
   const H = S.helpers;
 
-  const AUTHOR = 'Strony AI Wrocław (Grzegorz, Wrocław, kontakt: stronywroclawai@gmail.com)';
+  const AUTHOR = 'Strony AI Wrocław (Grzegorz, Wrocław, kontakt: stronyaiwroclaw@gmail.com)';
   const name = (a, meta) => a.company_name || (meta && meta.company_name) || 'firma';
   const slug = (t) =>
     String(t || '')
@@ -565,7 +565,7 @@ ${H.toMarkdown(a, meta)}`;
     const features = [sections ? `sekcje: ${sections}` : '', val('booking', a) ? `rezerwacje: ${val('booking', a)}` : '', val('integrations', a) ? `dodatki: ${val('integrations', a)}` : ''].filter(Boolean).join('; ') || '[lista]';
     const live = a.domain_name ? `[https://${String(a.domain_name).split(/[\s—-]+/)[0].replace(/^https?:\/\//, '')}] (sprawdź adres)` : '[https://…] (jeśli brak — pomiń przycisk)';
     return `Przygotuj mi KOMPLETNY PLIK ZIP z kartą projektu do portfolio na mojej stronie „Strony AI Wrocław”
-(autor: Grzegorz, Wrocław, kontakt: stronywroclawai@gmail.com). ZIP wgram w panelu administratora
+(autor: Grzegorz, Wrocław, kontakt: stronyaiwroclaw@gmail.com). ZIP wgram w panelu administratora
 (Portfolio → Karta projektu), a karta pojawi się pod adresem /portfolio/${sl}/.
 
 DANE PROJEKTU
@@ -596,7 +596,7 @@ INDEX.HTML — WYMAGANIA TECHNICZNE (inaczej karta nie zadziała):
 1. Jeden samodzielny plik: cały CSS i JS w środku, bez frameworków i bez zewnętrznych skryptów. Fonty mogą być z Google Fonts.
 2. Wyłącznie ścieżki względne: img/d-start.webp (NIE /img/… i NIE pełne ścieżki z dysku).
 3. NIE używaj localStorage, sessionStorage, IndexedDB ani cookies — karta działa w piaskownicy bezpieczeństwa.
-4. Link powrotny do portfolio: <a href="/#portfolio">, kontakt: mailto:stronywroclawai@gmail.com.
+4. Link powrotny do portfolio: <a href="/#portfolio">, kontakt: mailto:stronyaiwroclaw@gmail.com.
 5. Po polsku, wygląd bez przewijania poziomego na 390 px, kontrast WCAG AA, widoczny fokus,
    teksty alternatywne opisujące każdy zrzut, prefers-reduced-motion wyłącza animacje.
 

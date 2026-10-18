@@ -1,7 +1,7 @@
 // Wysyłka e-maili przez konto Gmail (SMTP) — bez zewnętrznych bibliotek.
 //
 // Zmienne w Cloudflare (Settings → Variables and Secrets):
-//   GMAIL_USER          adres konta, np. stronywroclawai@gmail.com (zwykła zmienna)
+//   GMAIL_USER          adres konta, np. stronyaiwroclaw@gmail.com (zwykła zmienna)
 //   GMAIL_APP_PASSWORD  „hasło aplikacji” Google (SEKRET — nigdy w kodzie ani na czacie)
 // Opcjonalnie do testów lokalnych: SMTP_HOST, SMTP_PORT, SMTP_SECURE (on / off).
 //

@@ -3156,7 +3156,7 @@
   }
 
   async function viewSettings(main) {
-    const settings = (await api('settings')).settings || { recruitment_open: 1, contact_email: 'stronywroclawai@gmail.com' };
+    const settings = (await api('settings')).settings || { recruitment_open: 1, contact_email: 'stronyaiwroclaw@gmail.com' };
 
     // Nabór
     const toggle = h('input', { type: 'checkbox', role: 'switch', checked: settings.recruitment_open });

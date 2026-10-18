@@ -1,7 +1,7 @@
 // Powiadomienia e-mail przez Resend (https://resend.com).
 // Bez własnej domeny Resend pozwala wysyłać z adresu onboarding@resend.dev
 // WYŁĄCZNIE na adres e-mail właściciela konta Resend — dlatego konto Resend
-// załóż na stronywroclawai@gmail.com.
+// załóż na stronyaiwroclaw@gmail.com.
 
 import { esc } from './render.js';
 import { contactEmail } from './http.js';

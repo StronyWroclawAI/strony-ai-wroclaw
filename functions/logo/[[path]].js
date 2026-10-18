@@ -5,7 +5,7 @@ import { ensureSchema, hasDb, nowIso } from '../_lib/db.js';
 import { TOKEN_RE } from '../_lib/brief.js';
 import { hasValidSession } from '../_lib/auth.js';
 
-const gone = () => new Response('Nie znaleziono propozycji. Link mógł zostać zastąpiony nowym — napisz na stronywroclawai@gmail.com.', { status: 404, headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex' } });
+const gone = () => new Response('Nie znaleziono propozycji. Link mógł zostać zastąpiony nowym — napisz na stronyaiwroclaw@gmail.com.', { status: 404, headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex' } });
 
 export async function onRequestGet(context) {
   const { request, env, params } = context;

@@ -74,7 +74,7 @@ Zaloguj się na https://dash.cloudflare.com (lub załóż darmowe konto).
 
 Cloudflare ani Gmail nie wysyłają takich powiadomień same z siebie. Do tego służy **Resend** (darmowy plan).
 
-1. Załóż konto na https://resend.com **na adres stronywroclawai@gmail.com**. To ważne: bez własnej domeny Resend wysyła tylko na adres właściciela konta.
+1. Załóż konto na https://resend.com **na adres stronyaiwroclaw@gmail.com**. To ważne: bez własnej domeny Resend wysyła tylko na adres właściciela konta.
 2. Potwierdź adres (link w skrzynce).
 3. **API Keys → Create API Key** → *Name:* `strony-ai-wroclaw`, *Permission:* **Sending access** → **Add**.
 4. Skopiuj klucz (`re_…`). Pokaże się tylko raz, więc wklej go od razu w kroku 6 albo trzymaj w menedżerze haseł.
@@ -127,7 +127,7 @@ Projekt → **Settings → Variables and Secrets** → **Add**. Dodaj dla środo
 | `TURNSTILE_SITE_KEY` | Site Key (krok 3) | Text |
 | `TURNSTILE_SECRET_KEY` | Secret Key (krok 3) | **Secret** |
 | `RESEND_API_KEY` | `re_…` (krok 4) | **Secret** |
-| `NOTIFY_TO` | `stronywroclawai@gmail.com` | Text |
+| `NOTIFY_TO` | `stronyaiwroclaw@gmail.com` | Text |
 | `NOTIFY_FROM` | `Strony AI Wrocław <onboarding@resend.dev>` | Text |
 
 `SITE_URL` dodasz dopiero po podłączeniu domeny (krok 8).
@@ -147,7 +147,7 @@ Powiązania i zmienne zaczynają działać dopiero po ponownym wdrożeniu: **Dep
    ✅ Widzisz panel z zakładką „Zgłoszenia”.
 3. Panel → **Ustawienia → Stan konfiguracji**.
    ✅ Wszystko na zielono poza „SITE_URL”. Kliknij **Wyślij e-mail testowy**.
-   ✅ Wiadomość przychodzi na stronywroclawai@gmail.com (sprawdź też folder Spam).
+   ✅ Wiadomość przychodzi na stronyaiwroclaw@gmail.com (sprawdź też folder Spam).
 4. Wyślij testowe zgłoszenie z formularza na stronie.
    ✅ Pojawia się komunikat „Dziękuję — zgłoszenie zostało zapisane”, zgłoszenie jest w panelu, a e-mail w skrzynce.
 5. Usuń testowe zgłoszenie (otwórz je → **Usuń zgłoszenie**).

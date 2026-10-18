@@ -36,7 +36,7 @@ Wynik automatycznych testów przeglądarkowych (Chromium): **36/36**.
 - [ ] Wysłanie pustego formularza pokazuje błędy przy polach.
 - [ ] Bez zaznaczenia Turnstile wysyłka jest blokowana.
 - [ ] Poprawne zgłoszenie → komunikat „Dziękuję — zgłoszenie zostało zapisane”.
-- [ ] Zgłoszenie jest w panelu, a e-mail przyszedł na stronywroclawai@gmail.com.
+- [ ] Zgłoszenie jest w panelu, a e-mail przyszedł na stronyaiwroclaw@gmail.com.
 - [ ] Odpowiedź na e-mail z powiadomieniem trafia do zgłaszającego (pole „Odpowiedz do”).
 
 **Uprawnienia** (w oknie prywatnym przeglądarki, bez logowania)

@@ -54,5 +54,5 @@ export function siteOrigin(env, request) {
 }
 
 export function contactEmail(env) {
-  return (env.NOTIFY_TO || 'stronywroclawai@gmail.com').trim();
+  return (env.NOTIFY_TO || 'stronyaiwroclaw@gmail.com').trim();
 }

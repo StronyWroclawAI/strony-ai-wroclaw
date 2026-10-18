@@ -18,7 +18,7 @@ Zmiany są widoczne na stronie **od razu** po zapisaniu. Sesja wygasa po 12 godz
 
 ## E-mail do klienta (w zgłoszeniu)
 - **Napisz e-mail** u góry zgłoszenia albo **Wyślij link e-mailem** przy briefie i przy propozycjach logo otwiera gotową wiadomość, którą możesz poprawić przed wysłaniem.
-- Po skonfigurowaniu Gmaila ([`EMAIL.md`](EMAIL.md)) przycisk **Wyślij z stronywroclawai@gmail.com** wysyła wiadomość prosto z Twojej skrzynki. Kopia jest w „Wysłanych”, a historia — w zgłoszeniu.
+- Po skonfigurowaniu Gmaila ([`EMAIL.md`](EMAIL.md)) przycisk **Wyślij z stronyaiwroclaw@gmail.com** wysyła wiadomość prosto z Twojej skrzynki. Kopia jest w „Wysłanych”, a historia — w zgłoszeniu.
 - Bez konfiguracji działa przycisk **Otwórz w Gmailu** (gotowa wiadomość, klikasz „Wyślij”).
 
 ## Logo i hasło — propozycje dla klienta (w zgłoszeniu)

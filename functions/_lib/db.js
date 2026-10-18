@@ -4,7 +4,7 @@
 
 import { SEED } from './seed.js';
 
-export const SCHEMA_VERSION = '17';
+export const SCHEMA_VERSION = '18';
 
 // Każda instrukcja w osobnym elemencie (D1 wykonuje je w jednej transakcji przez batch()).
 export const SCHEMA = [
@@ -12,7 +12,7 @@ export const SCHEMA = [
   `CREATE TABLE IF NOT EXISTS settings (
     id INTEGER PRIMARY KEY CHECK (id = 1),
     recruitment_open INTEGER NOT NULL DEFAULT 1,
-    contact_email TEXT NOT NULL DEFAULT 'stronywroclawai@gmail.com',
+    contact_email TEXT NOT NULL DEFAULT 'stronyaiwroclaw@gmail.com',
     updated_at TEXT)`,
   `CREATE TABLE IF NOT EXISTS site_content (
     key TEXT PRIMARY KEY, section TEXT NOT NULL, label TEXT NOT NULL,
@@ -168,6 +168,8 @@ const CONTENT_UPDATES = [
   // v12: krótszy formularz zgłoszeniowy
   ['contact.message_hint', 'Poniżej jest gotowy szkic — uzupełnij go lub napisz po swojemu. Wystarczy kilka zdań: resztę ustalimy w krótkim briefie, który wyślę po pierwszym kontakcie.'],
 ];
+// v18: adres e-mail marki zmieniony ze stronywroclawai@ na stronyaiwroclaw@ (gmail.com)
+const EMAIL_CHANGES = [['stronywroclawai' + '@gmail.com', 'stronyaiwroclaw@gmail.com']];
 // Pola usunięte ze strony (nadtytuł nad hasłem zastąpił nagłówek H1).
 const CONTENT_REMOVED = ['hero.eyebrow'];
 
@@ -212,7 +214,7 @@ async function init(env) {
   }
 
   const t = nowIso();
-  const stmts = [db.prepare(`INSERT OR IGNORE INTO settings (id, recruitment_open, contact_email, updated_at) VALUES (1, 1, 'stronywroclawai@gmail.com', ?)`).bind(t)];
+  const stmts = [db.prepare(`INSERT OR IGNORE INTO settings (id, recruitment_open, contact_email, updated_at) VALUES (1, 1, 'stronyaiwroclaw@gmail.com', ?)`).bind(t)];
   for (const c of SEED.content) {
     stmts.push(
       db
@@ -247,6 +249,12 @@ async function init(env) {
   }
   for (const key of CONTENT_REMOVED) {
     if (!SEED.content.some((c) => c.key === key)) stmts.push(db.prepare(`DELETE FROM site_content WHERE key = ?`).bind(key));
+  }
+  // v18: zmiana adresu e-mail marki — stary adres zamieniany w ustawieniach i we wszystkich tekstach strony
+  // (także w tekstach zmienionych w panelu). Inne adresy wpisane w panelu zostają bez zmian.
+  for (const [oldEmail, newEmail] of EMAIL_CHANGES) {
+    stmts.push(db.prepare(`UPDATE settings SET contact_email = ?, updated_at = ? WHERE lower(contact_email) = ?`).bind(newEmail, t, oldEmail));
+    stmts.push(db.prepare(`UPDATE site_content SET value = REPLACE(value, ?, ?), updated_at = ? WHERE instr(value, ?) > 0`).bind(oldEmail, newEmail, t, oldEmail));
   }
   stmts.push(db.prepare(`INSERT OR REPLACE INTO meta (key, value) VALUES ('schema_version', ?)`).bind(SCHEMA_VERSION));
   await db.batch(stmts);

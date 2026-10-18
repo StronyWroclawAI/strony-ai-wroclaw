@@ -871,7 +871,7 @@ export const SEED = {
    "section": "Kontakt i formularz",
    "label": "Po wysłaniu – treść",
    "kind": "long",
-   "value": "Przeczytam je i odpiszę na podany adres e-mail. Jeśli chcesz coś dodać, napisz bezpośrednio na stronywroclawai@gmail.com.",
+   "value": "Przeczytam je i odpiszę na podany adres e-mail. Jeśli chcesz coś dodać, napisz bezpośrednio na stronyaiwroclaw@gmail.com.",
    "sort_order": 11108
   },
   {

@@ -1,7 +1,7 @@
-# Wysyłanie e-maili z panelu z adresu stronywroclawai@gmail.com
+# Wysyłanie e-maili z panelu z adresu stronyaiwroclaw@gmail.com
 
 Po tej konfiguracji panel wysyła wiadomości do klientów **prosto z Twojej skrzynki Gmail**:
-- klient widzi nadawcę `Strony AI Wrocław <stronywroclawai@gmail.com>` i odpowiada na ten adres;
+- klient widzi nadawcę `Strony AI Wrocław <stronyaiwroclaw@gmail.com>` i odpowiada na ten adres;
 - kopia każdej wiadomości jest w Gmailu w folderze **Wysłane**;
 - w zgłoszeniu w panelu masz historię wysłanych wiadomości;
 - powiadomienia do Ciebie (nowe zgłoszenie, wypełniony brief, wybór logo) też idą przez Gmail, więc Resend przestaje być potrzebny.
@@ -11,7 +11,7 @@ Bez tej konfiguracji panel nadal działa: przycisk **Otwórz w Gmailu** otwiera 
 > **Bezpieczeństwo.** „Hasło aplikacji” daje dostęp do całej skrzynki. Wklejasz je **tylko** w Cloudflare jako sekret. Nie wpisuj go w kodzie, na GitHubie ani na żadnym czacie. Jeśli podejrzewasz wyciek — usuń je w koncie Google (krok 2) i utwórz nowe.
 
 ## Krok 1. Włącz weryfikację dwuetapową w Google
-1. Wejdź na <https://myaccount.google.com/security> (zalogowany jako stronywroclawai@gmail.com).
+1. Wejdź na <https://myaccount.google.com/security> (zalogowany jako stronyaiwroclaw@gmail.com).
 2. W sekcji „Sposób logowania się w Google” włącz **Weryfikację dwuetapową** (telefon). Bez tego Google nie pozwala tworzyć haseł aplikacji.
 
 ## Krok 2. Utwórz hasło aplikacji
@@ -24,7 +24,7 @@ Cloudflare → **Workers & Pages** → Twój projekt → **Settings → Variable
 
 | Nazwa | Typ | Wartość |
 |---|---|---|
-| `GMAIL_USER` | Text | `stronywroclawai@gmail.com` |
+| `GMAIL_USER` | Text | `stronyaiwroclaw@gmail.com` |
 | `GMAIL_APP_PASSWORD` | **Secret** | 16 znaków z kroku 2 (spacje nie przeszkadzają) |
 
 Zapisz, potem **Deployments → ⋯ → Retry deployment**.
