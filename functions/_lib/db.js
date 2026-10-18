@@ -4,7 +4,7 @@
 
 import { SEED } from './seed.js';
 
-export const SCHEMA_VERSION = '16';
+export const SCHEMA_VERSION = '17';
 
 // Każda instrukcja w osobnym elemencie (D1 wykonuje je w jednej transakcji przez batch()).
 export const SCHEMA = [
@@ -137,6 +137,19 @@ export const MIGRATIONS = [
     width INTEGER, height INTEGER, kv_key TEXT NOT NULL, has_thumb INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL)`,
   `CREATE INDEX IF NOT EXISTS lead_files_lead_idx ON lead_files (lead_id, kind, created_at)`,
   `CREATE INDEX IF NOT EXISTS lead_files_brief_idx ON lead_files (brief_id)`,
+  // v17: aktualności (posty pisane w panelu, opcjonalnie z osadzeniem oryginału z Facebooka / Instagrama)
+  `CREATE TABLE IF NOT EXISTS posts (
+    id TEXT PRIMARY KEY, title TEXT NOT NULL CHECK (length(title) BETWEEN 1 AND 150),
+    body TEXT NOT NULL DEFAULT '' CHECK (length(body) <= 3000),
+    published_on TEXT NOT NULL, media_id TEXT,
+    link_url TEXT CHECK (link_url IS NULL OR (length(link_url) <= 500 AND link_url LIKE 'https://%')),
+    embed INTEGER NOT NULL DEFAULT 0,
+    status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft','published')),
+    created_at TEXT NOT NULL, updated_at TEXT NOT NULL)`,
+  `CREATE INDEX IF NOT EXISTS posts_pub_idx ON posts (status, published_on DESC)`,
+  `ALTER TABLE settings ADD COLUMN posts_enabled INTEGER NOT NULL DEFAULT 0`,
+  `ALTER TABLE settings ADD COLUMN facebook_url TEXT`,
+  `ALTER TABLE settings ADD COLUMN instagram_url TEXT`,
 ];
 
 // v10 (SEO): stare teksty domyślne zamieniane na nowe — TYLKO gdy nie były zmieniane w panelu.

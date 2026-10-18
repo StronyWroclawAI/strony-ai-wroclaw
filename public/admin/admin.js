@@ -406,6 +406,7 @@
     branze: () => viewList(LISTS.branze),
     mozliwosci: () => viewList(LISTS.mozliwosci),
     portfolio: viewPortfolio,
+    aktualnosci: viewPosts,
     zdjecia: viewMedia,
     ustawienia: viewSettings,
   };
@@ -2236,7 +2237,7 @@
             'div',
             { class: 'media-card__body' },
             field('Tekst alternatywny', alt),
-            h('p', { class: 'small muted', text: `${m.width || '?'}×${m.height || '?'} px · ${m.size_bytes ? Math.round(m.size_bytes / 1024) + ' KB' : ''}${used[m.id] ? ` · w ${used[m.id]} realizacji` : ' · nieużywane'}` }),
+            h('p', { class: 'small muted', text: `${m.width || '?'}×${m.height || '?'} px · ${m.size_bytes ? Math.round(m.size_bytes / 1024) + ' KB' : ''}${used[m.id] ? ` · używane (realizacje/posty: ${used[m.id]})` : ' · nieużywane'}` }),
             h(
               'div',
               { class: 'actions' },
@@ -2867,6 +2868,293 @@
     );
   }
 
+
+  // =========================================================
+  // AKTUALNOŚCI (posty na stronie) i profile w mediach społecznościowych
+  // =========================================================
+  const today = () => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  };
+  const plDay = (day) => {
+    const m = String(day || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    return m ? `${Number(m[3])}.${m[2]}.${m[1]}` : '';
+  };
+  /** Czy link wskazuje konkretny post z Facebooka / Instagrama (taki da się osadzić)? Serwer sprawdza to samo. */
+  function embedKind(url) {
+    let u;
+    try {
+      u = new URL(/^https?:\/\//i.test(url) ? url : `https://${url}`);
+    } catch {
+      return null;
+    }
+    const host = u.hostname.toLowerCase();
+    if (host === 'instagram.com' || host === 'www.instagram.com') return /^\/(?:[A-Za-z0-9._]+\/)?(p|reel|tv)\/[A-Za-z0-9_-]{5,40}\/?/.test(u.pathname) ? 'instagram' : null;
+    if (['facebook.com', 'www.facebook.com', 'm.facebook.com', 'web.facebook.com', 'fb.com', 'www.fb.com'].includes(host)) {
+      return /\/videos\/|\/reel\/|^\/watch\/?$|\/posts\/|\/photos\/|^\/permalink\.php$|^\/story\.php$|^\/photo(\.php)?\/?$|^\/share\/[pvr]\//.test(u.pathname) ? 'facebook' : null;
+    }
+    return null;
+  }
+
+  function socialPanel(settings) {
+    const fb = h('input', { type: 'url', maxlength: '300', inputmode: 'url', placeholder: 'https://www.facebook.com/twojprofil', value: settings.facebook_url || '', 'data-social-input': 'facebook' });
+    const ig = h('input', { type: 'url', maxlength: '300', inputmode: 'url', placeholder: 'https://www.instagram.com/twojprofil/', value: settings.instagram_url || '', 'data-social-input': 'instagram' });
+    const btn = h('button', {
+      class: 'btn btn--primary btn--sm',
+      type: 'button',
+      text: 'Zapisz profile',
+      'data-social-save': '',
+      onclick: async () => {
+        busy(btn, true);
+        const { data, error: e } = await q(api('settings', { method: 'PUT', body: { facebook_url: fb.value.trim(), instagram_url: ig.value.trim() } }));
+        busy(btn, false);
+        if (e) return toast(errMsg(e), 'error');
+        const st = (await q(api('settings'))).data;
+        if (st && st.settings) {
+          fb.value = st.settings.facebook_url || '';
+          ig.value = st.settings.instagram_url || '';
+        }
+        toast(fb.value || ig.value ? 'Zapisano. Linki do profili są już na stronie.' : 'Zapisano. Linki do profili zostały usunięte ze strony.');
+        return data;
+      },
+    });
+    return h(
+      'section',
+      { class: 'panel' },
+      h('h2', { text: 'Profile na Facebooku i Instagramie' }),
+      h('p', { class: 'small muted', text: 'Linki pojawią się przy formularzu kontaktowym, w stopce i pod aktualnościami. Zostaw pole puste, aby ukryć dany link. Możesz wpisać pełny adres albo samą nazwę profilu.' }),
+      h('div', { class: 'grid-2' }, field('Facebook', fb), field('Instagram', ig)),
+      btn
+    );
+  }
+
+  async function viewPosts(main, param) {
+    if (param) return viewPost(main, param);
+    const [{ items }, { settings }] = await Promise.all([api('posts'), api('settings')]);
+    const published = items.filter((p) => p.status === 'published').length;
+
+    const toggle = h('input', { type: 'checkbox', role: 'switch', checked: !!settings.posts_enabled, 'data-posts-toggle': '' });
+    const toggleText = h('span');
+    const info = h('div');
+    function draw() {
+      toggleText.textContent = toggle.checked ? 'Sekcja „Aktualności” włączona' : 'Sekcja „Aktualności” wyłączona';
+      const visible = toggle.checked && published > 0;
+      info.replaceChildren(
+        h('div', {
+          class: `alert ${visible ? 'alert--ok' : 'alert--info'}`,
+          'data-posts-state': visible ? 'visible' : 'hidden',
+          text: visible
+            ? `Sekcja jest widoczna na stronie (opublikowane posty: ${published}, na stronie pokazuję 6 najnowszych).`
+            : toggle.checked
+              ? 'Sekcja jest włączona, ale pojawi się na stronie dopiero po opublikowaniu pierwszego posta.'
+              : 'Sekcja jest ukryta na stronie. Posty zostają zapisane w panelu — możesz je przygotować i włączyć sekcję później.',
+        })
+      );
+    }
+    draw();
+    toggle.addEventListener('change', async () => {
+      toggle.disabled = true;
+      const { error: e } = await q(api('settings', { method: 'PUT', body: { posts_enabled: toggle.checked } }));
+      toggle.disabled = false;
+      if (e) {
+        toggle.checked = !toggle.checked;
+        toast(`Nie zapisano: ${errMsg(e)}`, 'error');
+      } else toast(toggle.checked ? 'Sekcja „Aktualności” włączona.' : 'Sekcja „Aktualności” wyłączona — zniknęła ze strony.');
+      draw();
+    });
+
+    main.replaceChildren(
+      head('Aktualności', 'Krótkie posty na stronie głównej: nowe projekty, wolne terminy, ogłoszenia. Piszesz je tutaj — strona nie pobiera niczego automatycznie z Facebooka ani Instagrama. Do posta możesz dodać link do oryginału i (opcjonalnie) jego osadzenie, które wczyta się dopiero po kliknięciu odwiedzającego.', h('a', { class: 'btn btn--primary', href: '#aktualnosci/nowy', text: 'Dodaj post' })),
+      h('section', { class: 'panel' }, h('h2', { text: 'Sekcja na stronie' }), h('label', { class: 'switch' }, toggle, h('span', { class: 'switch__track', 'aria-hidden': 'true' }), toggleText), h('p'), info),
+      items.length
+        ? h(
+            'ul',
+            { class: 'lead-list', 'data-post-list': '' },
+            items.map((p) =>
+              h(
+                'li',
+                { class: 'lead-row' },
+                h(
+                  'div',
+                  null,
+                  h('a', { class: 'lead-row__title', href: `#aktualnosci/${p.id}`, text: p.title }),
+                  h('div', { class: 'lead-row__meta', text: [plDay(p.published_on), p.image ? 'ze zdjęciem' : 'bez zdjęcia', p.link_kind ? `link: ${p.link_kind === 'instagram' ? 'Instagram' : 'Facebook'}` : p.link_url ? 'z linkiem' : '', p.embed ? 'osadzenie po kliknięciu' : ''].filter(Boolean).join(' · ') })
+                ),
+                h(
+                  'div',
+                  { class: 'lead-row__badges' },
+                  h('span', { class: `status status--${p.status}`, text: p.status === 'published' ? 'Opublikowany' : 'Szkic' }),
+                  h('a', { class: 'btn btn--sm', href: `#aktualnosci/${p.id}`, text: 'Edytuj' })
+                )
+              )
+            )
+          )
+        : h('div', { class: 'empty', text: 'Nie masz jeszcze postów. Dodaj pierwszy — np. o nowym projekcie w portfolio albo wolnym terminie.' }),
+      socialPanel(settings)
+    );
+  }
+
+  async function viewPost(main, id) {
+    const isNew = id === 'nowy';
+    let post = { title: '', body: '', published_on: today(), image: null, media_id: null, link_url: '', embed: false, status: 'draft' };
+    if (!isNew) {
+      const found = ((await api('posts')).items || []).find((p) => p.id === id);
+      if (!found) {
+        main.replaceChildren(h('a', { class: 'back', href: '#aktualnosci', text: '← Aktualności' }), h('div', { class: 'empty', text: 'Nie znaleziono posta.' }));
+        return;
+      }
+      post = found;
+    }
+    let image = post.image ? { id: post.media_id, url: post.image.url, alt: post.image.alt } : null;
+
+    const title = h('input', { type: 'text', maxlength: '150', value: post.title, required: true, 'data-post-title': '' });
+    const date = h('input', { type: 'date', value: post.published_on, required: true, 'data-post-date': '' });
+    const text = h('textarea', { rows: '7', maxlength: '3000', 'data-post-body': '' });
+    text.value = post.body || '';
+    const counter = h('p', { class: 'hint' });
+    const count = () => (counter.textContent = `${text.value.length} / 3000 znaków. Pusta linia = nowy akapit. Długie posty na stronie są skracane z przyciskiem „Czytaj dalej”.`);
+    count();
+    const link = h('input', { type: 'url', maxlength: '500', inputmode: 'url', value: post.link_url || '', placeholder: 'https://www.instagram.com/p/… albo https://www.facebook.com/…/posts/…', 'data-post-link': '' });
+    const embed = h('input', { type: 'checkbox', checked: !!post.embed, 'data-post-embed': '' });
+    const embedHint = h('p', { class: 'small muted' });
+    const status = h('select', { 'data-post-status': '' }, h('option', { value: 'draft', text: 'Szkic (tylko w panelu)' }), h('option', { value: 'published', text: 'Opublikowany' }));
+    status.value = post.status;
+    function syncEmbed() {
+      const k = link.value.trim() ? embedKind(link.value.trim()) : null;
+      embed.disabled = !k;
+      if (!k) embed.checked = false;
+      embedHint.textContent = k
+        ? `Rozpoznano post z ${k === 'instagram' ? 'Instagrama' : 'Facebooka'}. Po zaznaczeniu pod postem pojawi się przycisk „Pokaż oryginalny post” — treść z Meta wczyta się dopiero po jego kliknięciu (zgodnie z polityką prywatności).`
+        : link.value.trim()
+          ? 'Ten link nie wskazuje konkretnego posta z Facebooka lub Instagrama — będzie zwykłym linkiem „Czytaj więcej”. Osadzić można np. https://www.instagram.com/p/ABC123/ albo https://www.facebook.com/twojprofil/posts/…'
+          : 'Wklej link do posta, aby dodać przycisk „Zobacz na Facebooku / Instagramie” i (opcjonalnie) osadzenie oryginału.';
+    }
+    syncEmbed();
+    [title, date, text, link, embed, status].forEach((el) => el.addEventListener('input', () => (dirty = true)));
+    text.addEventListener('input', count);
+    link.addEventListener('input', syncEmbed);
+    status.addEventListener('change', () => (dirty = true));
+
+    const imgBox = h('div', { 'data-post-image': '' });
+    const picker = h('div');
+    function drawImage() {
+      imgBox.replaceChildren(
+        image
+          ? h(
+              'div',
+              { class: 'post-img-pick' },
+              h('img', { src: image.url, alt: '' }),
+              h('div', null, h('p', { class: 'small', text: image.alt || '(brak opisu)' }), h('button', { class: 'btn btn--sm btn--danger-outline', type: 'button', text: 'Usuń zdjęcie z posta', onclick: () => { image = null; dirty = true; drawImage(); } }))
+            )
+          : h('p', { class: 'small muted', text: 'Bez zdjęcia — post będzie samym tekstem.' })
+      );
+    }
+    drawImage();
+    async function openPicker() {
+      const { data: libRes, error } = await q(api('media'));
+      if (error) return toast(errMsg(error), 'error');
+      const lib = (libRes.items || []).filter((m) => !image || m.id !== image.id);
+      if (!lib.length) return picker.replaceChildren(h('p', { class: 'muted small', text: 'Biblioteka jest pusta. Wgraj zdjęcie poniżej.' }));
+      picker.replaceChildren(
+        h(
+          'div',
+          { class: 'media-grid' },
+          lib.map((m) =>
+            h(
+              'button',
+              { class: 'media-card pick', type: 'button', 'aria-label': `Wybierz: ${m.alt || 'zdjęcie'}`, onclick: () => { image = m; dirty = true; picker.replaceChildren(); drawImage(); } },
+              h('img', { src: m.url, alt: '' }),
+              h('div', { class: 'media-card__body small', text: m.alt || '(brak opisu)' })
+            )
+          )
+        )
+      );
+    }
+
+    const msg = h('div', { 'aria-live': 'polite' });
+    const saveBtn = h('button', { class: 'btn btn--primary', type: 'submit', text: isNew ? 'Zapisz post' : 'Zapisz zmiany', 'data-post-save': '' });
+    const form = h(
+      'form',
+      {
+        novalidate: true,
+        onsubmit: async (e) => {
+          e.preventDefault();
+          msg.replaceChildren();
+          const err = (t, el) => {
+            if (el) el.focus();
+            msg.replaceChildren(h('div', { class: 'alert alert--error', text: t }));
+          };
+          if (!title.value.trim()) return err('Podaj tytuł posta.', title);
+          if (!date.value) return err('Podaj datę posta.', date);
+          if (!text.value.trim() && !image && !embed.checked) return err('Dodaj treść, zdjęcie albo osadzenie oryginalnego posta.', text);
+          busy(saveBtn, true);
+          const body = { title: title.value.trim(), published_on: date.value, body: text.value, media_id: image ? image.id : null, link_url: link.value.trim() || null, embed: embed.checked, status: status.value };
+          const res = await q(api(isNew ? 'posts' : `posts/${post.id}`, { method: isNew ? 'POST' : 'PUT', body }));
+          busy(saveBtn, false);
+          if (res.error) return err(`Nie zapisano: ${errMsg(res.error)}`);
+          dirty = false;
+          toast(status.value === 'published' ? 'Post zapisany i opublikowany.' : 'Post zapisany jako szkic.');
+          location.hash = '#aktualnosci';
+        },
+      },
+      h(
+        'section',
+        { class: 'panel' },
+        h('h2', { text: 'Treść' }),
+        h('div', { class: 'grid-2' }, field('Tytuł *', title), field('Data posta *', date, 'Posty są ułożone od najnowszego.')),
+        h('div', { class: 'field' }, h('label', { for: (text.id = `f-${Math.random().toString(36).slice(2, 9)}`), text: 'Treść' }), text, counter),
+        field('Status', status, 'Szkic jest widoczny tylko w panelu.'),
+        h('p', { class: 'small muted', text: 'Publikuj tylko własne teksty i zdjęcia, do których masz prawa (np. zrzuty swoich projektów). Nie kopiuj cudzych postów.' })
+      ),
+      h(
+        'section',
+        { class: 'panel' },
+        h('h2', { text: 'Zdjęcie' }),
+        imgBox,
+        h('button', { class: 'btn btn--sm', type: 'button', text: 'Wybierz z biblioteki', onclick: openPicker, 'data-post-pick': '' }),
+        picker
+      ),
+      h(
+        'section',
+        { class: 'panel' },
+        h('h2', { text: 'Link do oryginału (opcjonalnie)' }),
+        field('Adres posta na Facebooku / Instagramie albo innej strony', link),
+        h('label', { class: 'check' }, embed, h('span', null, h('strong', { text: 'Pokaż też oryginalny post' }), ' — wczytywany z Facebooka / Instagrama dopiero po kliknięciu odwiedzającego')),
+        embedHint
+      ),
+      msg,
+      h('div', { class: 'actions' }, saveBtn)
+    );
+    const uploader = uploaderForm((m) => {
+      image = m;
+      dirty = true;
+      drawImage();
+    });
+    const delBtn = isNew
+      ? null
+      : h('button', {
+          class: 'btn btn--danger-outline',
+          type: 'button',
+          text: 'Usuń post',
+          'data-post-delete': '',
+          onclick: async () => {
+            if (!(await confirmDialog({ title: 'Usunąć post?', text: `Post „${post.title}” zniknie ze strony i z panelu. Zdjęcie zostaje w bibliotece.` }))) return;
+            const { error: e } = await q(api(`posts/${post.id}`, { method: 'DELETE' }));
+            if (e) return toast(errMsg(e), 'error');
+            dirty = false;
+            toast('Post usunięty.');
+            location.hash = '#aktualnosci';
+          },
+        });
+    main.replaceChildren(
+      h('a', { class: 'back', href: '#aktualnosci', text: '← Aktualności' }),
+      head(isNew ? 'Nowy post' : 'Edycja posta'),
+      form,
+      h('details', { class: 'panel' }, h('summary', { text: 'Wgraj nowe zdjęcie do biblioteki i dodaj do posta' }), uploader),
+      delBtn ? h('div', { class: 'actions', style: 'margin-top:24px' }, delBtn) : null
+    );
+  }
+
   async function viewSettings(main) {
     const settings = (await api('settings')).settings || { recruitment_open: 1, contact_email: 'stronywroclawai@gmail.com' };
 
@@ -2959,6 +3247,7 @@
         h('p', { class: 'small muted', text: 'Wyłączenie naboru nie usuwa żadnych zgłoszeń ani kontaktów. Aby usunąć dane konkretnej osoby, otwórz jej zgłoszenie i użyj przycisku „Usuń zgłoszenie”.' })
       ),
       h('section', { class: 'panel' }, h('h2', { text: 'Adres e-mail na stronie' }), field('Adres kontaktowy wyświetlany na stronie', email, 'Adres, na który przychodzą powiadomienia, ustawiasz w Cloudflare (zmienna NOTIFY_TO).'), emailBtn),
+      socialPanel(settings),
       h('section', { class: 'panel' }, h('h2', { text: 'Stan konfiguracji' }), cfgBox),
       passwordPanel()
     );

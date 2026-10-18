@@ -203,3 +203,73 @@ function renderWorks(projects) {
     })
     .join('');
 }
+
+const MONTHS = ['stycznia', 'lutego', 'marca', 'kwietnia', 'maja', 'czerwca', 'lipca', 'sierpnia', 'września', 'października', 'listopada', 'grudnia'];
+export function plDate(day) {
+  const m = String(day || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  return m ? `${Number(m[3])} ${MONTHS[Number(m[2]) - 1] || ''} ${m[1]}` : '';
+}
+
+const SOCIAL_LABEL = { facebook: 'Facebook', instagram: 'Instagram' };
+const SOCIAL_ICON = {
+  facebook:
+    '<svg class="social-link__icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.5 21v-7.5h2.6l.4-3h-3V8.6c0-.9.3-1.5 1.6-1.5h1.6V4.4c-.3 0-1.2-.1-2.3-.1-2.3 0-3.9 1.4-3.9 4v2.2H8v3h2.5V21h3z"/></svg>',
+  instagram:
+    '<svg class="social-link__icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><rect x="3.5" y="3.5" width="17" height="17" rx="5" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3.9" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="17.2" cy="6.8" r="1.1" fill="currentColor"/></svg>',
+};
+
+/** Linki do profili (formularz, stopka, sekcja aktualności). */
+export function renderSocial(links) {
+  return ['facebook', 'instagram']
+    .filter((k) => safeUrl(links[k]))
+    .map(
+      (k) =>
+        `<li><a class="social-link social-link--${k}" href="${esc(safeUrl(links[k]))}" target="_blank" rel="noopener me">${SOCIAL_ICON[k]}<span>${SOCIAL_LABEL[k]}</span><span class="visually-hidden"> (otwiera się w nowej karcie)</span></a></li>`
+    )
+    .join('');
+}
+
+function paragraphs(text) {
+  return String(text || '')
+    .split(/\n{2,}/)
+    .map((p) => p.trim())
+    .filter(Boolean)
+    .map((p) => `<p>${esc(p).replace(/\n/g, '<br>')}</p>`)
+    .join('');
+}
+
+/**
+ * Aktualności: posty napisane w panelu. Osadzenie oryginału z Facebooka/Instagrama
+ * NIE ładuje się od razu — dopiero po kliknięciu przycisku (main.js), bo wczytuje treści i cookies Meta.
+ * `embed` = { kind, src } wyliczone po stronie serwera (functions/_lib/social.js).
+ */
+export function renderPosts(posts) {
+  return posts
+    .map((p, i) => {
+      const link = safeUrl(p.link_url);
+      const kind = p.link_kind;
+      const img = p.image && p.image.url
+        ? `<figure class="post__img"><img src="${esc(p.image.url)}" alt="${esc(p.image.alt)}" loading="lazy" decoding="async"${p.image.width ? ` width="${Number(p.image.width)}" height="${Number(p.image.height)}"` : ''}></figure>`
+        : '';
+      const name = kind ? SOCIAL_LABEL[kind] : '';
+      const embed = p.embed
+        ? `<div class="post__embed" data-embed>
+      <button class="btn btn--ghost btn--sm post__embed-btn" type="button" data-embed-src="${esc(p.embed.src)}" data-embed-kind="${esc(p.embed.kind)}" data-embed-ratio="${esc(p.embed.ratio || 'tall')}" aria-controls="post-embed-${i}">Pokaż oryginalny post z ${p.embed.kind === 'instagram' ? 'Instagrama' : 'Facebooka'}</button>
+      <p class="post__embed-note">Po kliknięciu wczytam post z serwisu ${SOCIAL_LABEL[p.embed.kind]} (Meta), który może zapisać w Twojej przeglądarce pliki cookie. <a href="/polityka-prywatnosci#osadzenia">Więcej</a></p>
+      <div class="post__embed-box" id="post-embed-${i}" hidden></div>
+    </div>`
+        : '';
+      return `
+<article class="post reveal${img ? '' : ' post--text'}">
+  ${img}
+  <div class="post__body">
+    <p class="post__meta"><time datetime="${esc(p.published_on)}">${esc(plDate(p.published_on))}</time>${name ? `<span class="post__src post__src--${kind}">${name}</span>` : ''}</p>
+    <h3 class="post__title">${esc(p.title)}</h3>
+    ${p.body ? `<div class="post__text" data-post-text>${paragraphs(p.body)}</div>` : ''}
+    ${embed}
+    ${link ? `<p class="post__actions"><a class="link-arrow" href="${esc(link)}" target="_blank" rel="noopener nofollow">${name ? `Zobacz na ${kind === 'instagram' ? 'Instagramie' : 'Facebooku'}` : 'Czytaj więcej'}<span class="visually-hidden">: ${esc(p.title)} (otwiera się w nowej karcie)</span></a></p>` : ''}
+  </div>
+</article>`;
+    })
+    .join('');
+}

@@ -1044,6 +1044,57 @@ button { font: inherit; }
   .contact .form-card { padding-top: 14px; }
 }
 
+/* ===== Aktualności (posty z panelu) i linki do profili ===== */
+.btn--ghost { --btn-bg: transparent; --btn-fg: var(--navy); --btn-bd: var(--gray-300); }
+.btn--ghost:hover { --btn-bg: var(--gray-50); --btn-bd: var(--navy-400); }
+.post-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; align-items: start; }
+.post { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius-lg); overflow: hidden; display: flex; flex-direction: column; min-width: 0; box-shadow: var(--shadow-sm); }
+.post__img { margin: 0; aspect-ratio: 4 / 3; background: var(--gray-100); overflow: hidden; }
+.post__img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.post__body { padding: 22px 24px 24px; display: flex; flex-direction: column; gap: 10px; align-items: flex-start; min-width: 0; }
+.post__meta { margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-size: .8125rem; font-weight: 700; color: var(--navy-400); letter-spacing: .04em; }
+.post__src { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: .75rem; letter-spacing: .08em; text-transform: uppercase; background: var(--sky-100); color: var(--navy-600); }
+.post__src--instagram { background: #fde8ef; color: #8a1f47; }
+.post__title { font-size: 1.1875rem; line-height: 1.3; font-weight: 800; color: var(--navy-900); margin: 0; overflow-wrap: anywhere; }
+.post__text { color: var(--muted); font-size: .9688rem; line-height: 1.6; overflow-wrap: anywhere; width: 100%; }
+.post__text p { margin: 0 0 .7em; }
+.post__text p:last-child { margin-bottom: 0; }
+.post__text--clamp { max-height: 9.6em; overflow: hidden; -webkit-mask-image: linear-gradient(#000 60%, transparent); mask-image: linear-gradient(#000 60%, transparent); }
+.post__more { background: none; border: 0; padding: 4px 0; font: inherit; font-weight: 700; font-size: .9063rem; color: var(--navy-600); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.post__actions { margin: 4px 0 0; }
+.post__embed { width: 100%; display: grid; gap: 6px; margin-top: 4px; }
+.post__embed-btn { justify-self: start; }
+.post__embed-note { margin: 0; font-size: .78rem; line-height: 1.45; color: var(--muted); }
+.post__embed-note a { color: var(--navy-600); }
+.post__embed-box { width: 100%; }
+.post__frame { display: block; width: 100%; max-width: 500px; border: 1px solid var(--gray-200); border-radius: 12px; background: var(--white); }
+.post__frame--tall { height: 620px; }
+.post__frame--video { aspect-ratio: 16 / 13; height: auto; }
+.posts__follow { margin-top: clamp(28px, 4vw, 44px); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; }
+.posts__follow p { margin: 0; font-weight: 700; color: var(--navy-900); }
+
+.social-links { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 10px; }
+.social-link { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 8px 16px 8px 12px; border-radius: 12px; border: 1.5px solid var(--gray-300); background: var(--white); color: var(--navy); font-weight: 700; font-size: .9375rem; text-decoration: none; transition: border-color .2s, background-color .2s, transform .2s var(--ease); }
+.social-link:hover { border-color: var(--navy-400); background: var(--gray-50); color: var(--navy); transform: translateY(-1px); }
+.social-link__icon { flex: none; }
+.social-links--light .social-link { background: rgba(255, 255, 255, .06); border-color: rgba(255, 255, 255, .3); color: var(--white); }
+.social-links--light .social-link:hover { background: rgba(255, 255, 255, .12); border-color: var(--white); color: var(--white); }
+.social-card { margin-top: 14px; padding: 18px 22px; border-radius: var(--radius); border: 1px solid rgba(255, 255, 255, .2); background: rgba(255, 255, 255, .05); display: grid; gap: 10px; }
+.site-footer .social-links--footer { display: flex; gap: 8px; margin-top: 14px; }
+.site-footer .social-links--footer .social-link { min-height: 40px; padding: 6px 12px 6px 9px; background: transparent; border-color: rgba(255, 255, 255, .25); color: var(--white); font-size: .875rem; }
+.site-footer .social-links--footer .social-link:hover { text-decoration: none; border-color: var(--white); background: rgba(255, 255, 255, .08); }
+.site-footer__col > a + .social-links--footer { margin-top: 14px; }
+@media (max-width: 980px) {
+  .post-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .social-card { order: 7; margin-top: 12px; }
+}
+@media (max-width: 640px) {
+  .post-list { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+  .post__body { padding: 18px 18px 20px; }
+  .post__frame--tall { height: 560px; }
+}
+.posts { background: linear-gradient(180deg, #fff 0%, #f1f6fd 100%); }
+
 
 .preview-bar{position:fixed;left:12px;right:12px;bottom:16px;margin:0 auto;width:fit-content;z-index:90;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;max-width:calc(100vw - 24px);padding:10px 12px 10px 16px;border-radius:14px;background:#fff;color:#0b1d36;font-size:.875rem;box-shadow:0 20px 50px -18px rgba(0,0,0,.55);border:2px solid transparent;background-image:linear-gradient(#fff,#fff),linear-gradient(90deg,#ff6b5a,#ffb547,#19c2b0,#8b7cf6);background-origin:border-box;background-clip:padding-box,border-box}
 .preview-bar span{color:#4d5a70}
@@ -1087,6 +1138,16 @@ button { font: inherit; }
     });
     bar.querySelector('[data-pv-hide]').addEventListener('click', function () { bar.remove(); });
   });
+  // W podglądzie oryginalny post z Instagrama/Facebooka nie jest wczytywany (przykładowy adres)
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-embed-src]');
+    if (!b) return;
+    e.stopImmediatePropagation(); e.preventDefault();
+    var box = document.getElementById(b.getAttribute('aria-controls'));
+    if (box) { box.hidden = false; box.innerHTML = '<p class="post__embed-note" style="padding:12px;border:1px dashed #c5cedb;border-radius:10px">Tu po kliknięciu wczyta się oryginalny post z Instagrama / Facebooka. W podglądzie lokalnym nic nie jest pobierane.</p>'; }
+  }, true);
+  document.addEventListener('DOMContentLoaded', function () {
+  });
 })();
 </script>
 <script>
@@ -1111,7 +1172,59 @@ button { font: inherit; }
     initTilt();
     initPortfolioTabs();
     initContactJump();
+    initPosts();
   });
+
+  /* ---------- Aktualności: „Czytaj dalej” dla długich postów i osadzenie oryginału
+     z Facebooka / Instagrama — ładowane DOPIERO po kliknięciu (wcześniej strona nie łączy się z Meta) ---------- */
+  function initPosts() {
+    var section = document.getElementById('aktualnosci');
+    if (!section) return;
+    Array.prototype.forEach.call(section.querySelectorAll('[data-post-text]'), function (t) {
+      t.classList.add('post__text--clamp');
+      if (t.scrollHeight <= t.clientHeight + 4) { t.classList.remove('post__text--clamp'); return; }
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'post__more';
+      b.setAttribute('aria-expanded', 'false');
+      b.textContent = 'Czytaj dalej';
+      b.addEventListener('click', function () {
+        var open = t.classList.toggle('post__text--clamp') === false;
+        b.setAttribute('aria-expanded', String(open));
+        b.textContent = open ? 'Zwiń' : 'Czytaj dalej';
+      });
+      t.parentNode.insertBefore(b, t.nextSibling);
+    });
+    var ALLOWED = /^https:\/\/www\.(facebook\.com\/plugins\/(post|video)\.php\?|instagram\.com\/(p|reel)\/[A-Za-z0-9_-]+\/embed\/)/;
+    Array.prototype.forEach.call(section.querySelectorAll('[data-embed-src]'), function (btn) {
+      var box = document.getElementById(btn.getAttribute('aria-controls'));
+      var src = btn.getAttribute('data-embed-src');
+      if (!box || !ALLOWED.test(src)) { btn.closest('[data-embed]').remove(); return; }
+      var label = btn.textContent;
+      btn.setAttribute('aria-expanded', 'false');
+      btn.addEventListener('click', function () {
+        if (!box.hidden) {
+          box.replaceChildren();
+          box.hidden = true;
+          btn.textContent = label;
+          btn.setAttribute('aria-expanded', 'false');
+          return;
+        }
+        var f = document.createElement('iframe');
+        f.src = src;
+        f.title = 'Oryginalny post — ' + (btn.getAttribute('data-embed-kind') === 'instagram' ? 'Instagram' : 'Facebook');
+        f.loading = 'lazy';
+        f.className = 'post__frame post__frame--' + (btn.getAttribute('data-embed-ratio') === 'video' ? 'video' : 'tall');
+        f.setAttribute('allow', 'encrypted-media; picture-in-picture; clipboard-write; web-share');
+        f.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox');
+        f.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
+        box.appendChild(f);
+        box.hidden = false;
+        btn.textContent = 'Ukryj oryginalny post';
+        btn.setAttribute('aria-expanded', 'true');
+      });
+    });
+  }
 
   /* ---------- Formularz: na komputerze linki opcjonalne od razu rozwinięte;
      na telefonie i tablecie przycisk „Zgłoś swoją firmę” przewija prosto do formularza ---------- */
@@ -1616,6 +1729,7 @@ button { font: inherit; }
         <li><a href="podglad-strony.html#wspolpraca">Współpraca</a></li>
         <li><a href="podglad-strony.html#zasady">Zasady</a></li>
         <li data-cms-block="nav-portfolio" hidden><a href="podglad-strony.html#portfolio">Portfolio</a></li>
+        <li data-cms-block="nav-posts" hidden><a href="podglad-strony.html#aktualnosci">Aktualności</a></li>
         <li><a href="podglad-strony.html#o-mnie">O mnie</a></li>
         <li><a href="podglad-strony.html#faq">FAQ</a></li>
       </ul>
@@ -1690,6 +1804,9 @@ button { font: inherit; }
       <p>Strona nie korzysta z zewnętrznych narzędzi analitycznych, pikseli reklamowych ani plików cookies marketingowych. Czcionki są ładowane z tego samego serwera, bez łączenia się z zewnętrznymi usługami.</p>
       <p>Prowadzę własny, prosty licznik odwiedzin, który nie używa plików cookies i nie korzysta z usług zewnętrznych. Zapisuje wyłącznie zbiorcze liczby: ile było wejść na daną podstronę danego dnia, z jakiej strony odsyłającej i z jakiego rodzaju urządzenia. Aby nie liczyć tej samej osoby wielokrotnie w ciągu dnia, serwer tworzy jednokierunkowy skrót z adresu IP i nazwy przeglądarki. Skrót zmienia się każdego dnia, jest usuwany najpóźniej po dwóch dniach i nie pozwala odtworzyć adresu IP ani rozpoznać nikogo między dniami.</p>
       <p>Mechanizm Cloudflare Turnstile, działający przy formularzu, może wykorzystywać technicznie niezbędne mechanizmy przeglądarki do wykrywania automatów. Panel administratora — dostępny wyłącznie dla mnie — używa jednego, technicznie niezbędnego pliku cookie z sesją logowania. Zwykli odwiedzający strony go nie otrzymują.</p>
+      <h3 id="osadzenia">Posty z Facebooka i Instagrama oraz linki do profili</h3>
+      <p>W sekcji „Aktualności” mogą pojawić się przyciski „Pokaż oryginalny post z Facebooka / Instagrama”. Dopóki ich nie klikniesz, strona nie łączy się z serwisami Meta. Po kliknięciu Twoja przeglądarka wczytuje post bezpośrednio z serwerów Meta Platforms Ireland Ltd., która otrzymuje wtedy m.in. Twój adres IP i informacje o przeglądarce oraz może zapisać lub odczytać własne pliki cookie — zgodnie ze swoją polityką prywatności (facebook.com/privacy/policy). Za to przetwarzanie odpowiada Meta. Kliknięcie jest Twoją dobrowolną decyzją; po odświeżeniu strony osadzenie znów jest wyłączone.</p>
+      <p>Linki do moich profili na Facebooku i Instagramie to zwykłe odnośniki — nic nie jest wczytywane z tych serwisów, dopóki w nie nie klikniesz.</p>
 
       <h2>9. Zmiany polityki</h2>
       <p>Jeśli sposób działania strony się zmieni, zaktualizuję tę politykę. Data ostatniej zmiany znajduje się na górze strony.</p>
@@ -1705,6 +1822,7 @@ button { font: inherit; }
     <div class="site-footer__col">
       <h2 class="site-footer__h">Kontakt</h2>
       <a href="mailto:stronywroclawai@gmail.com" data-cms-email>stronywroclawai@gmail.com</a>
+      <ul class="social-links social-links--footer" data-cms-block="social" data-social-list><li><a class="social-link social-link--facebook" href="https://www.facebook.com/" target="_blank" rel="noopener me"><svg class="social-link__icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.5 21v-7.5h2.6l.4-3h-3V8.6c0-.9.3-1.5 1.6-1.5h1.6V4.4c-.3 0-1.2-.1-2.3-.1-2.3 0-3.9 1.4-3.9 4v2.2H8v3h2.5V21h3z"/></svg><span>Facebook</span><span class="visually-hidden"> (otwiera się w nowej karcie)</span></a></li><li><a class="social-link social-link--instagram" href="https://www.instagram.com/" target="_blank" rel="noopener me"><svg class="social-link__icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><rect x="3.5" y="3.5" width="17" height="17" rx="5" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3.9" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="17.2" cy="6.8" r="1.1" fill="currentColor"/></svg><span>Instagram</span><span class="visually-hidden"> (otwiera się w nowej karcie)</span></a></li></ul>
     </div>
     <div class="site-footer__col">
       <h2 class="site-footer__h">Informacje</h2>

@@ -10,14 +10,19 @@ import {
   renderFaq,
   renderLines,
   renderPortfolio,
+  renderPosts,
+  renderSocial,
 } from './render.js';
+import { embedInfo, socialKind } from './social.js';
+
+const POSTS_LIMIT = 6;
 import { recordVisit } from './stats.js';
 
 /**
  * Dane strukturalne (schema.org) — wyłącznie informacje widoczne na stronie:
  * nazwa, adres strony, e-mail, obszar działania, autor. Bez adresu, telefonu, NIP-u i ocen.
  */
-export function structuredData(origin, email) {
+export function structuredData(origin, email, sameAs = []) {
   const org = `${origin}/#organizacja`;
   const graph = [
     {
@@ -39,6 +44,7 @@ export function structuredData(origin, email) {
       description:
         'Tworzenie nowoczesnych stron internetowych dla firm z Wrocławia i całej Polski: indywidualny projekt, wersja mobilna, formularz kontaktowy, mapa, galeria i pomoc przy wdrożeniu.',
       ...(email ? { email } : {}),
+      ...(sameAs.length ? { sameAs } : {}),
       founder: { '@type': 'Person', name: 'Grzegorz' },
       areaServed: [
         { '@type': 'City', name: 'Wrocław' },
@@ -70,9 +76,9 @@ export async function loadContent(context) {
   try {
     await ensureSchema(env);
     const db = env.DB;
-    const [content, settings, industries, capabilities, faq, projects, images] = await db.batch([
+    const [content, settings, industries, capabilities, faq, projects, images, posts] = await db.batch([
       db.prepare(`SELECT key, value FROM site_content`),
-      db.prepare(`SELECT recruitment_open, contact_email FROM settings WHERE id = 1`),
+      db.prepare(`SELECT recruitment_open, contact_email, posts_enabled, facebook_url, instagram_url FROM settings WHERE id = 1`),
       db.prepare(`SELECT name, description FROM industries WHERE is_published = 1 ORDER BY sort_order, created_at`),
       db.prepare(`SELECT title, description, size FROM capabilities WHERE is_published = 1 ORDER BY sort_order, created_at`),
       db.prepare(`SELECT question, answer FROM faq_items WHERE is_published = 1 ORDER BY sort_order, created_at`),
@@ -81,6 +87,9 @@ export async function loadContent(context) {
                   JOIN media m ON m.id = pi.media_id
                   JOIN portfolio_projects p ON p.id = pi.project_id AND p.status = 'published'
                   ORDER BY pi.sort_order`),
+      db.prepare(`SELECT p.title, p.body, p.published_on, p.link_url, p.embed, m.kv_key, m.alt, m.width, m.height FROM posts p
+                  LEFT JOIN media m ON m.id = p.media_id
+                  WHERE p.status = 'published' ORDER BY p.published_on DESC, p.created_at DESC LIMIT ${POSTS_LIMIT}`),
     ]);
     const map = {};
     for (const row of content.results) map[row.key] = row.value;
@@ -90,6 +99,17 @@ export async function loadContent(context) {
       content: map,
       recruitmentOpen: s.recruitment_open !== 0,
       contactEmail: s.contact_email || null,
+      postsEnabled: s.posts_enabled === 1,
+      social: { facebook: s.facebook_url || null, instagram: s.instagram_url || null },
+      posts: posts.results.map((p) => ({
+        title: p.title,
+        body: p.body,
+        published_on: p.published_on,
+        link_url: p.link_url,
+        link_kind: socialKind(p.link_url),
+        embed: p.embed ? embedInfo(p.link_url) : null,
+        image: p.kv_key ? { url: mediaUrl(p.kv_key), alt: p.alt || '', width: p.width, height: p.height } : null,
+      })),
       industries: industries.results,
       capabilities: capabilities.results,
       faq: faq.results,
@@ -154,7 +174,8 @@ export async function renderPage(context) {
     // Dane strukturalne dla Google (tylko strona główna ma ten element)
     .on('script#ld-json', {
       element(el) {
-        el.setInnerContent(structuredData(origin, (data && data.contactEmail) || contactEmail(env)), { html: true });
+        const sameAs = data ? Object.values(data.social).filter(Boolean) : [];
+        el.setInnerContent(structuredData(origin, (data && data.contactEmail) || contactEmail(env), sameAs), { html: true });
       },
     })
     .on('head', {
@@ -168,13 +189,16 @@ export async function renderPage(context) {
   if (data) {
     const email = data.contactEmail;
     const privacyComplete = PRIVACY_REQUIRED.every((k) => (c[k] || '').trim());
+    const showPosts = data.postsEnabled && data.posts.length > 0;
     const lists = {
       industries: () => (data.industries.length ? renderIndustries(data.industries) : null),
       'industry-options': () => renderIndustryOptions(data.industries),
       capabilities: () => (data.capabilities.length ? renderCapabilities(data.capabilities) : null),
       faq: () => (data.faq.length ? renderFaq(data.faq) : null),
       portfolio: () => renderPortfolio(data.projects, c),
+      posts: () => (showPosts ? renderPosts(data.posts) : null),
     };
+    const socialHtml = renderSocial(data.social);
 
     rw = rw
       .on('[data-cms]', {
@@ -221,6 +245,14 @@ export async function renderPage(context) {
           else if (name === 'form-closed') show(!data.recruitmentOpen);
           else if (name === 'portfolio' || name === 'nav-portfolio') show(data.projects.length > 0);
           else if (name === 'privacy-draft') show(!privacyComplete);
+          else if (name === 'posts' || name === 'nav-posts') show(showPosts);
+          else if (name === 'social') show(Boolean(socialHtml));
+        },
+      })
+      .on('[data-social-list]', {
+        element(el) {
+          el.setInnerContent(socialHtml, { html: true });
+          el.removeAttribute('data-social-list');
         },
       });
   }

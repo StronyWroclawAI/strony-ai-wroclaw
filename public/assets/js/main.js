@@ -19,7 +19,59 @@
     initTilt();
     initPortfolioTabs();
     initContactJump();
+    initPosts();
   });
+
+  /* ---------- Aktualności: „Czytaj dalej” dla długich postów i osadzenie oryginału
+     z Facebooka / Instagrama — ładowane DOPIERO po kliknięciu (wcześniej strona nie łączy się z Meta) ---------- */
+  function initPosts() {
+    var section = document.getElementById('aktualnosci');
+    if (!section) return;
+    Array.prototype.forEach.call(section.querySelectorAll('[data-post-text]'), function (t) {
+      t.classList.add('post__text--clamp');
+      if (t.scrollHeight <= t.clientHeight + 4) { t.classList.remove('post__text--clamp'); return; }
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'post__more';
+      b.setAttribute('aria-expanded', 'false');
+      b.textContent = 'Czytaj dalej';
+      b.addEventListener('click', function () {
+        var open = t.classList.toggle('post__text--clamp') === false;
+        b.setAttribute('aria-expanded', String(open));
+        b.textContent = open ? 'Zwiń' : 'Czytaj dalej';
+      });
+      t.parentNode.insertBefore(b, t.nextSibling);
+    });
+    var ALLOWED = /^https:\/\/www\.(facebook\.com\/plugins\/(post|video)\.php\?|instagram\.com\/(p|reel)\/[A-Za-z0-9_-]+\/embed\/)/;
+    Array.prototype.forEach.call(section.querySelectorAll('[data-embed-src]'), function (btn) {
+      var box = document.getElementById(btn.getAttribute('aria-controls'));
+      var src = btn.getAttribute('data-embed-src');
+      if (!box || !ALLOWED.test(src)) { btn.closest('[data-embed]').remove(); return; }
+      var label = btn.textContent;
+      btn.setAttribute('aria-expanded', 'false');
+      btn.addEventListener('click', function () {
+        if (!box.hidden) {
+          box.replaceChildren();
+          box.hidden = true;
+          btn.textContent = label;
+          btn.setAttribute('aria-expanded', 'false');
+          return;
+        }
+        var f = document.createElement('iframe');
+        f.src = src;
+        f.title = 'Oryginalny post — ' + (btn.getAttribute('data-embed-kind') === 'instagram' ? 'Instagram' : 'Facebook');
+        f.loading = 'lazy';
+        f.className = 'post__frame post__frame--' + (btn.getAttribute('data-embed-ratio') === 'video' ? 'video' : 'tall');
+        f.setAttribute('allow', 'encrypted-media; picture-in-picture; clipboard-write; web-share');
+        f.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox');
+        f.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
+        box.appendChild(f);
+        box.hidden = false;
+        btn.textContent = 'Ukryj oryginalny post';
+        btn.setAttribute('aria-expanded', 'true');
+      });
+    });
+  }
 
   /* ---------- Formularz: na komputerze linki opcjonalne od razu rozwinięte;
      na telefonie i tablecie przycisk „Zgłoś swoją firmę” przewija prosto do formularza ---------- */

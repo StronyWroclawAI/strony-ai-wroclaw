@@ -4,7 +4,7 @@ export const SECURITY_HEADERS = {
   'Content-Security-Policy': [
     "default-src 'self'",
     "script-src 'self' https://challenges.cloudflare.com",
-    "frame-src https://challenges.cloudflare.com",
+    "frame-src https://challenges.cloudflare.com https://www.facebook.com https://www.instagram.com",
     "connect-src 'self'",
     "img-src 'self' data: blob:",
     "style-src 'self' 'unsafe-inline'",

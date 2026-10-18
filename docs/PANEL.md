@@ -56,6 +56,24 @@ Zestawienie wszystkich briefów. Brief tworzysz w konkretnym zgłoszeniu i tam p
 - Lista „Branże” w panelu steruje kafelkami w sekcji „Dla kogo” na stronie. Pole „Branża” w formularzu ma stałą listę 130 branż — tę samą co brief, więc brief sam rozpoznaje branżę ze zgłoszenia.
 - Pierwsza możliwość na liście jest wyróżniona granatowym tłem. „Szeroka” zajmuje dwie kolumny.
 
+## Aktualności (posty) i profile na Facebooku / Instagramie
+
+**Sekcja „Aktualności”** na stronie głównej (pod Portfolio) pokazuje 6 najnowszych opublikowanych postów.
+
+- **Włączanie i wyłączanie:** przełącznik „Sekcja na stronie” w zakładce *Aktualności*. Sekcja (i pozycja „Aktualności” w menu) pojawia się tylko wtedy, gdy przełącznik jest włączony **i** jest co najmniej jeden opublikowany post. Wyłączenie niczego nie usuwa — posty zostają w panelu.
+- **Post:** tytuł, data, treść (pusta linia = nowy akapit; długie posty są skracane z przyciskiem „Czytaj dalej”), zdjęcie z biblioteki albo wgrane od razu, status Szkic / Opublikowany.
+- **Link do oryginału (opcjonalnie):** wklej adres posta z Facebooka lub Instagrama — pod postem pojawi się „Zobacz na Facebooku / Instagramie”. Może to być też dowolna inna strona („Czytaj więcej”).
+- **Osadzenie oryginału (opcjonalnie):** gdy link wskazuje konkretny post (np. `https://www.instagram.com/p/ABC123/` albo `https://www.facebook.com/twojprofil/posts/…`), możesz zaznaczyć „Pokaż też oryginalny post”. Odwiedzający zobaczy przycisk „Pokaż oryginalny post z …” z informacją o plikach cookie Meta — **ramka z Facebooka/Instagrama ładuje się dopiero po kliknięciu**. Do tego momentu strona nie łączy się z serwisami Meta (opisane w polityce prywatności, punkt 8).
+- Strona **nie pobiera** postów automatycznie z Facebooka ani Instagrama — wszystko piszesz w panelu. Publikuj tylko własne teksty i zdjęcia, do których masz prawa.
+- Osadzanie wymaga, żeby post na Facebooku/Instagramie był **publiczny**. Jeśli Meta zmieni zasady osadzania, przycisk może pokazać komunikat Meta zamiast posta — wtedy wystarczy link „Zobacz na …”.
+
+**Profile na Facebooku i Instagramie** ustawiasz w zakładce *Aktualności* (na dole) albo w *Ustawieniach*. Wpisz pełny adres albo samą nazwę profilu. Linki pojawiają się:
+- przy formularzu kontaktowym (karta „Znajdziesz mnie też tutaj”),
+- w stopce (także na stronie polityki prywatności),
+- pod aktualnościami („Więcej aktualności znajdziesz na moich profilach”).
+
+Puste pole = link ukryty. Adresy profili trafiają też do danych dla Google (`sameAs`). Teksty sekcji (nagłówek, wstęp, zachęta, etykieta przy formularzu) zmienisz w *Treściach strony* → „Aktualności – nagłówek” oraz „Kontakt i formularz”.
+
 ## Zdjęcia
 - Wybierz plik JPG, PNG lub WebP i **koniecznie opisz zdjęcie** (tekst alternatywny dla osób niewidomych i dla wyszukiwarek).
 - Panel sam zmniejszy zdjęcie (maksymalnie 1920 px) i zapisze je jako WebP. Po optymalizacji plik musi mieć mniej niż 5 MB.

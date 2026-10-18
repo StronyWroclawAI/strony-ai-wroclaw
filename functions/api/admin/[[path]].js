@@ -10,6 +10,7 @@ import { normalizeUrl } from '../../_lib/validate.js';
 import { newToken, cleanAnswers, BRIEF_KINDS } from '../../_lib/brief.js';
 import { saveUpload, serveFile, deleteFileRow, publicFile } from '../../_lib/files.js';
 import { readStats } from '../../_lib/stats.js';
+import { profileUrl, embedInfo, socialKind } from '../../_lib/social.js';
 import { SLUG_RE, VER_RE, PATH_RE, MAX_FILE, MAX_TOTAL, MAX_FILES, CARD_TYPES, extOf, isImagePath, sniffOk, slugify, deleteCardFiles, cardUrl } from '../../_lib/card.js';
 
 const STATUSES = ['nowe', 'kontakt', 'w_realizacji', 'zakonczone', 'odrzucone'];
@@ -52,6 +53,37 @@ async function body(request) {
   } catch {
     throw bad('Nieprawidłowe dane.');
   }
+}
+
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const postOut = (p) => ({
+  id: p.id, title: p.title, body: p.body, published_on: p.published_on, media_id: p.media_id || null,
+  image: p.media_id && p.kv_key ? { url: mediaUrl(p.kv_key), alt: p.alt || '' } : null,
+  link_url: p.link_url || null, embed: Boolean(p.embed), status: p.status, created_at: p.created_at, updated_at: p.updated_at,
+  link_kind: socialKind(p.link_url), embeddable: Boolean(embedInfo(p.link_url)),
+});
+/** Walidacja posta z panelu. */
+async function postInput(env, b) {
+  const title = str(b.title, [1, 150], 'Tytuł');
+  const text = typeof b.body === 'string' ? b.body.replace(/\r\n?/g, '\n').trim() : '';
+  if (text.length > 3000) throw bad('Treść posta może mieć maksymalnie 3000 znaków.');
+  const day = String(b.published_on || '').trim();
+  if (!DATE_RE.test(day) || Number.isNaN(Date.parse(`${day}T00:00:00Z`))) throw bad('Podaj datę posta.');
+  let media_id = b.media_id ? String(b.media_id) : null;
+  if (media_id) {
+    if (!ID_RE.test(media_id) || !(await first(env, `SELECT id FROM media WHERE id = ?`, media_id))) throw bad('Wybrane zdjęcie nie istnieje w bibliotece.');
+  }
+  let link_url = null;
+  if (b.link_url && String(b.link_url).trim()) {
+    const r = normalizeUrl(b.link_url);
+    if (!r.ok) throw bad('Podaj poprawny adres linku, np. https://www.facebook.com/…');
+    link_url = r.value.replace(/^http:/, 'https:');
+  }
+  const embed = bool(b.embed) && link_url && embedInfo(link_url) ? 1 : 0;
+  if (bool(b.embed) && !embed) throw bad('Osadzić można tylko link do konkretnego posta z Facebooka lub Instagrama (np. https://www.instagram.com/p/…).');
+  const status = b.status === 'published' ? 'published' : 'draft';
+  if (!text && !media_id && !embed) throw bad('Dodaj treść, zdjęcie albo osadzenie oryginalnego posta.');
+  return { title, body: text, published_on: day, media_id, link_url, embed, status };
 }
 
 // Sprawdza „magiczne bajty” pliku — nie ufamy samemu rozszerzeniu ani nagłówkowi.
@@ -469,7 +501,7 @@ export async function onRequest(context) {
 
       // ===== Ustawienia =====
       case 'GET /settings':
-        return json({ ok: true, settings: await first(env, `SELECT recruitment_open, contact_email FROM settings WHERE id = 1`) });
+        return json({ ok: true, settings: await first(env, `SELECT recruitment_open, contact_email, posts_enabled, facebook_url, instagram_url FROM settings WHERE id = 1`) });
       case 'PUT /settings': {
         const b = await body(request);
         const sets = [];
@@ -484,16 +516,49 @@ export async function onRequest(context) {
           sets.push('contact_email = ?');
           vals.push(e);
         }
+        if ('posts_enabled' in b) {
+          sets.push('posts_enabled = ?');
+          vals.push(bool(b.posts_enabled));
+        }
+        for (const k of ['facebook', 'instagram']) {
+          if (!(`${k}_url` in b)) continue;
+          const r = profileUrl(k, b[`${k}_url`]);
+          if (!r.ok) throw bad(k === 'facebook' ? 'Podaj adres profilu na Facebooku, np. https://www.facebook.com/twojprofil.' : 'Podaj adres profilu na Instagramie, np. https://www.instagram.com/twojprofil/.');
+          sets.push(`${k}_url = ?`);
+          vals.push(r.value);
+        }
         if (!sets.length) throw bad('Brak zmian.');
         await run(env, `UPDATE settings SET ${sets.join(', ')}, updated_at = ? WHERE id = 1`, ...vals, nowIso());
         return json({ ok: true });
       }
 
+      // ===== Aktualności (posty) =====
+      case 'GET /posts': {
+        const items = await all(env, `SELECT p.*, m.kv_key, m.alt FROM posts p LEFT JOIN media m ON m.id = p.media_id ORDER BY p.published_on DESC, p.created_at DESC`);
+        return json({ ok: true, items: items.map(postOut) });
+      }
+      case 'POST /posts': {
+        const v = await postInput(env, await body(request));
+        const t = nowIso();
+        const id = uuid();
+        await run(env, `INSERT INTO posts (id, title, body, published_on, media_id, link_url, embed, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, id, v.title, v.body, v.published_on, v.media_id, v.link_url, v.embed, v.status, t, t);
+        return json({ ok: true, id });
+      }
+      case 'PUT /posts/:id': {
+        const v = await postInput(env, await body(request));
+        const r = await run(env, `UPDATE posts SET title = ?, body = ?, published_on = ?, media_id = ?, link_url = ?, embed = ?, status = ?, updated_at = ? WHERE id = ?`, v.title, v.body, v.published_on, v.media_id, v.link_url, v.embed, v.status, nowIso(), checkId(seg[1]));
+        if (!r.meta.changes) throw notFound();
+        return json({ ok: true });
+      }
+      case 'DELETE /posts/:id':
+        await run(env, `DELETE FROM posts WHERE id = ?`, checkId(seg[1]));
+        return json({ ok: true });
+
       // ===== Zdjęcia =====
       case 'GET /media': {
         const items = await all(
           env,
-          `SELECT m.*, (SELECT COUNT(*) FROM portfolio_images pi WHERE pi.media_id = m.id) AS used FROM media m ORDER BY created_at DESC`
+          `SELECT m.*, (SELECT COUNT(*) FROM portfolio_images pi WHERE pi.media_id = m.id) + (SELECT COUNT(*) FROM posts po WHERE po.media_id = m.id) AS used FROM media m ORDER BY created_at DESC`
         );
         return json({ ok: true, items: items.map((m) => ({ ...m, url: mediaUrl(m.kv_key) })) });
       }
@@ -532,7 +597,7 @@ export async function onRequest(context) {
       case 'DELETE /media/:id': {
         const m = await first(env, `SELECT id, kv_key FROM media WHERE id = ?`, checkId(seg[1]));
         if (!m) throw notFound();
-        await env.DB.batch([env.DB.prepare(`DELETE FROM portfolio_images WHERE media_id = ?`).bind(m.id), env.DB.prepare(`DELETE FROM media WHERE id = ?`).bind(m.id)]);
+        await env.DB.batch([env.DB.prepare(`DELETE FROM portfolio_images WHERE media_id = ?`).bind(m.id), env.DB.prepare(`UPDATE posts SET media_id = NULL WHERE media_id = ?`).bind(m.id), env.DB.prepare(`DELETE FROM media WHERE id = ?`).bind(m.id)]);
         if (env.MEDIA) await env.MEDIA.delete(m.kv_key);
         return json({ ok: true });
       }
