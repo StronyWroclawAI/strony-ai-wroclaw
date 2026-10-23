@@ -11,6 +11,7 @@ import { newToken, cleanAnswers, BRIEF_KINDS } from '../../_lib/brief.js';
 import { saveUpload, serveFile, deleteFileRow, publicFile } from '../../_lib/files.js';
 import { readStats } from '../../_lib/stats.js';
 import { profileUrl, embedInfo, socialKind } from '../../_lib/social.js';
+import { VARIANT_NAMES, VARIANT_MAX_BYTES, variantKey, allVariantKeys, imageInfo, checkVariant, parseVariants, variantStatus, expectedVariants } from '../../_lib/media.js';
 import { SLUG_RE, VER_RE, PATH_RE, MAX_FILE, MAX_TOTAL, MAX_FILES, CARD_TYPES, extOf, isImagePath, sniffOk, slugify, deleteCardFiles, cardUrl } from '../../_lib/card.js';
 
 const STATUSES = ['nowe', 'kontakt', 'w_realizacji', 'zakonczone', 'odrzucone'];
@@ -560,7 +561,13 @@ export async function onRequest(context) {
           env,
           `SELECT m.*, (SELECT COUNT(*) FROM portfolio_images pi WHERE pi.media_id = m.id) + (SELECT COUNT(*) FROM posts po WHERE po.media_id = m.id) AS used FROM media m ORDER BY created_at DESC`
         );
-        return json({ ok: true, items: items.map((m) => ({ ...m, url: mediaUrl(m.kv_key) })) });
+        return json({
+          ok: true,
+          items: items.map((m) => {
+            const variants = parseVariants(m.variants);
+            return { ...m, variants, variant_status: variantStatus(m.width, variants), url: mediaUrl(m.kv_key) };
+          }),
+        });
       }
       case 'POST /media': {
         if (!env.MEDIA) throw new HttpError(503, 'Brak powiązania magazynu KV o nazwie MEDIA (Settings → Bindings).');
@@ -579,14 +586,72 @@ export async function onRequest(context) {
         const id = uuid();
         const kvKey = `m/${id}.${TYPES[type]}`;
         await env.MEDIA.put(kvKey, buf, { metadata: { contentType: type } });
-        const row = { id, kv_key: kvKey, content_type: type, alt, width: dim(form.get('width')), height: dim(form.get('height')), size_bytes: buf.byteLength, created_at: nowIso() };
+        // Wymiary odczytane z pliku (gdy nagłówek jest czytelny) mają pierwszeństwo przed danymi z przeglądarki.
+        const info = imageInfo(new Uint8Array(buf.slice(0, 65536)));
+        const real = info && info.width > 0 && info.height > 0 && info.width < 20000 && info.height < 20000;
+        const row = { id, kv_key: kvKey, content_type: type, alt, width: real ? info.width : dim(form.get('width')), height: real ? info.height : dim(form.get('height')), size_bytes: buf.byteLength, created_at: nowIso() };
         try {
           await run(env, `INSERT INTO media (id, kv_key, content_type, alt, width, height, size_bytes, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`, row.id, row.kv_key, row.content_type, row.alt, row.width, row.height, row.size_bytes, row.created_at);
         } catch (e) {
           await env.MEDIA.delete(kvKey);
           throw e;
         }
-        return json({ ok: true, item: { ...row, url: mediaUrl(kvKey), used: 0 } });
+        return json({ ok: true, item: { ...row, url: mediaUrl(kvKey), used: 0, variants: [], variant_status: variantStatus(row.width, []) } });
+      }
+      case 'POST /media/:id/variants': {
+        // Warianty responsywne (w480–w1280) dla ISTNIEJĄCEGO zdjęcia. Oryginał i rekord zdjęcia nie są tu zmieniane
+        // (poza dopisaniem udanych wariantów do kolumny variants). Każdy wariant jest sprawdzany i zapisywany osobno.
+        if (!env.MEDIA) throw new HttpError(503, 'Brak powiązania magazynu KV o nazwie MEDIA (Settings → Bindings).');
+        const m = await first(env, `SELECT id, kv_key, width, height, variants FROM media WHERE id = ?`, checkId(seg[1]));
+        if (!m) throw notFound('Nie znaleziono zdjęcia.');
+        const form = await request.formData().catch(() => null);
+        if (!form) throw bad('Nieprawidłowe dane.');
+        // Rzeczywiste wymiary oryginału — z pliku w KV, nie z bazy ani z przeglądarki
+        const orig = await env.MEDIA.get(m.kv_key, { type: 'arrayBuffer' });
+        const info = orig ? imageInfo(new Uint8Array(orig.slice(0, 65536))) : null;
+        if (!info) throw bad('Nie udało się odczytać wymiarów oryginału — wersje nie zostały przygotowane. Zdjęcie działa bez zmian.');
+        if (Number(m.width) !== info.width || Number(m.height) !== info.height) {
+          throw bad(`Wymiary zapisane w bazie (${m.width}×${m.height}) różnią się od pliku (${info.width}×${info.height}) — wersje nie zostały przygotowane. Zdjęcie działa bez zmian.`);
+        }
+        const allowed = expectedVariants(info.width);
+        const results = {};
+        const stored = [];
+        for (const name of VARIANT_NAMES) {
+          const f = form.get(name);
+          if (!f || typeof f === 'string') continue;
+          if (!allowed.includes(name)) { results[name] = { ok: false, message: 'Zdjęcie jest za małe na ten wariant.' }; continue; }
+          if (f.size > VARIANT_MAX_BYTES) { results[name] = { ok: false, message: 'Wariant jest za duży (maks. 1 MB).' }; continue; }
+          try {
+            const bytes = new Uint8Array(await f.arrayBuffer());
+            const c = checkVariant(name, bytes, info);
+            if (!c.ok) { results[name] = { ok: false, message: c.message }; continue; }
+            const key = variantKey(m.id, name, c.ext);
+            await env.MEDIA.put(key, bytes, { metadata: { contentType: c.ext === 'webp' ? 'image/webp' : 'image/jpeg' } });
+            // ten sam wariant w drugim formacie (np. wcześniej JPG, teraz WebP) jest już niepotrzebny
+            const other = variantKey(m.id, name, c.ext === 'webp' ? 'jpg' : 'webp');
+            try { await env.MEDIA.delete(other); } catch { /* brak pliku — nic nie szkodzi */ }
+            stored.push(c.entry);
+            results[name] = { ok: true, width: c.entry.w, height: c.entry.h };
+          } catch (e) {
+            console.error('Wariant nie zapisany', m.id, name, e);
+            results[name] = { ok: false, message: 'Nie udało się zapisać wariantu.' };
+          }
+        }
+        let variants = parseVariants(m.variants);
+        if (stored.length) {
+          // zapis „porównaj i zamień” — dwie próby, żeby równoległe wgrywanie nie nadpisało cudzych zmian
+          let current = m.variants;
+          for (let attempt = 0; attempt < 3; attempt++) {
+            const merged = parseVariants(current).filter((v) => !stored.some((x) => x.k === v.k)).concat(stored).sort((a, b) => a.w - b.w);
+            const r = await run(env, `UPDATE media SET variants = ? WHERE id = ? AND variants = ?`, JSON.stringify(merged), m.id, current);
+            if (r.meta.changes) { variants = merged; break; }
+            const fresh = await first(env, `SELECT variants FROM media WHERE id = ?`, m.id);
+            if (!fresh) throw notFound('Zdjęcie zostało usunięte.');
+            current = fresh.variants;
+            if (attempt === 2) throw new HttpError(409, 'Nie udało się zapisać listy wersji — spróbuj ponownie.');
+          }
+        }
+        return json({ ok: true, results, variants, variant_status: variantStatus(info.width, variants) });
       }
       case 'PATCH /media/:id': {
         const b = await body(request);
@@ -598,7 +663,13 @@ export async function onRequest(context) {
         const m = await first(env, `SELECT id, kv_key FROM media WHERE id = ?`, checkId(seg[1]));
         if (!m) throw notFound();
         await env.DB.batch([env.DB.prepare(`DELETE FROM portfolio_images WHERE media_id = ?`).bind(m.id), env.DB.prepare(`UPDATE posts SET media_id = NULL WHERE media_id = ?`).bind(m.id), env.DB.prepare(`DELETE FROM media WHERE id = ?`).bind(m.id)]);
-        if (env.MEDIA) await env.MEDIA.delete(m.kv_key);
+        if (env.MEDIA) {
+          await env.MEDIA.delete(m.kv_key);
+          // warianty: tylko zamknięta lista kluczy wyliczonych z UUID tego zdjęcia (bez usuwania po prefiksie)
+          for (const key of allVariantKeys(m.id)) {
+            try { await env.MEDIA.delete(key); } catch (e) { console.error('Nie usunięto wariantu', key, e); }
+          }
+        }
         return json({ ok: true });
       }
 

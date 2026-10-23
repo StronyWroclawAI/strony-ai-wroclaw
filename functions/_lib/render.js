@@ -2,6 +2,7 @@
 // Te same funkcje posłużyły do wygenerowania treści domyślnych w public/index.html,
 // dzięki czemu wygląd strony jest identyczny niezależnie od źródła danych.
 import { industryIcon, capabilityIcon, tone } from './icons.js';
+import { mediaImg } from './media.js';
 
 export function esc(value) {
   return String(value ?? '')
@@ -155,9 +156,8 @@ function renderWorks(projects) {
         .map((t) => t.trim())
         .filter(Boolean)
         .slice(0, 8);
-      const coverImg = cover
-        ? `<img src="${esc(cover.url)}" alt="${esc(cover.alt)}" loading="lazy" decoding="async"${cover.width ? ` width="${Number(cover.width)}" height="${Number(cover.height)}"` : ''}>`
-        : '';
+      // Zdjęcia z biblioteki z wariantami dostają srcset/sizes; okładka karty ZIP i zdjęcia bez wariantów — znacznik jak dotychczas.
+      const coverImg = cover ? mediaImg(cover, i === 0 ? 'featured' : 'normal') : '';
       const frame = coverImg
         ? `<div class="work__frame"><span class="work__dots" aria-hidden="true"><i></i><i></i><i></i></span>${coverImg}</div>`
         : '';
@@ -179,10 +179,7 @@ function renderWorks(projects) {
       rest.length
         ? `<ul class="work__thumbs">${rest
             .map(
-              (im) =>
-                `<li><img src="${esc(im.url)}" alt="${esc(im.alt)}" loading="lazy" decoding="async"${
-                  im.width ? ` width="${Number(im.width)}" height="${Number(im.height)}"` : ''
-                }></li>`
+              (im) => `<li>${mediaImg(im, i === 0 ? 'thumb-featured' : 'thumb-normal')}</li>`
             )
             .join('')}</ul>`
         : ''
@@ -249,7 +246,7 @@ export function renderPosts(posts) {
       const link = safeUrl(p.link_url);
       const kind = p.link_kind;
       const img = p.image && p.image.url
-        ? `<figure class="post__img"><img src="${esc(p.image.url)}" alt="${esc(p.image.alt)}" loading="lazy" decoding="async"${p.image.width ? ` width="${Number(p.image.width)}" height="${Number(p.image.height)}"` : ''}></figure>`
+        ? `<figure class="post__img">${mediaImg(p.image, 'post')}</figure>`
         : '';
       const name = kind ? SOCIAL_LABEL[kind] : '';
       const embed = p.embed

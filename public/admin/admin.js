@@ -2164,20 +2164,125 @@
       }
       if (!blob) throw new Error('Nie udało się przetworzyć zdjęcia.');
       if (blob.size > MAX_UPLOAD) throw new Error('Po optymalizacji zdjęcie nadal przekracza 5 MB.');
-      return { blob, ext, width: w, height: hgt };
+      // canvas zostaje do przygotowania wariantów (z niezakodowanych pikseli — bez podwójnej kompresji)
+      return { blob, ext, width: w, height: hgt, canvas };
     } finally {
       URL.revokeObjectURL(url);
     }
   }
 
+  // ---------- Warianty responsywne (w480–w1280) ----------
+  // Najpierw zawsze zapisuje się oryginał (jak dotychczas). Warianty to osobny, późniejszy krok:
+  // jego niepowodzenie nie usuwa ani nie zmienia oryginału — zdjęcie działa wtedy tak jak przed zmianą.
+  const VARIANT_WIDTHS = [480, 640, 960, 1280];
+  const VARIANT_MAX = 1024 * 1024;
+
+  /** Zmniejsza canvas do zadanej szerokości w kilku krokach (o połowę), żeby małe wersje nie były postrzępione. */
+  function downscale(src, w, hgt) {
+    let cur = src;
+    while (cur.width / 2 >= w * 1.0001 && cur.width > 2) {
+      const c = document.createElement('canvas');
+      c.width = Math.max(w, Math.round(cur.width / 2));
+      c.height = Math.max(hgt, Math.round(cur.height / 2));
+      const x = c.getContext('2d');
+      x.imageSmoothingEnabled = true;
+      x.imageSmoothingQuality = 'high';
+      x.drawImage(cur, 0, 0, c.width, c.height);
+      cur = c;
+    }
+    const out = document.createElement('canvas');
+    out.width = w;
+    out.height = hgt;
+    const x = out.getContext('2d');
+    x.imageSmoothingEnabled = true;
+    x.imageSmoothingQuality = 'high';
+    x.drawImage(cur, 0, 0, w, hgt);
+    return out;
+  }
+
+  /** Przygotowuje brakujące warianty z canvasu o wymiarach oryginału. Zwraca { files:[{name, blob}], errors:{name: tekst} }. */
+  async function makeVariants(canvas, width, height, only) {
+    const files = [];
+    const errors = {};
+    for (const w of VARIANT_WIDTHS) {
+      const name = `w${w}`;
+      if (w >= width || (only && !only.includes(name))) continue;
+      try {
+        const hgt = Math.round((w * height) / width);
+        const c = downscale(canvas, w, hgt);
+        let blob = await new Promise((r) => c.toBlob(r, 'image/webp', 0.8));
+        if (!blob || blob.type !== 'image/webp') blob = await new Promise((r) => c.toBlob(r, 'image/jpeg', 0.82));
+        if (!blob) throw new Error('nie udało się zapisać');
+        if (blob.size > VARIANT_MAX) throw new Error('za duży plik');
+        files.push({ name, blob });
+      } catch (e) {
+        errors[name] = (e && e.message) || 'błąd';
+      }
+    }
+    return { files, errors };
+  }
+
+  /** Wysyła warianty do serwera (każdy jest sprawdzany i zapisywany osobno). Nigdy nie rzuca wyjątku. */
+  async function sendVariants(mediaId, files, errors) {
+    const failed = Object.keys(errors);
+    if (!files.length) return { ok: !failed.length, failed, status: null };
+    const fd = new FormData();
+    for (const f of files) fd.append(f.name, f.blob, `${f.name}.${f.blob.type === 'image/webp' ? 'webp' : 'jpg'}`);
+    try {
+      const r = await api(`media/${mediaId}/variants`, { method: 'POST', body: fd });
+      for (const [k, v] of Object.entries(r.results || {})) if (!v.ok) failed.push(k);
+      return { ok: !failed.length, failed, status: r.variant_status };
+    } catch (e) {
+      return { ok: false, failed: failed.concat(files.map((f) => f.name)), status: null, message: errMsg(e) };
+    }
+  }
+
   async function uploadImage(file, alt) {
-    const { blob, ext, width, height } = await optimizeImage(file);
+    const { blob, ext, width, height, canvas } = await optimizeImage(file);
     const fd = new FormData();
     fd.append('file', blob, `zdjecie.${ext}`);
     fd.append('alt', alt);
     fd.append('width', String(width));
     fd.append('height', String(height));
-    return (await api('media', { method: 'POST', body: fd })).item;
+    // 1) oryginał — dokładnie jak dotychczas; błąd tutaj = zdjęcie nie zostało wgrane
+    const item = (await api('media', { method: 'POST', body: fd })).item;
+    // 2) warianty — osobno; żaden błąd nie cofa zapisu oryginału
+    try {
+      const { files, errors } = await makeVariants(canvas, item.width, item.height);
+      const r = await sendVariants(item.id, files, errors);
+      item.variantsOk = r.ok;
+      if (r.status) item.variant_status = r.status;
+    } catch {
+      item.variantsOk = false;
+    }
+    return item;
+  }
+
+  /** Warianty dla zdjęcia, które już jest w bibliotece (ręczne „Przygotuj wersje”). */
+  async function prepareVariantsFor(m) {
+    const res = await fetch(m.url, { credentials: 'same-origin', cache: 'no-store' });
+    if (!res.ok) throw new Error('Nie udało się pobrać zdjęcia.');
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    try {
+      const img = await new Promise((ok, fail) => {
+        const i = new Image();
+        i.onload = () => ok(i);
+        i.onerror = () => fail(new Error('Nie udało się odczytać zdjęcia.'));
+        i.src = url;
+      });
+      if (img.naturalWidth !== Number(m.width) || img.naturalHeight !== Number(m.height)) throw new Error('Wymiary pliku nie zgadzają się z zapisanymi w bibliotece.');
+      const c = document.createElement('canvas');
+      c.width = img.naturalWidth;
+      c.height = img.naturalHeight;
+      c.getContext('2d').drawImage(img, 0, 0);
+      const have = new Set((m.variants || []).map((v) => v.k));
+      const missing = VARIANT_WIDTHS.filter((w) => w < m.width).map((w) => `w${w}`).filter((k) => !have.has(k));
+      const { files, errors } = await makeVariants(c, m.width, m.height, missing);
+      return await sendVariants(m.id, files, errors);
+    } finally {
+      URL.revokeObjectURL(url);
+    }
   }
 
   function uploaderForm(onDone) {
@@ -2202,7 +2307,8 @@
           try {
             const m = await uploadImage(f, alt.value.trim());
             form.reset();
-            toast('Zdjęcie wgrane.');
+            if (m.variantsOk === false) toast('Zdjęcie wgrane. Nie udało się przygotować wszystkich wersji dla telefonów — możesz to powtórzyć w zakładce Zdjęcia („Przygotuj wersje”). Zdjęcie działa normalnie.', 'error');
+            else toast('Zdjęcie wgrane.');
             onDone && onDone(m);
           } catch (err) {
             msg.replaceChildren(h('div', { class: 'alert alert--error', text: errMsg(err) }));
@@ -2216,6 +2322,92 @@
       btn
     );
     return form;
+  }
+
+  const VARIANT_LABEL = {
+    gotowe: 'Wersje dla telefonów: gotowe',
+    czesciowe: 'Wersje dla telefonów: częściowe — użyj „Przygotuj wersje”',
+    brak: 'Wersje dla telefonów: brak (zdjęcie działa jak dotychczas)',
+    'nie-dotyczy': 'Wersje dla telefonów: niepotrzebne (zdjęcie ma do 480 px)',
+  };
+
+  /**
+   * Ręczne przygotowanie wariantów dla zdjęć, które ich nie mają (np. wgranych przed wprowadzeniem wariantów).
+   * Uruchamiane wyłącznie przyciskiem. Można przerwać i wznowić — lista brakujących zdjęć jest liczona od nowa przy każdym starcie.
+   */
+  function variantsPanel(media) {
+    const todo = media.filter((m) => m.variant_status === 'brak' || m.variant_status === 'czesciowe');
+    const counter = h('p', { 'data-variants-count': String(todo.length) });
+    const bar = h('progress', { max: String(Math.max(1, todo.length)), value: '0', style: 'width:100%', hidden: true, 'data-variants-progress': '' });
+    const log = h('p', { class: 'small muted', 'aria-live': 'polite', 'data-variants-log': '' });
+    let stop = false;
+    let running = false;
+    const startBtn = h('button', { class: 'btn btn--primary btn--sm', type: 'button', text: 'Przygotuj wersje', 'data-variants-start': '', disabled: !todo.length });
+    const stopBtn = h('button', { class: 'btn btn--sm', type: 'button', text: 'Przerwij', 'data-variants-stop': '', hidden: true, onclick: () => { stop = true; stopBtn.disabled = true; log.textContent = 'Przerywam po bieżącym zdjęciu…'; } });
+    const drawCount = (n) => {
+      counter.dataset.variantsCount = String(n);
+      counter.textContent = n ? `Zdjęcia bez wersji dla telefonów: ${n}. Na stronie działają normalnie — wersje tylko zmniejszą ilość danych pobieranych na telefonach.` : 'Wszystkie zdjęcia mają wersje dla telefonów (albo ich nie potrzebują).';
+    };
+    drawCount(todo.length);
+    startBtn.addEventListener('click', async () => {
+      if (running) return;
+      running = true;
+      stop = false;
+      startBtn.disabled = true;
+      stopBtn.hidden = false;
+      stopBtn.disabled = false;
+      // lista liczona od nowa — wznowienie pomija zdjęcia przygotowane wcześniej
+      let list = [];
+      try {
+        list = ((await api('media')).items || []).filter((m) => m.variant_status === 'brak' || m.variant_status === 'czesciowe');
+      } catch (e) {
+        log.textContent = `Nie udało się pobrać listy zdjęć: ${errMsg(e)}`;
+      }
+      bar.hidden = false;
+      bar.max = String(Math.max(1, list.length));
+      bar.value = 0;
+      let done = 0;
+      let failed = 0;
+      for (const m of list) {
+        if (stop || !document.body.contains(bar)) break;
+        log.textContent = `Przygotowuję ${done + 1} z ${list.length}: ${m.alt || 'zdjęcie'}…`;
+        try {
+          const r = await prepareVariantsFor(m);
+          if (!r.ok) failed++;
+        } catch {
+          failed++;
+        }
+        done++;
+        bar.value = done;
+      }
+      running = false;
+      stopBtn.hidden = true;
+      startBtn.disabled = false;
+      let left = list.length - done;
+      try {
+        left = ((await api('media')).items || []).filter((m) => m.variant_status === 'brak' || m.variant_status === 'czesciowe').length;
+      } catch {
+        /* zostaje przybliżenie */
+      }
+      drawCount(left);
+      startBtn.disabled = !left;
+      log.textContent = stop
+        ? `Przerwano. Przygotowano: ${done - failed} z ${list.length}. Kliknij „Przygotuj wersje”, aby dokończyć.`
+        : failed
+          ? `Gotowe, ale ${failed} zdjęć nie udało się przygotować — te zdjęcia działają jak dotychczas. Możesz spróbować ponownie.`
+          : `Gotowe: przygotowano wersje dla ${done} zdjęć.`;
+      if (done && !stop && !failed && document.body.contains(bar)) setTimeout(() => { if (!running && document.body.contains(bar)) route(); }, 1500);
+    });
+    return h(
+      'section',
+      { class: 'panel', 'data-variants-panel': '' },
+      h('h2', { text: 'Wersje zdjęć dla telefonów' }),
+      h('p', { class: 'small muted', text: 'Nowe zdjęcia dostają je automatycznie (480, 640, 960 i 1280 px). Dla zdjęć wgranych wcześniej możesz je przygotować tutaj — oryginały, adresy i opisy zdjęć się nie zmieniają.' }),
+      counter,
+      bar,
+      log,
+      h('div', { class: 'actions' }, startBtn, stopBtn)
+    );
   }
 
   async function viewMedia(main) {
@@ -2238,6 +2430,7 @@
             { class: 'media-card__body' },
             field('Tekst alternatywny', alt),
             h('p', { class: 'small muted', text: `${m.width || '?'}×${m.height || '?'} px · ${m.size_bytes ? Math.round(m.size_bytes / 1024) + ' KB' : ''}${used[m.id] ? ` · używane (realizacje/posty: ${used[m.id]})` : ' · nieużywane'}` }),
+            h('p', { class: 'small muted', 'data-variant-status': m.variant_status, text: VARIANT_LABEL[m.variant_status] || '' }),
             h(
               'div',
               { class: 'actions' },
@@ -2279,6 +2472,7 @@
     main.replaceChildren(
       head('Zdjęcia', 'Biblioteka zdjęć do realizacji w portfolio. Wgrywaj tylko zdjęcia, na których użycie masz zgodę.'),
       uploaderForm(() => route()),
+      variantsPanel(media || []),
       media && media.length ? grid : h('div', { class: 'empty', text: 'Brak zdjęć w bibliotece.' })
     );
   }

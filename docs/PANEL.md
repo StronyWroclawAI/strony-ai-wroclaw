@@ -80,6 +80,15 @@ Puste pole = link ukryty. Adresy profili trafiają też do danych dla Google (`s
 - Wgrywaj tylko zdjęcia, na których użycie masz zgodę.
 - Pliki zdjęć mają losowe, trudne do odgadnięcia adresy. Na stronie pojawiają się wyłącznie zdjęcia przypięte do opublikowanych realizacji.
 
+### Wersje zdjęć dla telefonów (warianty)
+- Przy wgrywaniu panel najpierw zapisuje zdjęcie (jak dotychczas), a potem przygotowuje jego mniejsze wersje: **480, 640, 960 i 1280 px** (tylko mniejsze od oryginału; zdjęcie do 480 px nie potrzebuje wersji).
+- Strona podaje przeglądarce wszystkie wersje (`srcset`/`sizes`), a przeglądarka sama wybiera najmniejszą wystarczającą dla ekranu. Miniatury w portfolio pobierają zwykle wersję 480 px zamiast pełnego zdjęcia. Wygląd strony się nie zmienia.
+- Jeśli przygotowanie wersji się nie uda (np. przerwane połączenie), zdjęcie i tak jest zapisane i działa tak jak wcześniej — panel pokaże komunikat.
+- Zdjęcia wgrane wcześniej działają bez zmian. Wersje możesz im dodać w zakładce **Zdjęcia → „Wersje zdjęć dla telefonów” → „Przygotuj wersje”**: licznik pokazuje, ile zdjęć ich nie ma, pasek — postęp. Można przerwać („Przerwij”) i później dokończyć; ponowne uruchomienie niczego nie psuje. Oryginały, ich adresy i opisy się nie zmieniają.
+- Przy każdym zdjęciu widać stan: gotowe / częściowe / brak / niepotrzebne.
+- Usunięcie zdjęcia usuwa też jego wersje.
+- Wersje zajmują mniej więcej tyle miejsca co oryginał (razem ok. 2× więcej niż sam oryginał) — przy darmowym limicie KV (1 GB) to wciąż setki zdjęć zapasu.
+
 ## Portfolio
 - **Dodaj realizację:** nazwa, branża/podtytuł, opis, tagi, adres strony, status, oznaczenie „Projekt demonstracyjny”, zdjęcia.
 - **Karta projektu:** wgraj paczkę ZIP (`index.html` + `img/` + `opis-do-portfolio.txt`). Panel sam uzupełni pola z opisu i pozwoli wybrać okładkę kafelka. Pełna instrukcja i gotowe polecenie dla AI: [`PORTFOLIO.md`](PORTFOLIO.md).

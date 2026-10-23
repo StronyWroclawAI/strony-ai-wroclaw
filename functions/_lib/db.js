@@ -4,7 +4,7 @@
 
 import { SEED } from './seed.js';
 
-export const SCHEMA_VERSION = '18';
+export const SCHEMA_VERSION = '19';
 
 // Każda instrukcja w osobnym elemencie (D1 wykonuje je w jednej transakcji przez batch()).
 export const SCHEMA = [
@@ -150,6 +150,8 @@ export const MIGRATIONS = [
   `ALTER TABLE settings ADD COLUMN posts_enabled INTEGER NOT NULL DEFAULT 0`,
   `ALTER TABLE settings ADD COLUMN facebook_url TEXT`,
   `ALTER TABLE settings ADD COLUMN instagram_url TEXT`,
+  // v19: warianty responsywne zdjęć z biblioteki (JSON: [{k,w,h,t,b}]). '[]' = zdjęcie wyświetlane jak dotychczas.
+  `ALTER TABLE media ADD COLUMN variants TEXT NOT NULL DEFAULT '[]'`,
 ];
 
 // v10 (SEO): stare teksty domyślne zamieniane na nowe — TYLKO gdy nie były zmieniane w panelu.

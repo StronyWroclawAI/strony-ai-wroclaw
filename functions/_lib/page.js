@@ -14,6 +14,7 @@ import {
   renderSocial,
 } from './render.js';
 import { embedInfo, socialKind } from './social.js';
+import { parseVariants } from './media.js';
 
 const POSTS_LIMIT = 6;
 import { recordVisit } from './stats.js';
@@ -83,11 +84,11 @@ export async function loadContent(context) {
       db.prepare(`SELECT title, description, size FROM capabilities WHERE is_published = 1 ORDER BY sort_order, created_at`),
       db.prepare(`SELECT question, answer FROM faq_items WHERE is_published = 1 ORDER BY sort_order, created_at`),
       db.prepare(`SELECT id, title, industry, description, site_url, slug, tags, is_demo, card_ver, card_cover, seo_for FROM portfolio_projects WHERE status = 'published' ORDER BY sort_order, created_at DESC`),
-      db.prepare(`SELECT pi.project_id, m.kv_key, m.alt, m.width, m.height FROM portfolio_images pi
+      db.prepare(`SELECT pi.project_id, m.id AS media_id, m.kv_key, m.alt, m.width, m.height, m.variants FROM portfolio_images pi
                   JOIN media m ON m.id = pi.media_id
                   JOIN portfolio_projects p ON p.id = pi.project_id AND p.status = 'published'
                   ORDER BY pi.sort_order`),
-      db.prepare(`SELECT p.title, p.body, p.published_on, p.link_url, p.embed, m.kv_key, m.alt, m.width, m.height FROM posts p
+      db.prepare(`SELECT p.title, p.body, p.published_on, p.link_url, p.embed, m.id AS media_id, m.kv_key, m.alt, m.width, m.height, m.variants FROM posts p
                   LEFT JOIN media m ON m.id = p.media_id
                   WHERE p.status = 'published' ORDER BY p.published_on DESC, p.created_at DESC LIMIT ${POSTS_LIMIT}`),
     ]);
@@ -108,14 +109,14 @@ export async function loadContent(context) {
         link_url: p.link_url,
         link_kind: socialKind(p.link_url),
         embed: p.embed ? embedInfo(p.link_url) : null,
-        image: p.kv_key ? { url: mediaUrl(p.kv_key), alt: p.alt || '', width: p.width, height: p.height } : null,
+        image: p.kv_key ? { id: p.media_id, url: mediaUrl(p.kv_key), alt: p.alt || '', width: p.width, height: p.height, variants: parseVariants(p.variants) } : null,
       })),
       industries: industries.results,
       capabilities: capabilities.results,
       faq: faq.results,
       projects: projects.results.map((p) => ({
         ...p,
-        images: imgs.filter((i) => i.project_id === p.id).map((i) => ({ url: mediaUrl(i.kv_key), alt: i.alt, width: i.width, height: i.height })),
+        images: imgs.filter((i) => i.project_id === p.id).map((i) => ({ id: i.media_id, url: mediaUrl(i.kv_key), alt: i.alt, width: i.width, height: i.height, variants: parseVariants(i.variants) })),
       })),
     };
   } catch (e) {
