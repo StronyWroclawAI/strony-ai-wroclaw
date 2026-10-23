@@ -155,9 +155,12 @@ const clip = (s, n) => {
 export function cardSeo(p, origin) {
   const forWhom = String(p.seo_for || '').replace(/\s+/g, ' ').trim();
   const branch = String(p.industry || '').split(/\s*[·•|]\s*/)[0].trim();
-  const subject = forWhom ? `Projekt strony internetowej dla ${forWhom}` : branch ? `Projekt strony internetowej: ${branch}` : `Projekt strony internetowej — ${String(p.title || '').trim() || 'portfolio'}`;
+  // Projekt demonstracyjny jest tak nazwany już w tytule — Google nie powinien brać go za stronę prawdziwej firmy.
+  const kind = p.is_demo ? 'Projekt demonstracyjny strony' : 'Projekt strony internetowej';
+  const subject = forWhom ? `${kind} dla ${forWhom}` : branch ? `${kind}: ${branch}` : `${kind} — ${String(p.title || '').trim() || 'portfolio'}`;
   const title = clip(`${subject} | Strony AI Wrocław`, 90);
-  const lead = p.is_demo ? `Przykładowa realizacja Strony AI Wrocław: ${subject.charAt(0).toLowerCase()}${subject.slice(1)}.` : `Realizacja Strony AI Wrocław: ${subject.charAt(0).toLowerCase()}${subject.slice(1)}.`;
+  const lower = `${subject.charAt(0).toLowerCase()}${subject.slice(1)}`;
+  const lead = p.is_demo ? `Strony AI Wrocław: ${lower} — koncepcja na przykładzie fikcyjnej firmy.` : `Realizacja Strony AI Wrocław: ${lower}.`;
   const tail = p.is_demo ? ' Projekt demonstracyjny — firma i dane są fikcyjne.' : '';
   const desc = clip(`${lead} ${clip(p.description, 240 - lead.length - tail.length)}`.trim(), 240 - tail.length) + tail;
   const url = `${origin}/portfolio/${p.slug}/`;

@@ -56,3 +56,21 @@ export function siteOrigin(env, request) {
 export function contactEmail(env) {
   return (env.NOTIFY_TO || 'stronyaiwroclaw@gmail.com').trim();
 }
+
+/**
+ * Strona „Nie znaleziono” (public/404.html) z kodem 404 i noindex.
+ * Serwer plików podaje ten plik pod adresem /404 z kodem 200 — tu zawsze ustawiamy 404.
+ */
+export async function notFoundPage(env, url) {
+  let body = '<!doctype html><meta charset="utf-8"><meta name="robots" content="noindex"><title>Nie znaleziono strony</title><p><a href="/">Strona główna</a></p>';
+  try {
+    if (env && env.ASSETS) {
+      const r = await env.ASSETS.fetch(new Request(new URL('/404', url).toString()));
+      if (r.status === 200 && (r.headers.get('Content-Type') || '').includes('text/html')) body = await r.text();
+    }
+  } catch (e) {
+    console.error('Nie udało się wczytać strony 404', e);
+  }
+  const h = withSecurityHeaders({ 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex' });
+  return new Response(body, { status: 404, headers: h });
+}

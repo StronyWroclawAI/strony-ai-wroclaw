@@ -137,7 +137,7 @@ export function renderPortfolio(projects, content = {}) {
   return tablist + panels;
 }
 
-function renderWorks(projects) {
+function renderWorks(projects, { realBadge = false } = {}) {
   return projects
     .map((p, i) => {
       const imgs = (p.images || []).filter((im) => im.url);
@@ -157,7 +157,11 @@ function renderWorks(projects) {
         .filter(Boolean)
         .slice(0, 8);
       // Zdjęcia z biblioteki z wariantami dostają srcset/sizes; okładka karty ZIP i zdjęcia bez wariantów — znacznik jak dotychczas.
-      const coverImg = cover ? mediaImg(cover, i === 0 ? 'featured' : 'normal') : '';
+      let coverImg = cover ? mediaImg(cover, i === 0 ? 'featured' : 'normal') : '';
+      // Wyróżniony kafelek: proporcja zdjęcia znana przed jego pobraniem (z wymiarów w bibliotece), więc kafelek nie zmienia wysokości.
+      // Okładka karty ZIP nie ma zapisanych wymiarów — wtedy obowiązuje proporcja 16:10 z CSS.
+      const cw = Number(cover && cover.width), ch = Number(cover && cover.height);
+      if (i === 0 && coverImg && cw > 0 && ch > 0) coverImg = coverImg.replace('<img ', `<img style="aspect-ratio:auto ${Math.round(cw)} / ${Math.round(ch)}" `);
       const frame = coverImg
         ? `<div class="work__frame"><span class="work__dots" aria-hidden="true"><i></i><i></i><i></i></span>${coverImg}</div>`
         : '';
@@ -171,7 +175,7 @@ function renderWorks(projects) {
       : ''
   }
   <div class="work__body">
-    <p class="work__meta">${p.industry ? esc(p.industry) : ''}${p.is_demo ? `<span class="work__demo" title="Koncepcja na przykładzie fikcyjnej firmy">Projekt demonstracyjny</span>` : ''}</p>
+    <p class="work__meta">${p.industry ? esc(p.industry) : ''}${p.is_demo ? `<span class="work__demo" title="Koncepcja na przykładzie fikcyjnej firmy">Projekt demonstracyjny</span>` : realBadge ? `<span class="work__real">Realizacja dla firmy</span>` : ''}</p>
     <h3 class="work__title">${cardHref ? `<a href="${esc(cardHref)}">${esc(p.title)}</a>` : esc(p.title)}</h3>
     ${p.description ? `<p class="work__desc">${esc(p.description)}</p>` : ''}
     ${tags.length ? `<ul class="work__tags" aria-label="Zakres projektu">${tags.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>` : ''}
@@ -199,6 +203,41 @@ function renderWorks(projects) {
 </article>`;
     })
     .join('');
+}
+
+/**
+ * Strona /realizacje/: dwie osobne sekcje — realizacje dla prawdziwych firm i projekty demonstracyjne.
+ * Projekt demonstracyjny nigdy nie trafia do sekcji realizacji (pole is_demo z panelu).
+ */
+export function renderPortfolioHub(projects) {
+  const real = projects.filter((p) => !p.is_demo);
+  const demo = projects.filter((p) => p.is_demo);
+  const realBody = real.length
+    ? `<div class="work-list">${renderWorks(real, { realBadge: true })}</div>`
+    : '<p class="hub__empty">Pierwsze realizacje dla firm pokażę tutaj po zakończeniu projektów i uzyskaniu zgody na ich prezentację.</p>';
+  const demoSection = demo.length
+    ? `
+<section class="section section--tint" aria-labelledby="hub-demo">
+  <div class="container">
+    <div class="section-head">
+      <h2 class="h2" id="hub-demo">Projekty demonstracyjne</h2>
+      <p class="lead">Koncepcje stron na przykładzie fikcyjnych firm. Pokazują, jak może wyglądać strona dla danej branży — nazwy firm, adresy, ceny i pozostałe dane w tych projektach są zmyślone. To nie są realizacje dla klientów.</p>
+    </div>
+    <div class="work-list">${renderWorks(demo)}</div>
+    <p class="hub__aside">Jak zaplanować stronę dla salonu? Przeczytaj: <a href="/dla-branz/salon-kosmetyczny/">strona internetowa dla salonu kosmetycznego</a>.</p>
+  </div>
+</section>`
+    : '';
+  return `
+<section class="section" aria-labelledby="hub-real">
+  <div class="container">
+    <div class="section-head">
+      <h2 class="h2" id="hub-real">Realizacje dla firm</h2>
+      <p class="lead">Strony przygotowane dla prawdziwych firm, które zgodziły się na ich pokazanie.</p>
+    </div>
+    ${realBody}
+  </div>
+</section>${demoSection}`;
 }
 
 const MONTHS = ['stycznia', 'lutego', 'marca', 'kwietnia', 'maja', 'czerwca', 'lipca', 'sierpnia', 'września', 'października', 'listopada', 'grudnia'];

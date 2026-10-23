@@ -10,6 +10,7 @@ import {
   renderFaq,
   renderLines,
   renderPortfolio,
+  renderPortfolioHub,
   renderPosts,
   renderSocial,
 } from './render.js';
@@ -197,6 +198,7 @@ export async function renderPage(context) {
       capabilities: () => (data.capabilities.length ? renderCapabilities(data.capabilities) : null),
       faq: () => (data.faq.length ? renderFaq(data.faq) : null),
       portfolio: () => renderPortfolio(data.projects, c),
+      realizacje: () => renderPortfolioHub(data.projects),
       posts: () => (showPosts ? renderPosts(data.posts) : null),
     };
     const socialHtml = renderSocial(data.social);

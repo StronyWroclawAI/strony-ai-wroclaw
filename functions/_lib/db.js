@@ -4,7 +4,7 @@
 
 import { SEED } from './seed.js';
 
-export const SCHEMA_VERSION = '19';
+export const SCHEMA_VERSION = '20';
 
 // Każda instrukcja w osobnym elemencie (D1 wykonuje je w jednej transakcji przez batch()).
 export const SCHEMA = [
@@ -172,6 +172,16 @@ const CONTENT_UPDATES = [
 ];
 // v18: adres e-mail marki zmieniony ze stronywroclawai@ na stronyaiwroclaw@ (gmail.com)
 const EMAIL_CHANGES = [['stronywroclawai' + '@gmail.com', 'stronyaiwroclaw@gmail.com']];
+// v20 (SEO, etap 1): nowe pytania FAQ dla istniejących baz. Dodawane JEDEN raz (znacznik faq_v20 w tabeli meta)
+// i tylko wtedy, gdy pytania o tej treści jeszcze nie ma — pytań usuniętych później w panelu nie przywracamy.
+// Liczba = pozycja na liście (domyślne pytania mają pozycje 10, 20, …, 110).
+const FAQ_ADDED_V20 = [
+  ['Ile kosztuje utrzymanie strony po uruchomieniu?', 35],
+  ['Kto ma dostęp do strony i kont po uruchomieniu?', 36],
+  ['Czy strona będzie przygotowana pod Google?', 75],
+  ['Co dzieje się po 3 miesiącach bezpłatnych aktualizacji?', 85],
+  ['Czy robisz strony tylko dla firm z Wrocławia?', 105],
+];
 // Pola usunięte ze strony (nadtytuł nad hasłem zastąpił nagłówek H1).
 const CONTENT_REMOVED = ['hero.eyebrow'];
 
@@ -224,7 +234,10 @@ async function init(env) {
         .bind(c.key, c.section, c.label, c.kind, c.value, c.sort_order, t)
     );
   }
-  // Listy wstawiane tylko do pustych tabel (jedna instrukcja na listę — bezpieczne przy równoległym starcie)
+  // Listy wstawiane tylko do pustych tabel. Jedna instrukcja na wiersz (D1 przyjmuje najwyżej 100 parametrów
+  // w jednym zapytaniu). Warunek „w tabeli nie ma wierszy z innym created_at niż t” znaczy: tabela była pusta
+  // przed tym uruchomieniem — kolejne wiersze tej samej listy (z tym samym t) nie blokują następnych.
+  // Cała paczka wykonuje się w jednej transakcji, więc równoległy start drugiej instancji niczego nie zdubluje.
   const lists = [
     ['industries', ['name', 'description'], SEED.industries],
     ['capabilities', ['title', 'description', 'size'], SEED.capabilities],
@@ -232,17 +245,29 @@ async function init(env) {
   ];
   for (const [table, cols, rows] of lists) {
     const all = ['id', ...cols, 'sort_order', 'is_published', 'created_at', 'updated_at'];
-    const ph = `(${all.map(() => '?').join(', ')})`;
-    const params = [];
-    rows.forEach((r, i) => params.push(uuid(), ...cols.map((c) => r[c] ?? ''), (i + 1) * 10, 1, t, t));
+    rows.forEach((r, i) => {
+      stmts.push(
+        db
+          .prepare(
+            `INSERT INTO ${table} (${all.join(', ')}) SELECT ${all.map(() => '?').join(', ')} WHERE NOT EXISTS (SELECT 1 FROM ${table} WHERE created_at <> ?)`
+          )
+          .bind(uuid(), ...cols.map((c) => r[c] ?? ''), (i + 1) * 10, 1, t, t, t)
+      );
+    });
+  }
+  for (const [question, sort] of FAQ_ADDED_V20) {
+    const item = SEED.faq.find((f) => f.question === question);
+    if (!item) continue;
     stmts.push(
       db
         .prepare(
-          `INSERT INTO ${table} (${all.join(', ')}) SELECT * FROM (VALUES ${rows.map(() => ph).join(', ')}) WHERE NOT EXISTS (SELECT 1 FROM ${table})`
+          `INSERT INTO faq_items (id, question, answer, sort_order, is_published, created_at, updated_at)
+           SELECT ?, ?, ?, ?, 1, ?, ? WHERE NOT EXISTS (SELECT 1 FROM faq_items WHERE question = ?) AND NOT EXISTS (SELECT 1 FROM meta WHERE key = 'faq_v20')`
         )
-        .bind(...params)
+        .bind(uuid(), item.question, item.answer, sort, t, t, item.question)
     );
   }
+  stmts.push(db.prepare(`INSERT OR IGNORE INTO meta (key, value) VALUES ('faq_v20', ?)`).bind(t));
   for (const [key, oldValue] of CONTENT_UPDATES) {
     const seed = SEED.content.find((c) => c.key === key);
     if (seed && seed.value !== oldValue) {

@@ -3,19 +3,16 @@
 import { ensureSchema, hasDb } from '../_lib/db.js';
 import { hasValidSession } from '../_lib/auth.js';
 import { SLUG_RE, PATH_RE, cardHeaders, rewriteCardHead } from '../_lib/card.js';
-import { siteOrigin } from '../_lib/http.js';
+import { siteOrigin, notFoundPage } from '../_lib/http.js';
 import { recordVisit } from '../_lib/stats.js';
 
-const notFound = () =>
-  new Response('<!doctype html><meta charset="utf-8"><title>Nie znaleziono</title><p style="font-family:sans-serif">Nie znaleziono tej karty projektu. <a href="/#portfolio">Wróć do portfolio</a></p>', {
-    status: 404,
-    headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' },
-  });
 
 export async function onRequestGet({ request, env, params, waitUntil }) {
   const url = new URL(request.url);
+  const notFound = () => notFoundPage(env, url);
   const seg = Array.isArray(params.path) ? params.path : params.path ? [params.path] : [];
-  if (!seg.length) return Response.redirect(`${url.origin}/#portfolio`, 302);
+  // Lista wszystkich projektów jest pod /realizacje/ (stałe przekierowanie, parametry zachowane)
+  if (!seg.length) return Response.redirect(`${url.origin}/realizacje/${url.search}`, 301);
   const slug = seg[0];
   if (!SLUG_RE.test(slug)) return notFound();
   // Bez ukośnika na końcu względne ścieżki obrazów (img/…) by nie działały.

@@ -26,7 +26,7 @@
 <link rel="icon" href="/assets/img/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
-<link rel="stylesheet" href="/assets/css/style.css?v=17">
+<link rel="stylesheet" href="/assets/css/style.css?v=18">
 <script src="/assets/js/industry-combo.js?v=1" defer></script>
 <script src="/assets/js/main.js?v=11" defer></script>
 </head>
@@ -47,9 +47,9 @@
     <nav class="nav" id="menu" aria-label="Główna nawigacja">
       <ul class="nav__list">
         <li><a href="#mozliwosci">Możliwości</a></li>
-        <li><a href="#wspolpraca">Współpraca</a></li>
         <li><a href="#zasady">Zasady</a></li>
-        <li data-cms-block="nav-portfolio" hidden><a href="#portfolio">Portfolio</a></li>
+        <li data-cms-block="nav-portfolio" hidden><a href="/realizacje/">Realizacje</a></li>
+        <li><a href="/poradnik/">Poradnik</a></li>
         <li data-cms-block="nav-posts" hidden><a href="#aktualnosci">Aktualności</a></li>
         <li><a href="#o-mnie">O mnie</a></li>
         <li><a href="#faq">FAQ</a></li>
@@ -140,6 +140,7 @@
       <h2 class="h2" id="benefits-title" data-cms="benefits.title">Co zyskuje firma dzięki dobrej stronie internetowej</h2>
       <p class="lead" data-cms="benefits.intro">Strona internetowa to często pierwsze miejsce, w którym klient poznaje Twoją firmę. Moim zadaniem jest przedstawić ją tak, jak na to zasługuje.</p>
       <p class="honest-note" data-cms="benefits.honest">Nie obiecuję wzrostu sprzedaży ani pozycji w Google. Obiecuję dopracowaną stronę, która jasno i profesjonalnie przedstawia Twoją firmę.</p>
+      <p class="benefits__seo" data-cms="benefits.seo">Każdą stronę przygotowuję z technicznymi podstawami SEO: czytelną strukturą nagłówków, tytułem i opisem dla wyszukiwarki, wersją mobilną, szybkim ładowaniem i mapą strony dla Google. To pomaga wyszukiwarce zrozumieć stronę — ale nie jest gwarancją pozycji.</p>
     </div>
     <ol class="benefit-list">
       <li class="benefit reveal tone-1"><span class="benefit__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3l1.8 4.6L18.5 9.4l-4.7 1.8L12 16l-1.8-4.8L5.5 9.4l4.7-1.8z"/><path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/><path d="M5 16l.6 1.4 1.4.6-1.4.6L5 20l-.6-1.4L3 18l1.4-.6z"/></svg></span><h3 class="benefit__title" data-cms="benefits.1_title">Profesjonalna prezentacja firmy</h3><p data-cms="benefits.1_text">Dopracowany wygląd pokazuje, że firma dba o szczegóły — zanim klient zadzwoni lub przyjdzie osobiście.</p></li>
@@ -197,6 +198,7 @@
   <h3 class="industry__name">Inne małe firmy usługowe</h3>
   <p class="industry__desc">Twojej branży nie ma na liście? Napisz. Każdy projekt zaczynam od tego, czym zajmuje się konkretna firma.</p>
 </li></ul>
+    <p class="section-more"><a class="link-arrow" href="/dla-branz/salon-kosmetyczny/">Co powinna mieć strona salonu kosmetycznego</a><a class="link-arrow" href="/dla-branz/">Strony dla branż</a></p>
   </div>
 </section>
 
@@ -254,6 +256,7 @@
       <p class="eyebrow" data-cms="process.eyebrow">Przebieg współpracy</p>
       <h2 class="h2" id="process-title" data-cms="process.title">Jak powstaje strona WWW — od pierwszej rozmowy do publikacji</h2>
       <p class="lead" data-cms="process.intro">Każdy etap jest jasny, a Ty wiesz, na co się zgadzasz, zanim zaczniemy pracę. Termin i zakres ustalam indywidualnie.</p>
+      <p class="process__time"><strong data-cms="process.time_title">Ile to trwa?</strong> <span data-cms="process.time_text">Nie podaję jednego terminu dla wszystkich. Czas zależy głównie od tego, jak szybko otrzymam materiały (teksty, zdjęcia, logo), od liczby podstron i funkcji oraz od liczby rund poprawek. Termin ustalamy przed rozpoczęciem pracy.</span></p>
       <a class="btn btn--primary" href="#kontakt">Zgłoś swoją firmę</a>
     </div>
     <ol class="steps" data-steps>
@@ -310,7 +313,11 @@
       <div class="fine-print__item reveal"><dt data-cms="rules.fine1_title">Poza zakresem aktualizacji</dt><dd data-cms="rules.fine1_text">Nowe podstrony, rozbudowa i dodatkowe funkcje wymagają osobnego ustalenia.</dd></div>
       <div class="fine-print__item reveal"><dt data-cms="rules.fine2_title">Błędy wykonania</dt><dd data-cms="rules.fine2_text">Poprawki moich błędów to osobna sprawa — nie są częścią aktualizacji i nie kończą się po 3 miesiącach.</dd></div>
       <div class="fine-print__item reveal"><dt data-cms="rules.fine3_title">Termin i zakres</dt><dd data-cms="rules.fine3_text">Ustalam indywidualnie. Nie obiecuję nieograniczonych poprawek ani stałej bezpłatnej opieki.</dd></div>
+      <div class="fine-print__item reveal"><dt data-cms="rules.fine4_title">Koszty utrzymania</dt><dd data-cms="rules.fine4_text">Po uruchomieniu stałym kosztem jest zwykle domena, opłacana co roku. Płatny hosting czy poczta w domenie pojawiają się tylko wtedy, gdy są potrzebne. Kwoty zależą od dostawcy, dlatego podaję je przed zakupem.</dd></div>
+      <div class="fine-print__item reveal"><dt data-cms="rules.fine5_title">Usługi zewnętrzne</dt><dd data-cms="rules.fine5_text">Na przykład system rezerwacji online czy płatności mają własne cenniki. Jeśli są potrzebne, mówię o tym przed ich podłączeniem.</dd></div>
+      <div class="fine-print__item reveal"><dt data-cms="rules.fine6_title">Po 3 miesiącach</dt><dd data-cms="rules.fine6_text">Jeśli strona ma panel edycji, treści możesz dalej zmieniać sam. Inne zmiany i rozbudowę ustalamy osobno, przed rozpoczęciem pracy.</dd></div>
     </dl>
+    <p class="rules__more"><a class="link-arrow" href="/poradnik/ile-kosztuje-strona-internetowa/">Z czego składa się koszt strony — wyjaśniam w poradniku</a></p>
   </div>
 </section>
 
@@ -331,6 +338,23 @@
   </div>
 </section>
 
+<!-- ============ WŁASNOŚĆ STRONY ============ -->
+<section class="section ownership" id="wlasnosc" aria-labelledby="ownership-title">
+  <div class="container materials__grid">
+    <div>
+      <p class="eyebrow" data-cms="ownership.eyebrow">Po uruchomieniu</p>
+      <h2 class="h2" id="ownership-title" data-cms="ownership.title">Kto jest właścicielem strony i domeny</h2>
+      <p class="lead" data-cms="ownership.intro">Strona ma działać dla Twojej firmy także wtedy, gdy kiedyś zechcesz pracować z kimś innym. Dlatego od początku ustalamy, na kogo są konta i kto ma do nich dostęp.</p>
+    </div>
+    <ol class="materials__list">
+      <li class="reveal tone-4"><span class="mat__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.5 2.5 3.8 5.5 3.8 9s-1.3 6.5-3.8 9c-2.5-2.5-3.8-5.5-3.8-9S9.5 5.5 12 3z"/></svg></span><h3 data-cms="ownership.1_title">Domena jest Twoja</h3><p data-cms="ownership.1_text">Domenę opłaca Twoja firma i to ona powinna być jej abonentem. Dzięki temu sam decydujesz o jej odnowieniu i ewentualnym przeniesieniu.</p></li>
+      <li class="reveal tone-5"><span class="mat__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><h3 data-cms="ownership.2_title">Dostajesz wszystkie dostępy</h3><p data-cms="ownership.2_text">Po uruchomieniu przekazuję zestawienie: gdzie jest domena i do kiedy jest opłacona, jakie konta powstały dla strony i jak się do nich zalogować.</p></li>
+      <li class="reveal tone-1"><span class="mat__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 6h10"/><path d="M18 6h2"/><circle cx="16" cy="6" r="2"/><path d="M4 12h4"/><path d="M12 12h8"/><circle cx="10" cy="12" r="2"/><path d="M4 18h12"/><path d="M20 18h0"/><circle cx="18" cy="18" r="2"/></svg></span><h3 data-cms="ownership.3_title">Możesz zmienić wykonawcę</h3><p data-cms="ownership.3_text">Nie wiążę Cię abonamentem ani umową na opiekę. Mając dostępy, możesz później prowadzić stronę sam albo powierzyć ją komuś innemu.</p></li>
+    </ol>
+    <p class="materials__note"><a href="/poradnik/domena-i-hosting/">Czym są domena i hosting i za co się płaci — wyjaśniam w poradniku</a></p>
+  </div>
+</section>
+
 <!-- ============ PORTFOLIO (pojawia się po opublikowaniu pierwszej realizacji) ============ -->
 <section class="section section--tint portfolio" id="portfolio" aria-labelledby="portfolio-title" data-cms-block="portfolio" hidden>
   <div class="container">
@@ -340,6 +364,7 @@
       <p class="lead" data-cms="portfolio.intro">Projekty zrealizowane dla firm (za ich zgodą) oraz projekty demonstracyjne — kliknij kafelek, aby zobaczyć szczegóły.</p>
     </div>
     <div class="pf-groups" data-cms-list="portfolio"></div>
+    <p class="section-more"><a class="btn btn--primary" href="/realizacje/">Wszystkie realizacje i projekty</a></p>
     <div hidden data-pf-texts>
       <span data-cms="portfolio.real_label">Projekty zrealizowane</span>
       <span data-cms="portfolio.real_intro">Strony przygotowane dla prawdziwych firm, które zgodziły się na ich prezentację.</span>
@@ -430,6 +455,7 @@
       <h2 class="h2" id="faq-title" data-cms="faq.title">Najczęstsze pytania</h2>
       <p class="lead" data-cms="faq.intro">Nie znalazłeś odpowiedzi? Napisz — chętnie wyjaśnię.</p>
       <a class="link-arrow" href="mailto:stronyaiwroclaw@gmail.com" data-cms-email>stronyaiwroclaw@gmail.com</a>
+      <p class="faq__more">Dłuższe odpowiedzi — o kosztach, domenie i hostingu — znajdziesz w <a href="/poradnik/">poradniku</a>.</p>
     </div>
     <div class="faq__list" data-cms-list="faq">
 <details class="faq__item">
@@ -443,6 +469,14 @@
 <details class="faq__item">
   <summary class="faq__q"><span>Kto płaci za domenę i hosting?</span><span class="faq__icon" aria-hidden="true"></span></summary>
   <div class="faq__a"><p>Domenę (np. twojafirma.pl) opłaca firma — dzięki temu pozostaje ona jej własnością. Płaci się za jej rejestrację i coroczne odnowienie.</p><p>W wielu przypadkach wystarcza bezpłatny hosting. Płatny hosting lub inne płatne usługi zewnętrzne proponuję tylko wtedy, gdy są naprawdę potrzebne — i zawsze uzgadniamy je, zanim ktokolwiek poniesie koszt.</p></div>
+</details>
+<details class="faq__item">
+  <summary class="faq__q"><span>Ile kosztuje utrzymanie strony po uruchomieniu?</span><span class="faq__icon" aria-hidden="true"></span></summary>
+  <div class="faq__a"><p>Wykonanie strony w ramach portfolio jest bezpłatne, ale utrzymanie strony w internecie ma koszty zewnętrzne. Zwykle jest to domena, opłacana co roku. Płatny hosting, poczta w domenie czy płatne usługi (np. system rezerwacji) dochodzą tylko wtedy, gdy są potrzebne.</p><p>Konkretne kwoty zależą od dostawcy i wybranej domeny, dlatego podaję je przed zakupem — nic nie jest kupowane bez Twojej zgody.</p></div>
+</details>
+<details class="faq__item">
+  <summary class="faq__q"><span>Kto ma dostęp do strony i kont po uruchomieniu?</span><span class="faq__icon" aria-hidden="true"></span></summary>
+  <div class="faq__a"><p>Ty. Po uruchomieniu przekazuję zestawienie: gdzie jest zarejestrowana domena i do kiedy jest opłacona, jakie konta powstały dla strony i jak się do nich zalogować. Domena powinna być zarejestrowana na Twoją firmę — wtedy to Ty decydujesz o jej odnowieniu i przeniesieniu.</p><p>Nie wiążę Cię abonamentem ani umową na opiekę. Mając dostępy, możesz później prowadzić stronę sam albo powierzyć ją komuś innemu.</p></div>
 </details>
 <details class="faq__item">
   <summary class="faq__q"><span>Jak wygląda wersja testowa?</span><span class="faq__icon" aria-hidden="true"></span></summary>
@@ -461,8 +495,16 @@
   <div class="faq__a"><p>Jeśli ustalimy, że strona ma mieć panel, otrzymasz bezpieczny login. Po zalogowaniu zmienisz przygotowane elementy — na przykład teksty, zdjęcia czy cennik — bez znajomości programowania. Zakres panelu dopasowuję do tego, co firma rzeczywiście chce aktualizować.</p></div>
 </details>
 <details class="faq__item">
+  <summary class="faq__q"><span>Czy strona będzie przygotowana pod Google?</span><span class="faq__icon" aria-hidden="true"></span></summary>
+  <div class="faq__a"><p>Tak, w zakresie technicznych podstaw: czytelna struktura nagłówków, tytuł i opis dla wyszukiwarki, wersja mobilna, szybkie ładowanie, mapa strony (sitemap) i możliwość indeksowania przez Google.</p><p>Nie obiecuję konkretnej pozycji w wynikach wyszukiwania — zależy ona też od konkurencji, opinii i wielu czynników poza samą stroną.</p></div>
+</details>
+<details class="faq__item">
   <summary class="faq__q"><span>Co obejmują 3 miesiące bezpłatnych aktualizacji?</span><span class="faq__icon" aria-hidden="true"></span></summary>
   <div class="faq__a"><p>Przez 3 miesiące od uruchomienia strony bezpłatnie wprowadzam zmiany tekstów, zdjęć, cennika i danych kontaktowych w uzgodnionym zakresie. Nowe podstrony, rozbudowa i dodatkowe funkcje wymagają osobnego ustalenia.</p><p>Poprawki błędów wykonania to osobna sprawa — nie są częścią aktualizacji i nie kończą się razem z tym okresem. Jeśli coś nie działa tak, jak uzgodniliśmy, daj mi znać.</p></div>
+</details>
+<details class="faq__item">
+  <summary class="faq__q"><span>Co dzieje się po 3 miesiącach bezpłatnych aktualizacji?</span><span class="faq__icon" aria-hidden="true"></span></summary>
+  <div class="faq__a"><p>Strona działa dalej. Jeśli ma panel edycji, treści możesz zmieniać sam. Zmiany, których nie zrobisz w panelu, oraz rozbudowę ustalamy osobno — zakres i warunki poznasz przed rozpoczęciem pracy.</p><p>Poprawki moich błędów wykonania nie kończą się po 3 miesiącach.</p></div>
 </details>
 <details class="faq__item">
   <summary class="faq__q"><span>Jakie są warunki portfolio i podpisu w stopce?</span><span class="faq__icon" aria-hidden="true"></span></summary>
@@ -471,6 +513,10 @@
 <details class="faq__item">
   <summary class="faq__q"><span>Jak ustalany jest termin realizacji?</span><span class="faq__icon" aria-hidden="true"></span></summary>
   <div class="faq__a"><p>Indywidualnie. Zależy od zakresu strony, gotowości materiałów i liczby projektów, które w danym momencie realizuję. Szacunkowy termin podaję po ustaleniu zakresu, zanim zaczniemy pracę.</p></div>
+</details>
+<details class="faq__item">
+  <summary class="faq__q"><span>Czy robisz strony tylko dla firm z Wrocławia?</span><span class="faq__icon" aria-hidden="true"></span></summary>
+  <div class="faq__a"><p>Nie. Jestem z Wrocławia, ale pracuję zdalnie, więc współpracuję z firmami z całej Polski. Rozmowy, przekazywanie materiałów i poprawki odbywają się zdalnie.</p></div>
 </details>
 <details class="faq__item">
   <summary class="faq__q"><span>Czy wysłanie zgłoszenia zobowiązuje do współpracy?</span><span class="faq__icon" aria-hidden="true"></span></summary>
@@ -634,6 +680,14 @@ Proszę o kontakt w sprawie dalszych kroków.</textarea>
       <p class="site-footer__h">Kontakt</p>
       <a href="mailto:stronyaiwroclaw@gmail.com" data-cms-email>stronyaiwroclaw@gmail.com</a>
       <ul class="social-links social-links--footer" data-cms-block="social" data-social-list hidden></ul>
+    </div>
+    <div class="site-footer__col">
+      <p class="site-footer__h">Dla firm</p>
+      <ul>
+        <li><a href="/realizacje/">Realizacje</a></li>
+        <li><a href="/dla-branz/">Strony dla branż</a></li>
+        <li><a href="/poradnik/">Poradnik</a></li>
+      </ul>
     </div>
     <div class="site-footer__col">
       <p class="site-footer__h">Informacje</p>

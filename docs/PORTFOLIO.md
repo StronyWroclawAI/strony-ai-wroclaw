@@ -107,7 +107,7 @@ WYMAGANIA DLA PACZKI
    - wersja na telefon;
    - technika i jakość: dostępność (WCAG 2.1 AA), szybkość, bezpieczeństwo;
    - zakończenie: „Chcesz taką stronę dla swojej firmy?” + przycisk mailto:stronyaiwroclaw@gmail.com
-     i link powrotny do portfolio: <a href="/#portfolio">.
+     i link powrotny do listy realizacji: <a href="/realizacje/">.
 6. Powiększanie zrzutów po kliknięciu (lightbox) dostępne z klawiatury (Esc, strzałki).
 7. Dostępność: kontrast WCAG AA, teksty alternatywne opisujące każdy zrzut, widoczny fokus,
    prefers-reduced-motion wyłącza animacje, wygląd bez przewijania poziomego na 390 px.
@@ -133,3 +133,22 @@ WYMAGANIA DLA PACZKI
 - Karta jest wyświetlana z nagłówkiem `Content-Security-Policy: sandbox`. Jej skrypty działają w odizolowanym środowisku, bez dostępu do ciasteczek, panelu i API strony.
 - Szkice kart widzi tylko zalogowany administrator, a wyszukiwarki ich nie indeksują. Opublikowane karty trafiają do `sitemap.xml`.
 - Pliki kart są w tym samym magazynie KV co zdjęcia. Darmowy plan KV pozwala na 1000 zapisów dziennie, a jedna karta to zwykle 15–30 plików.
+
+---
+
+## 6. Strona /realizacje/ i opis prawdziwej realizacji (case study)
+- `/realizacje/` pokazuje wszystkie opublikowane projekty w dwóch osobnych sekcjach: **Realizacje dla firm** (projekty bez zaznaczenia „Projekt demonstracyjny”) i **Projekty demonstracyjne**. O sekcji decyduje wyłącznie to pole w panelu.
+- Stary adres `/portfolio/` przekierowuje na stałe (301) na `/realizacje/`. Adresy kart `/portfolio/<adres>/` się nie zmieniają.
+- Kartę prawdziwej realizacji przygotuj według tego układu. Punkty, dla których nie masz potwierdzonych informacji, **pomiń** — nie uzupełniaj ich szacunkami:
+  1. klient i branża (nazwa tylko za zgodą klienta),
+  2. potrzeba — z czym klient przyszedł,
+  3. cel strony,
+  4. rozwiązanie — co przygotowałem,
+  5. funkcje strony,
+  6. wersja na komputer i na telefon (zrzuty),
+  7. zastosowane rozwiązania (technika, dostępność, szybkość),
+  8. panel administracyjny — jeśli strona go ma,
+  9. rezultat — tylko fakty (np. „strona działa pod adresem…”, „właścicielka sama zmienia cennik”); bez wymyślonych liczb, konwersji i statystyk,
+  10. link do strony — jeśli jest publiczna,
+  11. zachęta do kontaktu.
+- Opinię klienta dodawaj wyłącznie prawdziwą, dosłowną i za jego zgodą (najlepiej pisemną).
