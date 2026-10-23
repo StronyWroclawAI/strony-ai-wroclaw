@@ -1147,3 +1147,23 @@ button { font: inherit; }
 .hub__intro { color: var(--muted); margin: -6px 0 24px; max-width: 40em; }
 .prose ol { padding-left: 22px; margin-bottom: 1em; display: grid; gap: 6px; }
 .prose ol li { color: #2c3950; }
+/* ===== ETAP 2.1: płynne przejścia między podstronami (View Transitions między dokumentami — sam CSS, bez JS) =====
+   Przeglądarki bez obsługi ignorują te reguły i przechodzą na nową stronę zwyczajnie. Pierwsze wejście na stronę nie jest animowane.
+   Treść nigdy nie jest ukrywana: animowane są tylko „zrzuty” starej i nowej strony tworzone przez przeglądarkę. */
+html { background: var(--white); }
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition { navigation: auto; }
+}
+/* Stara strona lekko blednie i unosi się o 4 px (150 ms), nowa wchodzi z 8 px (280 ms). Zwykłe mieszanie — bez prześwitu tła. */
+::view-transition-old(root), ::view-transition-new(root) { mix-blend-mode: normal; }
+::view-transition-old(root) { animation: vt-out 150ms cubic-bezier(.4, 0, 1, 1) both; }
+::view-transition-new(root) { animation: vt-in 280ms cubic-bezier(.2, .7, .2, 1) both; }
+@keyframes vt-out { to { opacity: .9; transform: translateY(-4px); } }
+@keyframes vt-in { from { opacity: 0; transform: translateY(8px); } }
+/* Nagłówek osobno: stoi w miejscu, tylko krótko się przenika (np. przezroczysty na stronie głównej → biały na podstronie). */
+.site-header { view-transition-name: site-header; }
+::view-transition-group(site-header) { animation-duration: 200ms; }
+::view-transition-old(site-header), ::view-transition-new(site-header) { animation-duration: 200ms; }
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
+}

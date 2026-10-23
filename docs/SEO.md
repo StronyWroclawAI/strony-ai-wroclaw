@@ -43,3 +43,10 @@ Podpis w stopce stron klientów: patrz `docs/STOPKA-KLIENTA.md`.
 
 ## Open Graph
 Podstrony mają og:title, og:description i og:url. Nie mają og:image — do przygotowania dedykowana grafika (1200×630) dla poradnika i stron branżowych.
+
+## Przejścia między stronami (etap 2.1)
+- Płynne przejścia między podstronami robi przeglądarka (View Transitions między dokumentami) — wyłącznie CSS w `style.css`
+  (`@view-transition { navigation: auto; }`), bez JavaScriptu, bez zmian w HTML i adresach.
+- Działa w przeglądarkach z obsługą (Chrome/Edge 126+, Safari 18.2+). Pozostałe (np. Firefox) przechodzą zwyczajnie.
+- Przy włączonym „ograniczeniu ruchu” w systemie przejścia są wyłączone, a przewijanie do sekcji jest natychmiastowe.
+- Karty projektów (`/portfolio/…`) i panel nie mają tej reguły — przejścia do nich są zwykłe.
