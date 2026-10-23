@@ -22,11 +22,31 @@ export const SITE_PAGES = [
   "lastmod": "2026-10-23"
  },
  {
+  "path": "/poradnik/ile-trwa-stworzenie-strony-internetowej/",
+  "lastmod": "2026-10-23"
+ },
+ {
+  "path": "/poradnik/co-powinna-zawierac-strona-firmowa/",
+  "lastmod": "2026-10-23"
+ },
+ {
+  "path": "/poradnik/czy-mala-firma-potrzebuje-strony-internetowej/",
+  "lastmod": "2026-10-23"
+ },
+ {
   "path": "/dla-branz/",
   "lastmod": "2026-10-23"
  },
  {
   "path": "/dla-branz/salon-kosmetyczny/",
+  "lastmod": "2026-10-23"
+ },
+ {
+  "path": "/dla-branz/fryzjer/",
+  "lastmod": "2026-10-23"
+ },
+ {
+  "path": "/dla-branz/warsztat-samochodowy/",
   "lastmod": "2026-10-23"
  }
 ];

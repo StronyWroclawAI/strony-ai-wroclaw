@@ -160,7 +160,7 @@ export function cardSeo(p, origin) {
   const subject = forWhom ? `${kind} dla ${forWhom}` : branch ? `${kind}: ${branch}` : `${kind} — ${String(p.title || '').trim() || 'portfolio'}`;
   const title = clip(`${subject} | Strony AI Wrocław`, 90);
   const lower = `${subject.charAt(0).toLowerCase()}${subject.slice(1)}`;
-  const lead = p.is_demo ? `Strony AI Wrocław: ${lower} — koncepcja na przykładzie fikcyjnej firmy.` : `Realizacja Strony AI Wrocław: ${lower}.`;
+  const lead = p.is_demo ? `${subject} — koncepcja Strony AI Wrocław na przykładzie fikcyjnej firmy.` : `Realizacja Strony AI Wrocław: ${lower}.`;
   const tail = p.is_demo ? ' Projekt demonstracyjny — firma i dane są fikcyjne.' : '';
   const desc = clip(`${lead} ${clip(p.description, 240 - lead.length - tail.length)}`.trim(), 240 - tail.length) + tail;
   const url = `${origin}/portfolio/${p.slug}/`;

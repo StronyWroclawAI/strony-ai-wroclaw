@@ -1,0 +1,35 @@
+# =============================================================
+# Zmienne środowiskowe — WZÓR (bez sekretów).
+#
+# Do uruchomienia lokalnego: skopiuj ten plik jako ".dev.vars"
+# i uzupełnij wartości. Plik .dev.vars NIE może trafić do GitHuba
+# (jest wpisany w .gitignore).
+#
+# Na Cloudflare te same nazwy wpisujesz w:
+# Workers & Pages → Twój projekt → Settings → Variables and Secrets.
+# Bazę D1 (DB) i magazyn KV (MEDIA) podłączasz w: Settings → Bindings.
+# Nigdy nie wklejaj tych wartości do czatu ani do kodu.
+# =============================================================
+
+# --- Panel administratora (wygeneruj w public/admin/generator-hasla.html) ---
+ADMIN_PASSWORD_HASH=
+SESSION_SECRET=
+IP_HASH_SALT=
+
+# --- Cloudflare Turnstile (ochrona formularza) ---
+# Do testów lokalnych: oficjalne klucze testowe Cloudflare (zawsze przechodzą)
+TURNSTILE_SITE_KEY=1x00000000000000000000AA
+TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA
+
+# --- Resend (powiadomienia e-mail) ---
+RESEND_API_KEY=
+NOTIFY_TO=stronyaiwroclaw@gmail.com
+NOTIFY_FROM=Strony AI Wrocław <onboarding@resend.dev>
+
+# --- Adres docelowy strony (po podłączeniu domeny), np. https://stronyaiwroclaw.pl ---
+SITE_URL=
+
+# --- Gmail (e-maile do klientów z panelu; instrukcja: docs/EMAIL.md) ---
+GMAIL_USER=stronyaiwroclaw@gmail.com
+# Hasło aplikacji Google — SEKRET. Wpisz tylko w lokalnym .dev.vars / w Cloudflare.
+GMAIL_APP_PASSWORD=
