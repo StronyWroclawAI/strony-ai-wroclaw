@@ -464,6 +464,10 @@ button { font: inherit; }
 .js .hero__visual { animation: fade 1.1s .2s var(--ease) both; }
 @keyframes rise { from { opacity: 0; transform: translateY(16px); } }
 @keyframes fade { from { opacity: 0; transform: translateY(24px); } }
+/* Najważniejsze teksty hero (H1, główny tytuł, opis) są widoczne od pierwszego renderu: zostaje tylko ruch wejścia,
+   bez rozjaśniania (czas, krzywa i opóźnienia — bez zmian; przy „ograniczonym ruchu” animacje i tak są wyłączone) */
+.js .hero__copy > .hero__h1, .js .hero__copy > .hero__title, .js .hero__copy > .hero__lead { animation-name: rise-move; }
+@keyframes rise-move { from { transform: translateY(16px); } }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
