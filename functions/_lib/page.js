@@ -11,11 +11,24 @@ import {
   renderLines,
   renderPortfolio,
   renderPortfolioHub,
+  renderCaseImages,
   renderPosts,
   renderSocial,
 } from './render.js';
 import { embedInfo, socialKind } from './social.js';
 import { parseVariants } from './media.js';
+import { SITE_PAGES } from './pages.js';
+
+// Realizacje opisane na stronach z buildu (np. /portfolio/anna-niedobitek-fotografia/) — dopasowanie po adresie strony klienta.
+const siteKey = (u) => {
+  try {
+    const x = new URL(String(u));
+    return (x.hostname.replace(/^www\./, '') + x.pathname.replace(/\/+$/, '')).toLowerCase();
+  } catch {
+    return '';
+  }
+};
+const CASES = new Map(SITE_PAGES.filter((p) => p.kind === 'case' && p.site).map((p) => [siteKey(p.site), p.path]));
 
 const POSTS_LIMIT = 6;
 import { recordVisit } from './stats.js';
@@ -47,7 +60,7 @@ export function structuredData(origin, email, sameAs = []) {
         'Tworzenie nowoczesnych stron internetowych dla firm z Wrocławia i całej Polski: indywidualny projekt, wersja mobilna, formularz kontaktowy, mapa, galeria i pomoc przy wdrożeniu.',
       ...(email ? { email } : {}),
       ...(sameAs.length ? { sameAs } : {}),
-      founder: { '@type': 'Person', name: 'Grzegorz' },
+      founder: { '@type': 'Person', name: 'Grzegorz Rejszel' },
       areaServed: [
         { '@type': 'City', name: 'Wrocław' },
         { '@type': 'Country', name: 'Polska' },
@@ -117,6 +130,7 @@ export async function loadContent(context) {
       faq: faq.results,
       projects: projects.results.map((p) => ({
         ...p,
+        case_path: !p.is_demo && !(p.card_ver && p.slug) ? CASES.get(siteKey(p.site_url)) || null : null,
         images: imgs.filter((i) => i.project_id === p.id).map((i) => ({ id: i.media_id, url: mediaUrl(i.kv_key), alt: i.alt, width: i.width, height: i.height, variants: parseVariants(i.variants) })),
       })),
     };
@@ -199,6 +213,7 @@ export async function renderPage(context) {
       faq: () => (data.faq.length ? renderFaq(data.faq) : null),
       portfolio: () => renderPortfolio(data.projects, c),
       realizacje: () => renderPortfolioHub(data.projects),
+      'case-images': (el) => renderCaseImages(data.projects, el.getAttribute('data-case-site')),
       posts: () => (showPosts ? renderPosts(data.posts) : null),
     };
     const socialHtml = renderSocial(data.social);
@@ -233,7 +248,7 @@ export async function renderPage(context) {
       .on('[data-cms-list]', {
         element(el) {
           const fn = lists[el.getAttribute('data-cms-list')];
-          const html = fn ? fn() : null;
+          const html = fn ? fn(el) : null;
           if (html !== null && html !== undefined) el.setInnerContent(html, { html: true });
         },
       })

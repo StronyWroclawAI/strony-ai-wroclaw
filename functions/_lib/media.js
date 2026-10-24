@@ -144,6 +144,8 @@ export const SIZES = {
   // okładka kolejnych projektów
   normal:
     '(max-width: 399px) calc(100vw - 78px), (max-width: 700px) calc(92vw - 46px), (max-width: 799px) calc(46vw - 58px), (max-width: 1179px) calc(50vw - 90px), 500px',
+  // zdjęcie na stronie opisu realizacji (kolumna tekstu .prose: maks. 780 px)
+  case: '(max-width: 819px) calc(100vw - 40px), 780px',
   // zdjęcie w Aktualnościach
   post:
     '(max-width: 399px) calc(100vw - 34px), (max-width: 640px) calc(92vw - 2px), (max-width: 799px) calc(46vw - 14px), (max-width: 980px) calc(50vw - 46px), (max-width: 1179px) calc(33.34vw - 39px), 354px',

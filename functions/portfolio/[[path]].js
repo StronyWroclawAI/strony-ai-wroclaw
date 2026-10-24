@@ -5,9 +5,11 @@ import { hasValidSession } from '../_lib/auth.js';
 import { SLUG_RE, PATH_RE, cardHeaders, rewriteCardHead } from '../_lib/card.js';
 import { siteOrigin, notFoundPage } from '../_lib/http.js';
 import { recordVisit } from '../_lib/stats.js';
+import { renderPage } from '../_lib/page.js';
 
 
-export async function onRequestGet({ request, env, params, waitUntil }) {
+export async function onRequestGet(context) {
+  const { request, env, params, waitUntil } = context;
   const url = new URL(request.url);
   const notFound = () => notFoundPage(env, url);
   const seg = Array.isArray(params.path) ? params.path : params.path ? [params.path] : [];
@@ -20,11 +22,17 @@ export async function onRequestGet({ request, env, params, waitUntil }) {
   let path = seg.slice(1).join('/');
   if (!path || url.pathname.endsWith('/')) path = path ? `${path}/index.html` : 'index.html';
   if (!PATH_RE.test(path)) return notFound();
-  if (!hasDb(env) || !env.MEDIA) return notFound();
+  // Opis realizacji przygotowany w buildzie (public/portfolio/<adres>/index.html) — ten sam wygląd co reszta strony.
+  const staticCase = async () => {
+    if (path !== 'index.html' || !env.ASSETS) return null;
+    const a = await env.ASSETS.fetch(new Request(new URL(`/portfolio/${slug}/`, url).toString()));
+    return a.ok && (a.headers.get('Content-Type') || '').includes('text/html') ? renderPage(context) : null;
+  };
+  if (!hasDb(env) || !env.MEDIA) return (await staticCase()) || notFound();
 
   await ensureSchema(env);
   const p = await env.DB.prepare(`SELECT id, status, card_ver, title, industry, description, is_demo, seo_for, slug, card_cover FROM portfolio_projects WHERE slug = ?`).bind(slug).first();
-  if (!p || !p.card_ver) return notFound();
+  if (!p || !p.card_ver) return (await staticCase()) || notFound();
   let preview = false;
   if (p.status !== 'published') {
     if (!(await hasValidSession(env, request))) return notFound();

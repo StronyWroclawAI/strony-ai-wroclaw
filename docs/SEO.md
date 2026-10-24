@@ -50,3 +50,17 @@ Podstrony mają og:title, og:description i og:url. Nie mają og:image — do prz
 - Działa w przeglądarkach z obsługą (Chrome/Edge 126+, Safari 18.2+). Pozostałe (np. Firefox) przechodzą zwyczajnie.
 - Przy włączonym „ograniczeniu ruchu” w systemie przejścia są wyłączone, a przewijanie do sekcji jest natychmiastowe.
 - Karty projektów (`/portfolio/…`) i panel nie mają tej reguły — przejścia do nich są zwykłe.
+
+## Etap 3
+- **Opisy prawdziwych realizacji** powstają jak pozostałe podstrony (wpis `kind: 'case'` w `pages.mjs`, pole `site` = adres strony klienta).
+  Adres: `/portfolio/<adres>/` — jeśli w panelu nie ma karty ZIP o tym adresie, serwer pokazuje stronę z buildu.
+  Kafelek realizacji w portfolio (dopasowany po adresie strony klienta) sam linkuje do opisu. Zdjęcia w sekcji „Podgląd projektu”
+  pochodzą z biblioteki panelu (zdjęcia przypisane do realizacji, z wariantami w480–w1280).
+  Pierwszy opis: `/portfolio/anna-niedobitek-fotografia/` (schema: CreativeWork + BreadcrumbList; bez LocalBusiness i ocen).
+- **Grafiki OG** (1200×630 JPEG, ok. 65 KB): jeden szablon — granat, biel, niebieski, logo marki, font strony.
+  Kategoria i krótki tytuł z pola `og` w `pages.mjs`; generowanie: `python3 work/og/generate.py` → `public/assets/img/og/`.
+  Bez preloadu (tylko znaczniki meta), więc nie wpływają na ładowanie strony.
+- **Autor artykułów**: Grzegorz Rejszel (podpis i Article.author: Person z nazwą i odnośnikiem do sekcji „O mnie”) — bez stanowiska, certyfikatów itp.
+- **Przejścia między stronami a karty ZIP**: karty z paczek ZIP działają w piaskownicy bezpieczeństwa (CSP `sandbox` bez `allow-same-origin`),
+  więc przeglądarka traktuje je jak inną domenę i nie animuje przejść do nich ani z nich. To celowe — zdjęcie piaskownicy dałoby skryptom
+  z karty dostęp do strony i panelu. Opisy realizacji z buildu (np. Anna) mają przejścia jak reszta serwisu.

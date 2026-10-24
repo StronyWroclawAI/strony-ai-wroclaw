@@ -152,3 +152,8 @@ WYMAGANIA DLA PACZKI
   10. link do strony — jeśli jest publiczna,
   11. zachęta do kontaktu.
 - Opinię klienta dodawaj wyłącznie prawdziwą, dosłowną i za jego zgodą (najlepiej pisemną).
+
+## 7. Opis realizacji bez karty ZIP
+Prawdziwą realizację można opisać także jako podstronę serwisu (przygotowaną w buildzie, patrz `docs/SEO.md`, „Etap 3”).
+Taki opis ma wygląd, menu, okruszki i przejścia całej strony. Zdjęcia do niego dodajesz w panelu — w realizacji (biblioteka zdjęć);
+pokażą się w sekcji „Podgląd projektu”. Gdyby w panelu pojawiła się karta ZIP o tym samym adresie, pierwszeństwo ma karta.

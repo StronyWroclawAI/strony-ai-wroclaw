@@ -17,3 +17,7 @@ Nie dodawaj podpisu do strony, której właściciel się na to nie zgodził, i n
 
 ## Po zakończeniu współpracy
 Jeśli klient poprosi o usunięcie podpisu — usuń go albo pozwól mu to zrobić (to jego strona).
+
+## Istniejące podpisy (prawdziwe linki z realizacji)
+- **Anna Niedobitek Fotografia** — https://www.annanfoto.pl/ : w stopce „Strona stworzona przez” z linkiem do Strony AI Wrocław
+  (ustalone z klientką; nie zmieniamy jej strony z poziomu tego projektu).

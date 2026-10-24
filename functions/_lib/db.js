@@ -4,7 +4,7 @@
 
 import { SEED } from './seed.js';
 
-export const SCHEMA_VERSION = '20';
+export const SCHEMA_VERSION = '21';
 
 // Każda instrukcja w osobnym elemencie (D1 wykonuje je w jednej transakcji przez batch()).
 export const SCHEMA = [
@@ -182,6 +182,14 @@ const FAQ_ADDED_V20 = [
   ['Co dzieje się po 3 miesiącach bezpłatnych aktualizacji?', 85],
   ['Czy robisz strony tylko dla firm z Wrocławia?', 105],
 ];
+// v21 (etap 3): projekt demonstracyjny kancelarii — poprawka branży, nazwy i „Dla kogo”.
+// Zmiana TYLKO wtedy, gdy pola mają dokładnie stare wartości (nic, co zmieniono w panelu, nie jest nadpisywane).
+const PORTFOLIO_FIXES_V21 = [
+  ['kancelaria-notarialne-x-y', 'industry', 'Kancelaria prawna (adwokat / radca prawny)', 'Kancelaria notarialna'],
+  ['kancelaria-notarialne-x-y', 'industry', 'Kancelaria prawna (adwokat / radca prawny) · Wrocław', 'Kancelaria notarialna · Wrocław'],
+  ['kancelaria-notarialne-x-y', 'title', 'Kancelaria notarialne X&Y', 'Kancelaria Notarialna X&Y'],
+  ['kancelaria-notarialne-x-y', 'seo_for', '', 'kancelarii notarialnej'],
+];
 // Pola usunięte ze strony (nadtytuł nad hasłem zastąpił nagłówek H1).
 const CONTENT_REMOVED = ['hero.eyebrow'];
 
@@ -268,6 +276,10 @@ async function init(env) {
     );
   }
   stmts.push(db.prepare(`INSERT OR IGNORE INTO meta (key, value) VALUES ('faq_v20', ?)`).bind(t));
+  for (const [slug, col, oldValue, newValue] of PORTFOLIO_FIXES_V21) {
+    if (!['industry', 'title', 'seo_for'].includes(col)) continue;
+    stmts.push(db.prepare(`UPDATE portfolio_projects SET ${col} = ?, updated_at = ? WHERE slug = ? AND is_demo = 1 AND ${col} = ?`).bind(newValue, t, slug, oldValue));
+  }
   for (const [key, oldValue] of CONTENT_UPDATES) {
     const seed = SEED.content.find((c) => c.key === key);
     if (seed && seed.value !== oldValue) {

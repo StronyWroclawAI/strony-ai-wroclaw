@@ -48,5 +48,11 @@ export const SITE_PAGES = [
  {
   "path": "/dla-branz/warsztat-samochodowy/",
   "lastmod": "2026-10-23"
+ },
+ {
+  "path": "/portfolio/anna-niedobitek-fotografia/",
+  "lastmod": "2026-10-24",
+  "kind": "case",
+  "site": "https://www.annanfoto.pl/"
  }
 ];

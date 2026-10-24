@@ -15,7 +15,10 @@ export async function onRequestGet({ env, request }) {
     try {
       await ensureSchema(env);
       const r = await env.DB.prepare(`SELECT slug, card_at FROM portfolio_projects WHERE status = 'published' AND card_ver IS NOT NULL AND slug IS NOT NULL ORDER BY sort_order`).all();
-      for (const row of r.results || []) urls.push({ loc: `/portfolio/${row.slug}/`, lastmod: day(row.card_at) });
+      for (const row of r.results || []) {
+        const loc = `/portfolio/${row.slug}/`;
+        if (!urls.some((u) => u.loc === loc)) urls.push({ loc, lastmod: day(row.card_at) });
+      }
     } catch (e) {
       console.error(e);
     }
