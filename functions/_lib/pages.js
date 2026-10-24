@@ -15,7 +15,7 @@ export const SITE_PAGES = [
  },
  {
   "path": "/poradnik/strona-internetowa-czy-facebook/",
-  "lastmod": "2026-10-23"
+  "lastmod": "2026-10-24"
  },
  {
   "path": "/poradnik/domena-i-hosting/",
@@ -27,7 +27,7 @@ export const SITE_PAGES = [
  },
  {
   "path": "/poradnik/co-powinna-zawierac-strona-firmowa/",
-  "lastmod": "2026-10-23"
+  "lastmod": "2026-10-24"
  },
  {
   "path": "/poradnik/czy-mala-firma-potrzebuje-strony-internetowej/",
@@ -35,7 +35,7 @@ export const SITE_PAGES = [
  },
  {
   "path": "/dla-branz/",
-  "lastmod": "2026-10-23"
+  "lastmod": "2026-10-24"
  },
  {
   "path": "/dla-branz/salon-kosmetyczny/",
@@ -48,6 +48,10 @@ export const SITE_PAGES = [
  {
   "path": "/dla-branz/warsztat-samochodowy/",
   "lastmod": "2026-10-23"
+ },
+ {
+  "path": "/dla-branz/fotograf/",
+  "lastmod": "2026-10-25"
  },
  {
   "path": "/portfolio/anna-niedobitek-fotografia/",

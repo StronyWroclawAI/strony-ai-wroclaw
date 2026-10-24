@@ -225,7 +225,7 @@ export function renderPortfolioHub(projects) {
       <p class="lead">Koncepcje stron na przykładzie fikcyjnych firm. Pokazują, jak może wyglądać strona dla danej branży — nazwy firm, adresy, ceny i pozostałe dane w tych projektach są zmyślone. To nie są realizacje dla klientów.</p>
     </div>
     <div class="work-list">${renderWorks(demo)}</div>
-    <p class="hub__aside">Co powinna mieć strona w Twojej branży? Zobacz: <a href="/dla-branz/salon-kosmetyczny/">salon kosmetyczny</a>, <a href="/dla-branz/fryzjer/">fryzjer</a>, <a href="/dla-branz/warsztat-samochodowy/">warsztat samochodowy</a>.</p>
+    <p class="hub__aside">Co powinna mieć strona w Twojej branży? Zobacz: <a href="/dla-branz/salon-kosmetyczny/">salon kosmetyczny</a>, <a href="/dla-branz/fryzjer/">fryzjer</a>, <a href="/dla-branz/warsztat-samochodowy/">warsztat samochodowy</a>, <a href="/dla-branz/fotograf/">fotograf</a>.</p>
   </div>
 </section>`
     : '';

@@ -64,3 +64,19 @@ Podstrony mają og:title, og:description i og:url. Nie mają og:image — do prz
 - **Przejścia między stronami a karty ZIP**: karty z paczek ZIP działają w piaskownicy bezpieczeństwa (CSP `sandbox` bez `allow-same-origin`),
   więc przeglądarka traktuje je jak inną domenę i nie animuje przejść do nich ani z nich. To celowe — zdjęcie piaskownicy dałoby skryptom
   z karty dostęp do strony i panelu. Opisy realizacji z buildu (np. Anna) mają przejścia jak reszta serwisu.
+
+## Etap 4
+- **Zrzuty realizacji**: oryginały (dostarczone przez właściciela) → warianty WebP w `public/assets/img/realizacje/<adres>/<plik>-w<szer>.webp`
+  (tylko skalowanie i kompresja, bez zmiany treści). W treści strony: `@@SHOT:<adres>/<plik>|tekst alternatywny|desktop|mobile@@` —
+  build wstawia `<img>` z `srcset`, `sizes`, wymiarami i `loading="lazy"`. Zrzut komputera w prostej ramce, telefon obok opisu.
+- Opis Anny: sekcje „Projekt na komputerze” (2 zrzuty) i „Wersja mobilna” (zrzut z telefonu + tylko widoczne na nim cechy).
+  Zdjęcia z biblioteki panelu nie są już pokazywane na tej stronie (kafelek w portfolio dalej używa okładki z panelu).
+- `/dla-branz/fotograf/`: strona branżowa (intencja „strona internetowa dla fotografa”), przykład: realizacja Anny.
+  Nie celuje w zapytania klientów fotografów („fotograf + miasto”). Schema: tylko BreadcrumbList.
+
+## Search Console — co obserwować
+- Indeksowanie: czy wszystkie adresy z sitemapy są „Zindeksowane”; przyczyny wykluczeń.
+- Na stronę: wyświetlenia, kliknięcia, CTR, średnia pozycja — osobno dla strony głównej, realizacji, opisu Anny, 7 stron poradnika/branż.
+- Zapytania: na które strona główna pokazuje się bez słowa „Wrocław” (sygnał dla ewentualnej `/strony-internetowe-dla-firm/`);
+  czy zapytania branżowe trafiają na właściwe strony branżowe, a nie na stronę główną.
+- Decyzje o nowych stronach dopiero przy powtarzalnych zapytaniach z wyświetleniami (nie pojedynczych), z kilku tygodni danych.

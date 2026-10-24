@@ -12,6 +12,16 @@
   descent-override: 21%;
   line-gap-override: 0%;
 }
+/* Pogrubiona wersja kroju zastępczego — prawdziwy bold zamiast sztucznego pogrubienia (nagłówki nie zmieniają łamania po wczytaniu czcionki) */
+@font-face {
+  font-family: "Jakarta Fallback";
+  font-weight: 600 900;
+  src: local("Arial Bold"), local("Arial-BoldMT"), local("Helvetica Neue Bold"), local("HelveticaNeue-Bold"), local("Liberation Sans Bold"), local("LiberationSans-Bold"), local("Roboto Bold"), local("Roboto-Bold");
+  size-adjust: 104%;
+  ascent-override: 100%;
+  descent-override: 21%;
+  line-gap-override: 0%;
+}
 @font-face {
   font-family: "Plus Jakarta Sans";
   font-style: normal;
@@ -1175,3 +1185,20 @@ html { background: var(--white); }
 .case-shot img { width: 100%; height: auto; border-radius: var(--radius-sm, 10px); border: 1px solid var(--gray-200); }
 .case-shot figcaption { margin-top: 8px; font-size: .875rem; color: var(--muted); }
 .cta-box a:not(.btn):not(.link-arrow), .prose .cta-box a:not(.btn):not(.link-arrow) { color: #fff; }
+/* ===== ETAP 4: zrzuty realizacji (komputer w prostej ramce, telefon obok opisu) ===== */
+.case-shot--desktop { margin: 18px 0 30px; border-radius: 12px; overflow: hidden; border: 1px solid var(--gray-200); background: #fff; box-shadow: 0 24px 50px -36px rgba(20, 46, 80, .55); }
+.case-shot__bar { display: flex; gap: 6px; padding: 9px 12px; background: #eef1f6; border-bottom: 1px solid #dde3ec; }
+.case-shot__bar i { width: 9px; height: 9px; border-radius: 50%; background: #c5cedb; }
+.case-shot--desktop img { display: block; width: 100%; height: auto; border: 0; border-radius: 0; }
+.case-shot--desktop figcaption { margin: 0; padding: 10px 14px; font-size: .875rem; color: var(--muted); border-top: 1px solid var(--gray-200); }
+.case-mobile { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 32px; align-items: start; margin: 44px 0 10px; }
+.case-mobile__text h2 { margin-top: 0; }
+.case-shot--mobile { margin: 0; }
+.case-shot--mobile img { display: block; width: 100%; height: auto; border-radius: 22px; border: 1px solid var(--gray-200); box-shadow: 0 24px 50px -30px rgba(20, 46, 80, .55); }
+.case-shot--mobile figcaption { margin-top: 10px; text-align: center; font-size: .875rem; color: var(--muted); }
+@media (max-width: 819px) {
+  .case-mobile { grid-template-columns: 1fr; gap: 20px; }
+  .case-shot--mobile { width: min(300px, 100%); margin-inline: auto; }
+}
+.real-note { padding: 14px 16px; border-radius: var(--radius-sm, 10px); background: #dcf5ef; border: 1px solid #a7e2d4; }
+.prose .real-note { color: #0b4a40; }
