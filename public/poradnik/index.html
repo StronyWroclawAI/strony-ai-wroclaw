@@ -25,8 +25,8 @@
 <link rel="icon" href="/assets/img/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
-<link rel="stylesheet" href="/assets/css/style.css?v=22">
-<script src="/assets/js/main.js?v=11" defer></script>
+<link rel="stylesheet" href="/assets/css/style.css?v=23">
+<script src="/assets/js/main.js?v=12" defer></script>
 </head>
 <body class="subpage subpage--hub">
 <a class="skip-link" href="#tresc">Przejdź do treści</a>
@@ -40,17 +40,19 @@
       <span class="nav-toggle__bars" aria-hidden="true"></span>
       <span class="visually-hidden">Menu</span>
     </button>
+    <!-- Bez JavaScriptu: menu na telefonie otwiera się przez #menu (:target), zamyka linkiem „#” -->
+    <a class="nav-toggle nav-toggle--nojs nav-toggle--open" href="#menu"><span class="nav-toggle__bars" aria-hidden="true"></span><span class="visually-hidden">Menu</span></a>
+    <a class="nav-toggle nav-toggle--nojs nav-toggle--close" href="#"><span class="nav-toggle__bars" aria-hidden="true"></span><span class="visually-hidden">Zamknij menu</span></a>
     <nav class="nav" id="menu" aria-label="Główna nawigacja">
       <ul class="nav__list">
-        <li><a href="/#mozliwosci">Możliwości</a></li>
-        <li><a href="/#zasady">Zasady</a></li>
-        <li data-cms-block="nav-portfolio" hidden><a href="/realizacje/">Realizacje</a></li>
+        <li><a href="/">Start</a></li>
+        <li><a href="/oferta/">Oferta</a></li>
+        <li><a href="/realizacje/">Realizacje</a></li>
+        <li><a href="/dla-branz/">Dla branż</a></li>
         <li><a href="/poradnik/" aria-current="page">Poradnik</a></li>
-        <li data-cms-block="nav-posts" hidden><a href="/#aktualnosci">Aktualności</a></li>
-        <li><a href="/#o-mnie">O mnie</a></li>
-        <li><a href="/#faq">FAQ</a></li>
+        <li><a href="/o-mnie/">O mnie</a></li>
       </ul>
-      <a class="btn btn--light btn--sm nav__cta" href="/#kontakt">Napisz do mnie</a>
+      <a class="btn btn--light btn--sm nav__cta" href="/kontakt/">Kontakt</a>
     </nav>
   </div>
 </header>
@@ -97,7 +99,7 @@
     <div class="container"><div class="hub__more">
       <h2 class="h2 hub__title" id="hub-more">Masz inne pytanie?</h2>
       <p class="lead">Krótkie odpowiedzi o tym, jak wygląda współpraca ze mną, znajdziesz w <a href="/#faq">najczęstszych pytaniach</a> na stronie głównej. Jeśli zastanawiasz się, co powinna mieć strona w Twojej branży, zajrzyj do działu <a href="/dla-branz/">strony dla branż</a>.</p>
-      <p class="cta-box__actions"><a class="btn btn--primary" href="/#kontakt">Zgłoś swoją firmę</a><a class="link-arrow" href="/realizacje/">Zobacz realizacje</a></p>
+      <p class="cta-box__actions"><a class="btn btn--primary" href="/kontakt/">Zgłoś swoją firmę</a><a class="link-arrow" href="/realizacje/">Zobacz realizacje</a></p>
     </div></div>
   </section>
 
@@ -111,20 +113,23 @@
     <div class="site-footer__col">
       <p class="site-footer__h">Kontakt</p>
       <a href="mailto:stronyaiwroclaw@gmail.com" data-cms-email>stronyaiwroclaw@gmail.com</a>
+      <a href="/kontakt/">Formularz kontaktowy</a>
       <ul class="social-links social-links--footer" data-cms-block="social" data-social-list hidden></ul>
     </div>
     <div class="site-footer__col">
-      <p class="site-footer__h">Dla firm</p>
+      <p class="site-footer__h">Serwis</p>
       <ul>
+        <li><a href="/oferta/">Oferta</a></li>
         <li><a href="/realizacje/">Realizacje</a></li>
         <li><a href="/dla-branz/">Strony dla branż</a></li>
         <li><a href="/poradnik/">Poradnik</a></li>
+        <li><a href="/o-mnie/">O mnie</a></li>
       </ul>
     </div>
     <div class="site-footer__col">
       <p class="site-footer__h">Informacje</p>
       <ul>
-        <li><a href="/#zasady">Zasady współpracy</a></li>
+        <li><a href="/oferta/#zasady">Zasady współpracy</a></li>
         <li><a href="/#faq">Najczęstsze pytania</a></li>
         <li><a href="/polityka-prywatnosci">Polityka prywatności</a></li>
       </ul>

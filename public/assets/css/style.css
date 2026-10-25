@@ -487,24 +487,7 @@ button { font: inherit; }
 }
 
 /* ---------- Responsywność ---------- */
-@media (max-width: 1080px) {
-  .nav__list a { padding: 8px 9px; }
-  .nav { gap: 16px; }
-}
 @media (max-width: 980px) {
-  .nav-toggle { display: inline-flex; }
-  .nav {
-    position: fixed; inset: var(--header-h) 0 auto 0; flex-direction: column; align-items: stretch; gap: 16px;
-    background: var(--navy-900); color: var(--white); padding: 16px var(--gutter) 24px;
-    box-shadow: 0 20px 40px -20px rgba(0, 0, 0, .5); max-height: calc(100vh - var(--header-h)); max-height: calc(100dvh - var(--header-h)); overflow-y: auto; overscroll-behavior: contain;
-    visibility: hidden; opacity: 0; transform: translateY(-8px); transition: opacity .2s, transform .25s var(--ease), visibility 0s .25s;
-    --focus: #9cc3ff;
-  }
-  .nav.is-open { visibility: visible; opacity: 1; transform: none; transition: opacity .2s, transform .25s var(--ease); }
-  .nav__list { flex-direction: column; gap: 2px; }
-  .nav__list a { padding: 14px 8px; font-size: 1.0625rem; border-bottom: 1px solid rgba(255, 255, 255, .08); border-radius: 0; }
-  .nav__cta { --btn-bg: var(--white) !important; --btn-fg: var(--navy-900) !important; --btn-bd: var(--white) !important; min-height: 52px; }
-  .site-header.menu-open { background: var(--navy-900); color: var(--white); }
 
   .hero__grid { grid-template-columns: 1fr; }
   .hero__visual { min-height: 380px; max-width: 560px; width: 100%; margin-inline: auto; }
@@ -1095,8 +1078,6 @@ button { font: inherit; }
 
 /* ===== SEO etap 1: podstrony (szerokości w em, nie w ch — ch zależy od kroju, a zmiana kroju po wczytaniu fontu przesuwałaby tekst) (poradnik, branże, realizacje) i nowe elementy strony głównej ===== */
 .nav__list a, .nav__cta { white-space: nowrap; }
-@media (min-width: 981px) and (max-width: 1140px) { .nav__list a { padding: 8px 7px; font-size: .9063rem; } .nav { gap: 12px; } }
-@media (min-width: 981px) and (max-width: 1040px) { .nav__list a { padding: 8px 6px; } .nav__list { gap: 0; } .site-header .brand__name { font-size: 1rem; } }
 .page-top--sub { padding-bottom: clamp(40px, 6vw, 64px); }
 .page-top--sub h1 { max-width: 15em; text-wrap: balance; }
 .subpage--article .page-top--sub h1 { max-width: 16em; font-size: clamp(1.8rem, 4vw, 2.8rem); }
@@ -1202,3 +1183,63 @@ html { background: var(--white); }
 }
 .real-note { padding: 14px 16px; border-radius: var(--radius-sm, 10px); background: #dcf5ef; border: 1px solid #a7e2d4; }
 .prose .real-note { color: #0b4a40; }
+
+/* ===== ETAP 5: nawigacja wielostronicowa (każda pozycja menu = osobny adres, przejście View Transitions) ===== */
+/* Menu na telefonie i tablecie: do 1023 px (pełne menu potrzebuje ok. 945 px — od 1024 px mieści się z zapasem, bez ściskania linków) */
+@media (max-width: 1023px) {
+  .nav-toggle { display: inline-flex; }
+  .nav {
+    position: fixed; inset: var(--header-h) 0 auto 0; flex-direction: column; align-items: stretch; gap: 16px;
+    background: var(--navy-900); color: var(--white); padding: 16px var(--gutter) 24px;
+    box-shadow: 0 20px 40px -20px rgba(0, 0, 0, .5); max-height: calc(100vh - var(--header-h)); max-height: calc(100dvh - var(--header-h)); overflow-y: auto; overscroll-behavior: contain;
+    visibility: hidden; opacity: 0; transform: translateY(-8px); transition: opacity .2s, transform .25s var(--ease), visibility 0s .25s;
+    --focus: #9cc3ff;
+  }
+  .nav.is-open { visibility: visible; opacity: 1; transform: none; transition: opacity .2s, transform .25s var(--ease); }
+  .nav__list { flex-direction: column; gap: 2px; }
+  .nav__list a { padding: 14px 8px; font-size: 1.0625rem; border-bottom: 1px solid rgba(255, 255, 255, .08); border-radius: 0; }
+  .nav__cta { --btn-bg: var(--white) !important; --btn-fg: var(--navy-900) !important; --btn-bd: var(--white) !important; min-height: 52px; }
+  .site-header.menu-open { background: var(--navy-900); color: var(--white); }
+  .nav-toggle--nojs { display: none; }
+}
+.nav-toggle--nojs { display: none; }
+.site-header .nav-toggle--nojs, .site-header .nav-toggle--nojs:hover { color: inherit; }
+/* Bez JavaScriptu: przycisk menu zastępuje link #menu — panel otwiera się przez :target, zamyka linkiem „#”. */
+@media (max-width: 1023px) {
+  html:not(.js) .nav-toggle[data-nav-toggle] { display: none; }
+  html:not(.js) .nav-toggle--open { display: inline-flex; }
+  html:not(.js) .nav:target { visibility: visible; opacity: 1; transform: none; }
+  html:not(.js) .site-header:has(.nav:target) { background: var(--navy-900); color: var(--white); }
+  html:not(.js) .site-header:has(.nav:target) .nav-toggle--open { display: none; }
+  html:not(.js) .site-header:has(.nav:target) .nav-toggle--close { display: inline-flex; }
+  .nav-toggle--close .nav-toggle__bars { background: transparent; }
+  .nav-toggle--close .nav-toggle__bars::before { transform: translateY(7px) rotate(45deg); }
+  .nav-toggle--close .nav-toggle__bars::after { transform: translateY(-7px) rotate(-45deg); }
+}
+/* Aktywna pozycja menu: podkreślenie (kształt, nie tylko kolor) + pełna nieprzezroczystość. Bez zmiany grubości fontu — bez przesunięć. */
+.nav__list a[aria-current] { opacity: 1; position: relative; }
+.nav__list a[aria-current]::after { content: ""; position: absolute; left: 12px; right: 12px; bottom: 3px; height: 2px; border-radius: 2px; background: currentColor; }
+.nav__cta[aria-current] { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 5px; }
+@media (max-width: 1023px) {
+  .nav__list a[aria-current]::after { left: 8px; right: auto; width: 32px; bottom: 8px; }
+}
+/* Strona główna: skrót oferty (pełne zasady na /oferta/) */
+.rule-col__text { margin: 0; line-height: 1.6; color: #dbe5f3; }
+.rule-col--free .rule-col__text { color: var(--text); }
+.rules__more--actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 28px; }
+.link-arrow--light { color: #fff; border-color: rgba(255, 255, 255, .45); }
+.link-arrow--light:hover { color: #fff; border-color: #fff; }
+.about__more { margin-top: 26px; }
+.guide-teaser { background: var(--white); }
+.guide-teaser .hub-grid { margin-top: 8px; }
+/* Strona 404: główne części serwisu */
+.error-page__links { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 22px; margin-top: 30px; }
+.error-page__links a { color: var(--sky-200); font-weight: 600; text-underline-offset: 4px; }
+.error-page__links a:hover { color: #fff; }
+/* /o-mnie/: wartości współpracy w treści artykułu */
+.prose .values { padding-left: 0; margin-top: 14px; padding-top: 0; border-top: 0; gap: 20px; }
+/* /kontakt/ i /oferta/: sekcje pełnej szerokości bezpośrednio pod nagłówkiem strony */
+.subpage--contact .contact { padding-top: clamp(48px, 7vw, 88px); }
+.subpage--offer .ownership + .container > .prose { padding-top: 8px; }
+/* Wąskie telefony: adres e-mail w karcie kontaktu mieści się w jednym wierszu (zamiast łamania „…gmail.co / m”) */
+@media (max-width: 380px) { .mail-card { padding: 18px; } .mail-card__link { font-size: .9688rem; } }

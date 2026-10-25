@@ -27,8 +27,8 @@
 <link rel="icon" href="/assets/img/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
-<link rel="stylesheet" href="/assets/css/style.css?v=22">
-<script src="/assets/js/main.js?v=11" defer></script>
+<link rel="stylesheet" href="/assets/css/style.css?v=23">
+<script src="/assets/js/main.js?v=12" defer></script>
 </head>
 <body class="subpage subpage--article">
 <a class="skip-link" href="#tresc">Przejdź do treści</a>
@@ -42,17 +42,19 @@
       <span class="nav-toggle__bars" aria-hidden="true"></span>
       <span class="visually-hidden">Menu</span>
     </button>
+    <!-- Bez JavaScriptu: menu na telefonie otwiera się przez #menu (:target), zamyka linkiem „#” -->
+    <a class="nav-toggle nav-toggle--nojs nav-toggle--open" href="#menu"><span class="nav-toggle__bars" aria-hidden="true"></span><span class="visually-hidden">Menu</span></a>
+    <a class="nav-toggle nav-toggle--nojs nav-toggle--close" href="#"><span class="nav-toggle__bars" aria-hidden="true"></span><span class="visually-hidden">Zamknij menu</span></a>
     <nav class="nav" id="menu" aria-label="Główna nawigacja">
       <ul class="nav__list">
-        <li><a href="/#mozliwosci">Możliwości</a></li>
-        <li><a href="/#zasady">Zasady</a></li>
-        <li data-cms-block="nav-portfolio" hidden><a href="/realizacje/">Realizacje</a></li>
-        <li><a href="/poradnik/" aria-current="page">Poradnik</a></li>
-        <li data-cms-block="nav-posts" hidden><a href="/#aktualnosci">Aktualności</a></li>
-        <li><a href="/#o-mnie">O mnie</a></li>
-        <li><a href="/#faq">FAQ</a></li>
+        <li><a href="/">Start</a></li>
+        <li><a href="/oferta/">Oferta</a></li>
+        <li><a href="/realizacje/">Realizacje</a></li>
+        <li><a href="/dla-branz/">Dla branż</a></li>
+        <li><a href="/poradnik/" aria-current="true">Poradnik</a></li>
+        <li><a href="/o-mnie/">O mnie</a></li>
       </ul>
-      <a class="btn btn--light btn--sm nav__cta" href="/#kontakt">Napisz do mnie</a>
+      <a class="btn btn--light btn--sm nav__cta" href="/kontakt/">Kontakt</a>
     </nav>
   </div>
 </header>
@@ -65,7 +67,7 @@
       </nav>
       <h1>Co powinna zawierać dobra strona internetowa firmy?</h1>
       <p class="page-top__lead">Nie każda strona potrzebuje wszystkiego. Dzielę elementy na te, bez których strona firmy słabo działa, i te, które warto dodać zależnie od branży.</p>
-      <p class="page-top__meta">Autor: <a href="/#o-mnie">Grzegorz Rejszel</a>, Strony AI Wrocław · <time datetime="2026-10-23">23 października 2026</time> · zaktualizowano <time datetime="2026-10-24">24 października 2026</time></p>
+      <p class="page-top__meta">Autor: <a href="/o-mnie/">Grzegorz Rejszel</a>, Strony AI Wrocław · <time datetime="2026-10-23">23 października 2026</time> · zaktualizowano <time datetime="2026-10-24">24 października 2026</time></p>
     </div>
   </section>
   <div class="container">
@@ -163,7 +165,7 @@
       <aside class="cta-box" aria-labelledby="cta-zawartosc">
         <p class="cta-box__title" id="cta-zawartosc">Nie wiesz, co powinno się znaleźć na Twojej stronie?</p>
         <p>Napisz, czym zajmuje się firma i jak klienci teraz się z Tobą kontaktują. Pomogę ustalić, czego strona naprawdę potrzebuje, a co można pominąć.</p>
-        <p class="cta-box__actions"><a class="btn btn--light" href="/#kontakt">Zgłoś swoją firmę</a><a class="link-arrow" href="/dla-branz/">Strony dla branż</a></p>
+        <p class="cta-box__actions"><a class="btn btn--light" href="/kontakt/">Zgłoś swoją firmę</a><a class="link-arrow" href="/dla-branz/">Strony dla branż</a></p>
       </aside>
 
       <h2>Czytaj dalej</h2>
@@ -185,20 +187,23 @@
     <div class="site-footer__col">
       <p class="site-footer__h">Kontakt</p>
       <a href="mailto:stronyaiwroclaw@gmail.com" data-cms-email>stronyaiwroclaw@gmail.com</a>
+      <a href="/kontakt/">Formularz kontaktowy</a>
       <ul class="social-links social-links--footer" data-cms-block="social" data-social-list hidden></ul>
     </div>
     <div class="site-footer__col">
-      <p class="site-footer__h">Dla firm</p>
+      <p class="site-footer__h">Serwis</p>
       <ul>
+        <li><a href="/oferta/">Oferta</a></li>
         <li><a href="/realizacje/">Realizacje</a></li>
         <li><a href="/dla-branz/">Strony dla branż</a></li>
         <li><a href="/poradnik/">Poradnik</a></li>
+        <li><a href="/o-mnie/">O mnie</a></li>
       </ul>
     </div>
     <div class="site-footer__col">
       <p class="site-footer__h">Informacje</p>
       <ul>
-        <li><a href="/#zasady">Zasady współpracy</a></li>
+        <li><a href="/oferta/#zasady">Zasady współpracy</a></li>
         <li><a href="/#faq">Najczęstsze pytania</a></li>
         <li><a href="/polityka-prywatnosci">Polityka prywatności</a></li>
       </ul>
@@ -209,6 +214,6 @@
     <p>© <span data-year>2026</span> Strony AI Wrocław</p>
   </div>
 </footer>
-<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Strona główna","item":"https://stronyaiwroclaw.pl/"},{"@type":"ListItem","position":2,"name":"Poradnik","item":"https://stronyaiwroclaw.pl/poradnik/"},{"@type":"ListItem","position":3,"name":"Co powinna zawierać strona firmowa","item":"https://stronyaiwroclaw.pl/poradnik/co-powinna-zawierac-strona-firmowa/"}]},{"@type":"Article","@id":"https://stronyaiwroclaw.pl/poradnik/co-powinna-zawierac-strona-firmowa/#artykul","headline":"Co powinna zawierać dobra strona internetowa firmy?","description":"Lista elementów dobrej strony firmy: opis, usługi, wyraźne przyciski, kontakt, zdjęcia, opinie, lokalizacja, wersja mobilna, szybkość, podstawy SEO i prywatność.","url":"https://stronyaiwroclaw.pl/poradnik/co-powinna-zawierac-strona-firmowa/","mainEntityOfPage":"https://stronyaiwroclaw.pl/poradnik/co-powinna-zawierac-strona-firmowa/","inLanguage":"pl-PL","datePublished":"2026-10-23","dateModified":"2026-10-24","author":{"@type":"Person","name":"Grzegorz Rejszel","url":"https://stronyaiwroclaw.pl/#o-mnie"},"publisher":{"@type":"Organization","@id":"https://stronyaiwroclaw.pl/#organizacja","name":"Strony AI Wrocław","url":"https://stronyaiwroclaw.pl/","logo":{"@type":"ImageObject","url":"https://stronyaiwroclaw.pl/assets/img/icon-512.png"}},"isPartOf":{"@type":"WebSite","@id":"https://stronyaiwroclaw.pl/#strona","url":"https://stronyaiwroclaw.pl/"}}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Strona główna","item":"https://stronyaiwroclaw.pl/"},{"@type":"ListItem","position":2,"name":"Poradnik","item":"https://stronyaiwroclaw.pl/poradnik/"},{"@type":"ListItem","position":3,"name":"Co powinna zawierać strona firmowa","item":"https://stronyaiwroclaw.pl/poradnik/co-powinna-zawierac-strona-firmowa/"}]},{"@type":"Article","@id":"https://stronyaiwroclaw.pl/poradnik/co-powinna-zawierac-strona-firmowa/#artykul","headline":"Co powinna zawierać dobra strona internetowa firmy?","description":"Lista elementów dobrej strony firmy: opis, usługi, wyraźne przyciski, kontakt, zdjęcia, opinie, lokalizacja, wersja mobilna, szybkość, podstawy SEO i prywatność.","url":"https://stronyaiwroclaw.pl/poradnik/co-powinna-zawierac-strona-firmowa/","mainEntityOfPage":"https://stronyaiwroclaw.pl/poradnik/co-powinna-zawierac-strona-firmowa/","inLanguage":"pl-PL","datePublished":"2026-10-23","dateModified":"2026-10-24","author":{"@type":"Person","@id":"https://stronyaiwroclaw.pl/o-mnie/#osoba","name":"Grzegorz Rejszel","url":"https://stronyaiwroclaw.pl/o-mnie/"},"publisher":{"@type":"Organization","@id":"https://stronyaiwroclaw.pl/#organizacja","name":"Strony AI Wrocław","url":"https://stronyaiwroclaw.pl/","logo":{"@type":"ImageObject","url":"https://stronyaiwroclaw.pl/assets/img/icon-512.png"}},"isPartOf":{"@type":"WebSite","@id":"https://stronyaiwroclaw.pl/#strona","url":"https://stronyaiwroclaw.pl/"}}]}</script>
 </body>
 </html>

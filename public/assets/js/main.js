@@ -4,6 +4,21 @@
   var doc = document.documentElement;
   doc.classList.add('js');
 
+  /* Wstecz / Dalej: przeglądarka przywraca pozycję przewinięcia, zanim podmieni się font. Podmiana zmienia wysokość
+     tekstów powyżej, a „scroll anchoring” przesuwał wtedy widok o ok. 35 px. Na czas wczytywania fontu (tylko przy
+     powrocie z historii) kotwiczenie jest wyłączone — strona wraca dokładnie w to samo miejsce. */
+  try {
+    var nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+    if (nav && nav.type === 'back_forward') {
+      doc.style.overflowAnchor = 'none';
+      var restore = function () { requestAnimationFrame(function () { requestAnimationFrame(function () { doc.style.overflowAnchor = ''; }); }); };
+      window.addEventListener('load', function () {
+        if (document.fonts && document.fonts.ready) document.fonts.ready.then(restore); else restore();
+      });
+      setTimeout(restore, 3000);
+    }
+  } catch (e) { /* starsze przeglądarki: zwykłe zachowanie */ }
+
   var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   document.addEventListener('DOMContentLoaded', function () {
@@ -260,6 +275,9 @@
     var nav = document.getElementById('menu');
     var header = document.querySelector('[data-header]');
     if (!toggle || !nav) return;
+    // Menu bez JS otwiera się przez #menu — po załadowaniu skryptu sterowanie przejmuje przycisk (adres bez #menu).
+    if (location.hash === '#menu' && history.replaceState) history.replaceState(null, '', location.pathname + location.search);
+    var mobile = window.matchMedia ? window.matchMedia('(max-width: 1023px)') : { matches: window.innerWidth <= 1023 };
 
     function setOpen(open) {
       toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
@@ -279,7 +297,7 @@
       }
     });
     window.addEventListener('resize', function () {
-      if (window.innerWidth > 980) setOpen(false);
+      if (!mobile.matches) setOpen(false);
     });
   }
 

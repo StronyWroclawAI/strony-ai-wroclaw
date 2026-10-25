@@ -4,7 +4,7 @@
 
 import { SEED } from './seed.js';
 
-export const SCHEMA_VERSION = '21';
+export const SCHEMA_VERSION = '22';
 
 // Każda instrukcja w osobnym elemencie (D1 wykonuje je w jednej transakcji przez batch()).
 export const SCHEMA = [
@@ -279,6 +279,11 @@ async function init(env) {
   for (const [slug, col, oldValue, newValue] of PORTFOLIO_FIXES_V21) {
     if (!['industry', 'title', 'seo_for'].includes(col)) continue;
     stmts.push(db.prepare(`UPDATE portfolio_projects SET ${col} = ?, updated_at = ? WHERE slug = ? AND is_demo = 1 AND ${col} = ?`).bind(newValue, t, slug, oldValue));
+  }
+  // v22: część sekcji przeniesiona na /oferta/ i /o-mnie/ — nazwa sekcji i etykieta pola w panelu mówią, gdzie tekst jest widoczny.
+  // Zmieniane są tylko opisy w panelu (section, label), nigdy treść (value).
+  for (const c of SEED.content) {
+    stmts.push(db.prepare(`UPDATE site_content SET section = ?, label = ? WHERE key = ? AND (section <> ? OR label <> ?)`).bind(c.section, c.label, c.key, c.section, c.label));
   }
   for (const [key, oldValue] of CONTENT_UPDATES) {
     const seed = SEED.content.find((c) => c.key === key);

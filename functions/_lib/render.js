@@ -284,7 +284,7 @@ export function renderSocial(links) {
     .filter((k) => safeUrl(links[k]))
     .map(
       (k) =>
-        `<li><a class="social-link social-link--${k}" href="${esc(safeUrl(links[k]))}" target="_blank" rel="noopener me">${SOCIAL_ICON[k]}<span>${SOCIAL_LABEL[k]}</span><span class="visually-hidden"> (otwiera się w nowej karcie)</span></a></li>`
+        `<li><a class="social-link social-link--${k}" href="${esc(safeUrl(links[k]))}" target="_blank" rel="noopener noreferrer me">${SOCIAL_ICON[k]}<span>${SOCIAL_LABEL[k]}</span><span class="visually-hidden"> (otwiera się w nowej karcie)</span></a></li>`
     )
     .join('');
 }
@@ -327,7 +327,7 @@ export function renderPosts(posts) {
     <h3 class="post__title">${esc(p.title)}</h3>
     ${p.body ? `<div class="post__text" data-post-text>${paragraphs(p.body)}</div>` : ''}
     ${embed}
-    ${link ? `<p class="post__actions"><a class="link-arrow" href="${esc(link)}" target="_blank" rel="noopener nofollow">${name ? `Zobacz na ${kind === 'instagram' ? 'Instagramie' : 'Facebooku'}` : 'Czytaj więcej'}<span class="visually-hidden">: ${esc(p.title)} (otwiera się w nowej karcie)</span></a></p>` : ''}
+    ${link ? `<p class="post__actions"><a class="link-arrow" href="${esc(link)}" target="_blank" rel="noopener noreferrer nofollow">${name ? `Zobacz na ${kind === 'instagram' ? 'Instagramie' : 'Facebooku'}` : 'Czytaj więcej'}<span class="visually-hidden">: ${esc(p.title)} (otwiera się w nowej karcie)</span></a></p>` : ''}
   </div>
 </article>`;
     })

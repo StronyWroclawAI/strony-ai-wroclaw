@@ -48,6 +48,8 @@ Zestawienie wszystkich briefów. Brief tworzysz w konkretnym zgłoszeniu i tam p
 - Grupa **Polityka prywatności** zawiera dane do uzupełnienia przed publikacją.
 - Grupa **Kontakt i formularz** zawiera m.in. **Formularz: szkic wiadomości** — tekst, który odwiedzający widzi wpisany w polu wiadomości — oraz podpowiedź nad tym polem. Wpisz „-”, jeśli pole wiadomości ma być puste.
 
+- **Gdzie widać teksty (wersja 1.0):** sekcje „Zasady i koszty”, „Materiały firmy” i „Własność strony” są na stronie `/oferta/`; wartości z sekcji „O mnie” — na `/o-mnie/`; nagłówki i teksty formularza z sekcji „Kontakt i formularz” — na stronie głównej i na `/kontakt/` (jeden formularz, te same pola). Skrót oferty na stronie głównej ma osobne pola: „Oferta – skrót na stronie głównej” — przy zmianie zasad warto sprawdzić, czy skrót nadal się zgadza.
+
 ## FAQ, Branże, Możliwości
 - **Dodaj…** tworzy nowy element na końcu listy. Wypełnij pola i kliknij **Dodaj**.
 - Strzałki **↑ ↓** zmieniają kolejność.
@@ -60,7 +62,7 @@ Zestawienie wszystkich briefów. Brief tworzysz w konkretnym zgłoszeniu i tam p
 
 **Sekcja „Aktualności”** na stronie głównej (pod Portfolio) pokazuje 6 najnowszych opublikowanych postów.
 
-- **Włączanie i wyłączanie:** przełącznik „Sekcja na stronie” w zakładce *Aktualności*. Sekcja (i pozycja „Aktualności” w menu) pojawia się tylko wtedy, gdy przełącznik jest włączony **i** jest co najmniej jeden opublikowany post. Wyłączenie niczego nie usuwa — posty zostają w panelu.
+- **Włączanie i wyłączanie:** przełącznik „Sekcja na stronie” w zakładce *Aktualności*. Sekcja na stronie głównej pojawia się tylko wtedy, gdy przełącznik jest włączony **i** jest co najmniej jeden opublikowany post. Wyłączenie niczego nie usuwa — posty zostają w panelu.
 - **Post:** tytuł, data, treść (pusta linia = nowy akapit; długie posty są skracane z przyciskiem „Czytaj dalej”), zdjęcie z biblioteki albo wgrane od razu, status Szkic / Opublikowany.
 - **Link do oryginału (opcjonalnie):** wklej adres posta z Facebooka lub Instagrama — pod postem pojawi się „Zobacz na Facebooku / Instagramie”. Może to być też dowolna inna strona („Czytaj więcej”).
 - **Osadzenie oryginału (opcjonalnie):** gdy link wskazuje konkretny post (np. `https://www.instagram.com/p/ABC123/` albo `https://www.facebook.com/twojprofil/posts/…`), możesz zaznaczyć „Pokaż też oryginalny post”. Odwiedzający zobaczy przycisk „Pokaż oryginalny post z …” z informacją o plikach cookie Meta — **ramka z Facebooka/Instagrama ładuje się dopiero po kliknięciu**. Do tego momentu strona nie łączy się z serwisami Meta (opisane w polityce prywatności, punkt 8).
@@ -94,7 +96,7 @@ Puste pole = link ukryty. Adresy profili trafiają też do danych dla Google (`s
 - **Karta projektu:** wgraj paczkę ZIP (`index.html` + `img/` + `opis-do-portfolio.txt`). Panel sam uzupełni pola z opisu i pozwoli wybrać okładkę kafelka. Pełna instrukcja i gotowe polecenie dla AI: [`PORTFOLIO.md`](PORTFOLIO.md).
 - **Szkic** widzisz tylko Ty (także podgląd karty). **Opublikowana** jest widoczna na stronie. Przed publikacją panel przypomni o zgodzie firmy, a przy projekcie demonstracyjnym — o fikcyjnych danych.
 - Pierwsza realizacja na liście (domyślnie najnowsza) jest pokazana dużym kafelkiem na górze, a kolejne w mniejszych kafelkach po dwie obok siebie. Kolejność zmieniasz strzałkami.
-- Sekcja „Portfolio” i link w menu pojawiają się automatycznie po opublikowaniu pierwszej realizacji.
+- Sekcja „Portfolio” na stronie głównej pojawia się automatycznie po opublikowaniu pierwszej realizacji. Pozycja „Realizacje” w menu głównym jest zawsze widoczna (strona `/realizacje/`).
 
 ## Ustawienia
 - **Przyjmowanie nowych projektów:** wyłączenie ukrywa formularz i pokazuje komunikat „Obecnie realizuję przyjęte projekty. Możesz napisać do mnie, aby zapytać o kolejny termin”, razem z adresem e-mail. **Nie usuwa** żadnych zgłoszeń ani kontaktów.

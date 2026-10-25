@@ -7,7 +7,7 @@ import { notFoundPage } from './_lib/http.js';
 
 const ERROR_PATHS = new Set(['/404', '/404/', '/404.html']);
 // Podstrony z buildu mają jeden adres — z ukośnikiem na końcu (/poradnik/…/). Wersja bez ukośnika → 301.
-const SLASH_RE = /^\/(?:realizacje|poradnik|dla-branz)(?:\/[a-z0-9-]+)?$/;
+const SLASH_RE = /^\/(?:realizacje|poradnik|dla-branz|oferta|o-mnie|kontakt)(?:\/[a-z0-9-]+)?$/;
 
 export async function onRequest(context) {
   const url = new URL(context.request.url);

@@ -16,7 +16,7 @@ Wynik automatycznych testów przeglądarkowych (Chromium): **36/36**.
 | XSS | Kod HTML wpisany w treść w panelu wyświetla się na stronie jako zwykły tekst. |
 | Panel | Lista i szczegóły zgłoszeń, statusy, notatki, treści, dodawanie i usuwanie FAQ z potwierdzeniem, zdjęcia, portfolio z pytaniem o zgodę, przełącznik naboru (zgłoszenia nie znikają). |
 | Strona po zmianach | Nowy tekst, komunikat zamkniętego naboru i sekcja Portfolio ze zdjęciem są widoczne od razu. |
-| Widoki | Brak przewijania poziomego przy 320, 390, 768, 1024 i 1440 px. Menu mobilne. Tryb ograniczonego ruchu. Strona 404. Kotwice menu. Brak błędów JavaScript. Podgląd `podglad/` działa z dysku bez internetu. |
+| Widoki | Brak przewijania poziomego przy 320, 390, 768, 1024 i 1440 px. Menu mobilne. Tryb ograniczonego ruchu. Strona 404. Menu: każda pozycja otwiera osobny adres (Start, Oferta, Realizacje, Dla branż, Poradnik, O mnie, Kontakt), aktywna pozycja podkreślona, menu działa bez JavaScriptu. Brak błędów JavaScript. Podgląd `podglad/` działa z dysku bez internetu. |
 
 ## Czego nie dało się sprawdzić tutaj (sprawdź po wdrożeniu)
 - Prawdziwa weryfikacja Cloudflare Turnstile i prawdziwa wysyłka przez Resend (środowisko testowe nie miało do nich dostępu).

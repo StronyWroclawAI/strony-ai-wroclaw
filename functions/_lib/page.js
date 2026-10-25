@@ -60,7 +60,7 @@ export function structuredData(origin, email, sameAs = []) {
         'Tworzenie nowoczesnych stron internetowych dla firm z Wrocławia i całej Polski: indywidualny projekt, wersja mobilna, formularz kontaktowy, mapa, galeria i pomoc przy wdrożeniu.',
       ...(email ? { email } : {}),
       ...(sameAs.length ? { sameAs } : {}),
-      founder: { '@type': 'Person', name: 'Grzegorz Rejszel' },
+      founder: { '@type': 'Person', '@id': `${origin}/o-mnie/#osoba`, name: 'Grzegorz Rejszel', url: `${origin}/o-mnie/` },
       areaServed: [
         { '@type': 'City', name: 'Wrocław' },
         { '@type': 'Country', name: 'Polska' },
@@ -157,6 +157,9 @@ export async function renderPage(context) {
   const data = await loadContent(context);
   const c = data ? data.content : {};
   const turnstileKey = (env.TURNSTILE_SITE_KEY || '').trim();
+  // Skrypt Turnstile tylko na stronach z formularzem zgłoszenia (strona główna i /kontakt/) — pozostałe strony nie łączą się z Cloudflare Challenges.
+  const pathname = new URL(request.url).pathname;
+  const hasForm = pathname === '/' || pathname === '/kontakt/';
 
   let rw = new HTMLRewriter()
     // Adresy bezwzględne dla canonical i Open Graph
@@ -196,7 +199,7 @@ export async function renderPage(context) {
     })
     .on('head', {
       element(el) {
-        if (turnstileKey) {
+        if (turnstileKey && hasForm) {
           el.append('<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>', { html: true });
         }
       },

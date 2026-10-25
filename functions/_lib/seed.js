@@ -11,36 +11,12 @@ export const SEED = {
    "sort_order": 1000
   },
   {
-   "key": "rules.free_items",
-   "section": "Zasady i koszty",
-   "label": "Kolumna 1 – punkty (jedna linia = jeden punkt)",
-   "kind": "lines",
-   "value": "Projekt i wykonanie strony w uzgodnionym zakresie\nWersja testowa pod adresem roboczym\nWprowadzenie uzgodnionych poprawek\nPomoc przy uruchomieniu pod domeną firmy\n3 miesiące aktualizacji: teksty, zdjęcia, cennik i dane kontaktowe",
-   "sort_order": 6001
-  },
-  {
-   "key": "rules.paid_items",
-   "section": "Zasady i koszty",
-   "label": "Kolumna 2 – punkty (jedna linia = jeden punkt)",
-   "kind": "lines",
-   "value": "Domena — rejestracja i coroczne odnowienie\nPłatny hosting — tylko jeśli bezpłatny nie wystarczy\nEwentualne płatne usługi zewnętrzne",
-   "sort_order": 6002
-  },
-  {
-   "key": "rules.cond_items",
-   "section": "Zasady i koszty",
-   "label": "Kolumna 3 – punkty (jedna linia = jeden punkt)",
-   "kind": "lines",
-   "value": "Zgoda na pokazanie nazwy firmy, zrzutów ekranu i linku do strony w moim portfolio\nDyskretny podpis w stopce: „Projekt i wykonanie: Strony AI Wrocław”, z linkiem do mojej strony",
-   "sort_order": 6003
-  },
-  {
    "key": "hero.h1",
    "section": "Pierwszy ekran",
    "label": "Nagłówek H1 (najważniejszy dla Google — o czym jest strona)",
    "kind": "text",
    "value": "Tworzenie stron internetowych dla firm we Wrocławiu",
-   "sort_order": 1004
+   "sort_order": 1001
   },
   {
    "key": "hero.title",
@@ -48,7 +24,7 @@ export const SEED = {
    "label": "Nagłówek główny",
    "kind": "text",
    "value": "Strony, które budują wizerunek",
-   "sort_order": 1005
+   "sort_order": 1002
   },
   {
    "key": "hero.title_accent",
@@ -56,7 +32,7 @@ export const SEED = {
    "label": "Nagłówek główny – druga linia (bez animacji i dla czytników ekranu)",
    "kind": "text",
    "value": "Twojej firmy",
-   "sort_order": 1006
+   "sort_order": 1003
   },
   {
    "key": "hero.lead",
@@ -64,7 +40,7 @@ export const SEED = {
    "label": "Opis pod nagłówkiem",
    "kind": "long",
    "value": "Projektuję nowoczesne strony internetowe dla małych firm, usługodawców i lokalnych biznesów z Wrocławia i całej Polski. Każda strona powstaje indywidualnie, działa wygodnie na telefonach i komputerach i jest przygotowana tak, aby dobrze prezentować firmę w internecie. Buduję portfolio, dlatego wybranym firmom wykonuję stronę bezpłatnie.",
-   "sort_order": 1007
+   "sort_order": 1004
   },
   {
    "key": "hero.offer_label",
@@ -72,7 +48,7 @@ export const SEED = {
    "label": "Karta oferty – etykieta",
    "kind": "text",
    "value": "Wykonanie strony",
-   "sort_order": 1008
+   "sort_order": 1005
   },
   {
    "key": "hero.offer_value",
@@ -80,7 +56,7 @@ export const SEED = {
    "label": "Karta oferty – wartość",
    "kind": "text",
    "value": "0 zł",
-   "sort_order": 1009
+   "sort_order": 1006
   },
   {
    "key": "hero.offer_note",
@@ -88,7 +64,7 @@ export const SEED = {
    "label": "Karta oferty – informacja o kosztach zewnętrznych",
    "kind": "long",
    "value": "Po Twojej stronie są tylko koszty zewnętrzne: domena oraz — jeśli okaże się potrzebny — płatny hosting lub inne płatne usługi. Każdy koszt uzgadniamy przed zakupem.",
-   "sort_order": 1010
+   "sort_order": 1007
   },
   {
    "key": "hero.cta_primary",
@@ -96,7 +72,7 @@ export const SEED = {
    "label": "Przycisk główny",
    "kind": "text",
    "value": "Zgłoś swoją firmę",
-   "sort_order": 1011
+   "sort_order": 1008
   },
   {
    "key": "hero.cta_secondary",
@@ -104,7 +80,7 @@ export const SEED = {
    "label": "Przycisk drugi",
    "kind": "text",
    "value": "Zobacz, jak wygląda współpraca",
-   "sort_order": 1012
+   "sort_order": 1009
   },
   {
    "key": "hero.remote",
@@ -112,7 +88,7 @@ export const SEED = {
    "label": "Informacja pod przyciskami",
    "kind": "text",
    "value": "Pracuję zdalnie — współpracuję z firmami z całej Polski.",
-   "sort_order": 1013
+   "sort_order": 1010
   },
   {
    "key": "benefits.eyebrow",
@@ -120,7 +96,7 @@ export const SEED = {
    "label": "Nad nagłówkiem",
    "kind": "text",
    "value": "Korzyści",
-   "sort_order": 2014
+   "sort_order": 2011
   },
   {
    "key": "benefits.title",
@@ -128,7 +104,7 @@ export const SEED = {
    "label": "Nagłówek sekcji",
    "kind": "text",
    "value": "Co zyskuje firma dzięki dobrej stronie internetowej",
-   "sort_order": 2015
+   "sort_order": 2012
   },
   {
    "key": "benefits.intro",
@@ -136,7 +112,7 @@ export const SEED = {
    "label": "Wstęp",
    "kind": "long",
    "value": "Strona internetowa to często pierwsze miejsce, w którym klient poznaje Twoją firmę. Moim zadaniem jest przedstawić ją tak, jak na to zasługuje.",
-   "sort_order": 2016
+   "sort_order": 2013
   },
   {
    "key": "benefits.honest",
@@ -144,7 +120,7 @@ export const SEED = {
    "label": "Uczciwa uwaga",
    "kind": "long",
    "value": "Nie obiecuję wzrostu sprzedaży ani pozycji w Google. Obiecuję dopracowaną stronę, która jasno i profesjonalnie przedstawia Twoją firmę.",
-   "sort_order": 2017
+   "sort_order": 2014
   },
   {
    "key": "benefits.seo",
@@ -152,7 +128,7 @@ export const SEED = {
    "label": "Podstawy SEO (co dostaje każda strona)",
    "kind": "long",
    "value": "Każdą stronę przygotowuję z technicznymi podstawami SEO: czytelną strukturą nagłówków, tytułem i opisem dla wyszukiwarki, wersją mobilną, szybkim ładowaniem i mapą strony dla Google. To pomaga wyszukiwarce zrozumieć stronę — ale nie jest gwarancją pozycji.",
-   "sort_order": 2018
+   "sort_order": 2015
   },
   {
    "key": "benefits.1_title",
@@ -160,7 +136,7 @@ export const SEED = {
    "label": "Korzyść 1 – tytuł",
    "kind": "text",
    "value": "Profesjonalna prezentacja firmy",
-   "sort_order": 2019
+   "sort_order": 2016
   },
   {
    "key": "benefits.1_text",
@@ -168,7 +144,7 @@ export const SEED = {
    "label": "Korzyść 1 – opis",
    "kind": "text",
    "value": "Dopracowany wygląd pokazuje, że firma dba o szczegóły — zanim klient zadzwoni lub przyjdzie osobiście.",
-   "sort_order": 2020
+   "sort_order": 2017
   },
   {
    "key": "benefits.2_title",
@@ -176,7 +152,7 @@ export const SEED = {
    "label": "Korzyść 2 – tytuł",
    "kind": "text",
    "value": "Czytelna oferta",
-   "sort_order": 2021
+   "sort_order": 2018
   },
   {
    "key": "benefits.2_text",
@@ -184,7 +160,7 @@ export const SEED = {
    "label": "Korzyść 2 – opis",
    "kind": "long",
    "value": "Usługi, ceny i najważniejsze informacje w jednym miejscu — bez przewijania dziesiątek postów w mediach społecznościowych.",
-   "sort_order": 2022
+   "sort_order": 2019
   },
   {
    "key": "benefits.3_title",
@@ -192,7 +168,7 @@ export const SEED = {
    "label": "Korzyść 3 – tytuł",
    "kind": "text",
    "value": "Wygoda na telefonie",
-   "sort_order": 2023
+   "sort_order": 2020
   },
   {
    "key": "benefits.3_text",
@@ -200,7 +176,7 @@ export const SEED = {
    "label": "Korzyść 3 – opis",
    "kind": "long",
    "value": "Strona dobrze wygląda i łatwo się z niej korzysta na małym ekranie, gdzie wiele osób szuka informacji o firmach.",
-   "sort_order": 2024
+   "sort_order": 2021
   },
   {
    "key": "benefits.4_title",
@@ -208,7 +184,7 @@ export const SEED = {
    "label": "Korzyść 4 – tytuł",
    "kind": "text",
    "value": "Prosty kontakt",
-   "sort_order": 2025
+   "sort_order": 2022
   },
   {
    "key": "benefits.4_text",
@@ -216,7 +192,7 @@ export const SEED = {
    "label": "Korzyść 4 – opis",
    "kind": "text",
    "value": "Telefon, e-mail, formularz, mapa i link do rezerwacji są tam, gdzie klient ich szuka.",
-   "sort_order": 2026
+   "sort_order": 2023
   },
   {
    "key": "benefits.5_title",
@@ -224,7 +200,7 @@ export const SEED = {
    "label": "Korzyść 5 – tytuł",
    "kind": "text",
    "value": "Samodzielne aktualizacje",
-   "sort_order": 2027
+   "sort_order": 2024
   },
   {
    "key": "benefits.5_text",
@@ -232,7 +208,7 @@ export const SEED = {
    "label": "Korzyść 5 – opis",
    "kind": "text",
    "value": "Z panelem edycji zmienisz cennik, zdjęcia czy godziny otwarcia wtedy, kiedy potrzebujesz.",
-   "sort_order": 2028
+   "sort_order": 2025
   },
   {
    "key": "industries.eyebrow",
@@ -240,7 +216,7 @@ export const SEED = {
    "label": "Nad nagłówkiem",
    "kind": "text",
    "value": "Dla kogo",
-   "sort_order": 3029
+   "sort_order": 3026
   },
   {
    "key": "industries.title",
@@ -248,7 +224,7 @@ export const SEED = {
    "label": "Nagłówek sekcji",
    "kind": "text",
    "value": "Projekt dopasowany do charakteru firmy",
-   "sort_order": 3030
+   "sort_order": 3027
   },
   {
    "key": "industries.intro",
@@ -256,7 +232,7 @@ export const SEED = {
    "label": "Wstęp",
    "kind": "long",
    "value": "Salon kosmetyczny potrzebuje innego klimatu niż kancelaria notarialna, a warsztat — innych informacji niż szkoła. Wygląd, układ i treści dobieram do tego, czym zajmuje się konkretna firma i kim są jej klienci.",
-   "sort_order": 3031
+   "sort_order": 3028
   },
   {
    "key": "capabilities.eyebrow",
@@ -264,7 +240,7 @@ export const SEED = {
    "label": "Nad nagłówkiem",
    "kind": "text",
    "value": "Możliwości",
-   "sort_order": 4032
+   "sort_order": 4029
   },
   {
    "key": "capabilities.title",
@@ -272,7 +248,7 @@ export const SEED = {
    "label": "Nagłówek sekcji",
    "kind": "text",
    "value": "Co mogę stworzyć dla Twojej firmy",
-   "sort_order": 4033
+   "sort_order": 4030
   },
   {
    "key": "capabilities.intro",
@@ -280,7 +256,7 @@ export const SEED = {
    "label": "Wstęp",
    "kind": "long",
    "value": "Integracje i funkcje dobieram do potrzeb firmy — nie każda strona potrzebuje wszystkiego. Oto, co może się na niej znaleźć.",
-   "sort_order": 4034
+   "sort_order": 4031
   },
   {
    "key": "process.eyebrow",
@@ -288,7 +264,7 @@ export const SEED = {
    "label": "Nad nagłówkiem",
    "kind": "text",
    "value": "Przebieg współpracy",
-   "sort_order": 5035
+   "sort_order": 5032
   },
   {
    "key": "process.title",
@@ -296,7 +272,7 @@ export const SEED = {
    "label": "Nagłówek sekcji",
    "kind": "text",
    "value": "Jak powstaje strona WWW — od pierwszej rozmowy do publikacji",
-   "sort_order": 5036
+   "sort_order": 5033
   },
   {
    "key": "process.intro",
@@ -304,7 +280,7 @@ export const SEED = {
    "label": "Wstęp",
    "kind": "long",
    "value": "Każdy etap jest jasny, a Ty wiesz, na co się zgadzasz, zanim zaczniemy pracę. Termin i zakres ustalam indywidualnie.",
-   "sort_order": 5037
+   "sort_order": 5034
   },
   {
    "key": "process.time_title",
@@ -312,7 +288,7 @@ export const SEED = {
    "label": "Czas realizacji – nagłówek",
    "kind": "text",
    "value": "Ile to trwa?",
-   "sort_order": 5038
+   "sort_order": 5035
   },
   {
    "key": "process.time_text",
@@ -320,7 +296,7 @@ export const SEED = {
    "label": "Czas realizacji – treść",
    "kind": "long",
    "value": "Nie podaję jednego terminu dla wszystkich. Czas zależy głównie od tego, jak szybko otrzymam materiały (teksty, zdjęcia, logo), od liczby podstron i funkcji oraz od liczby rund poprawek. Termin ustalamy przed rozpoczęciem pracy.",
-   "sort_order": 5039
+   "sort_order": 5036
   },
   {
    "key": "process.1_title",
@@ -328,7 +304,7 @@ export const SEED = {
    "label": "Krok 1 – tytuł",
    "kind": "text",
    "value": "Poznaję Twoją firmę",
-   "sort_order": 5040
+   "sort_order": 5037
   },
   {
    "key": "process.1_text",
@@ -336,7 +312,7 @@ export const SEED = {
    "label": "Krok 1 – opis",
    "kind": "text",
    "value": "Opowiadasz o potrzebach, oczekiwaniach i preferencjach wizualnych oraz przekazujesz materiały.",
-   "sort_order": 5041
+   "sort_order": 5038
   },
   {
    "key": "process.2_title",
@@ -344,7 +320,7 @@ export const SEED = {
    "label": "Krok 2 – tytuł",
    "kind": "text",
    "value": "Ustalamy zakres i zgody",
-   "sort_order": 5042
+   "sort_order": 5039
   },
   {
    "key": "process.2_text",
@@ -352,7 +328,7 @@ export const SEED = {
    "label": "Krok 2 – opis",
    "kind": "text",
    "value": "Wspólnie określamy zakres strony oraz zgody na wykorzystanie materiałów i prezentację realizacji w portfolio.",
-   "sort_order": 5043
+   "sort_order": 5040
   },
   {
    "key": "process.3_title",
@@ -360,7 +336,7 @@ export const SEED = {
    "label": "Krok 3 – tytuł",
    "kind": "text",
    "value": "Przygotowuję wersję testową",
-   "sort_order": 5044
+   "sort_order": 5041
   },
   {
    "key": "process.3_text",
@@ -368,7 +344,7 @@ export const SEED = {
    "label": "Krok 3 – opis",
    "kind": "text",
    "value": "Tworzę działającą stronę na bezpłatnym hostingu, pod adresem roboczym — do obejrzenia i przetestowania.",
-   "sort_order": 5045
+   "sort_order": 5042
   },
   {
    "key": "process.4_title",
@@ -376,7 +352,7 @@ export const SEED = {
    "label": "Krok 4 – tytuł",
    "kind": "text",
    "value": "Wprowadzam poprawki",
-   "sort_order": 5046
+   "sort_order": 5043
   },
   {
    "key": "process.4_text",
@@ -384,7 +360,7 @@ export const SEED = {
    "label": "Krok 4 – opis",
    "kind": "text",
    "value": "Przekazujesz uwagi, a ja wprowadzam uzgodnione zmiany.",
-   "sort_order": 5047
+   "sort_order": 5044
   },
   {
    "key": "process.5_title",
@@ -392,7 +368,7 @@ export const SEED = {
    "label": "Krok 5 – tytuł",
    "kind": "text",
    "value": "Uruchamiamy stronę",
-   "sort_order": 5048
+   "sort_order": 5045
   },
   {
    "key": "process.5_text",
@@ -400,7 +376,7 @@ export const SEED = {
    "label": "Krok 5 – opis",
    "kind": "text",
    "value": "Po akceptacji pomagam uruchomić stronę pod indywidualną domeną firmy.",
-   "sort_order": 5049
+   "sort_order": 5046
   },
   {
    "key": "process.6_title",
@@ -408,7 +384,7 @@ export const SEED = {
    "label": "Krok 6 – tytuł",
    "kind": "text",
    "value": "3 miesiące aktualizacji",
-   "sort_order": 5050
+   "sort_order": 5047
   },
   {
    "key": "process.6_text",
@@ -416,319 +392,79 @@ export const SEED = {
    "label": "Krok 6 – opis",
    "kind": "long",
    "value": "Przez 3 miesiące od uruchomienia bezpłatnie aktualizuję teksty, zdjęcia, cennik i dane kontaktowe w uzgodnionym zakresie.",
-   "sort_order": 5051
+   "sort_order": 5048
   },
   {
-   "key": "rules.eyebrow",
-   "section": "Zasady i koszty",
+   "key": "offer.eyebrow",
+   "section": "Oferta – skrót na stronie głównej",
    "label": "Nad nagłówkiem",
    "kind": "text",
-   "value": "Zasady",
-   "sort_order": 6052
+   "value": "Oferta i zasady",
+   "sort_order": 5849
   },
   {
-   "key": "rules.title",
-   "section": "Zasady i koszty",
+   "key": "offer.title",
+   "section": "Oferta – skrót na stronie głównej",
    "label": "Nagłówek sekcji",
    "kind": "text",
-   "value": "Uczciwie o kosztach i warunkach",
-   "sort_order": 6053
+   "value": "Wykonanie strony bezpłatnie, koszty zewnętrzne uzgadniane z góry",
+   "sort_order": 5850
   },
   {
-   "key": "rules.intro",
-   "section": "Zasady i koszty",
+   "key": "offer.intro",
+   "section": "Oferta – skrót na stronie głównej",
    "label": "Wstęp",
-   "kind": "text",
-   "value": "Samo wykonanie strony jest bezpłatne. Poniżej znajdziesz wszystko, co warto wiedzieć, zanim się zgłosisz.",
-   "sort_order": 6054
+   "kind": "long",
+   "value": "Buduję portfolio, dlatego projekt i wykonanie strony są bezpłatne. Po stronie firmy zostaje domena i ewentualne płatne usługi — zawsze uzgodnione przed zakupem.",
+   "sort_order": 5851
   },
   {
-   "key": "rules.free_title",
-   "section": "Zasady i koszty",
-   "label": "Kolumna 1 – tytuł",
+   "key": "offer.1_title",
+   "section": "Oferta – skrót na stronie głównej",
+   "label": "Punkt 1 – tytuł",
    "kind": "text",
    "value": "Bezpłatnie",
-   "sort_order": 6055
+   "sort_order": 5852
   },
   {
-   "key": "rules.paid_title",
-   "section": "Zasady i koszty",
-   "label": "Kolumna 2 – tytuł",
+   "key": "offer.1_text",
+   "section": "Oferta – skrót na stronie głównej",
+   "label": "Punkt 1 – opis",
+   "kind": "text",
+   "value": "Projekt i wykonanie strony, wersja testowa, poprawki, pomoc przy uruchomieniu i 3 miesiące aktualizacji.",
+   "sort_order": 5853
+  },
+  {
+   "key": "offer.2_title",
+   "section": "Oferta – skrót na stronie głównej",
+   "label": "Punkt 2 – tytuł",
    "kind": "text",
    "value": "Po stronie firmy",
-   "sort_order": 6056
+   "sort_order": 5854
   },
   {
-   "key": "rules.paid_note",
-   "section": "Zasady i koszty",
-   "label": "Kolumna 2 – dopisek",
+   "key": "offer.2_text",
+   "section": "Oferta – skrót na stronie głównej",
+   "label": "Punkt 2 – opis",
    "kind": "text",
-   "value": "Każdy koszt zewnętrzny uzgadniamy, zanim zostanie poniesiony.",
-   "sort_order": 6057
+   "value": "Domena, a jeśli okaże się potrzebny — płatny hosting lub inne usługi zewnętrzne.",
+   "sort_order": 5855
   },
   {
-   "key": "rules.cond_title",
-   "section": "Zasady i koszty",
-   "label": "Kolumna 3 – tytuł",
+   "key": "offer.3_title",
+   "section": "Oferta – skrót na stronie głównej",
+   "label": "Punkt 3 – tytuł",
    "kind": "text",
    "value": "Warunek współpracy",
-   "sort_order": 6058
+   "sort_order": 5856
   },
   {
-   "key": "rules.cond_note",
-   "section": "Zasady i koszty",
-   "label": "Kolumna 3 – dopisek",
-   "kind": "text",
-   "value": "Zgody ustalamy po pierwszej rozmowie, przed rozpoczęciem projektu.",
-   "sort_order": 6059
-  },
-  {
-   "key": "rules.fine1_title",
-   "section": "Zasady i koszty",
-   "label": "Uwaga 1 – tytuł",
-   "kind": "text",
-   "value": "Poza zakresem aktualizacji",
-   "sort_order": 6060
-  },
-  {
-   "key": "rules.fine1_text",
-   "section": "Zasady i koszty",
-   "label": "Uwaga 1 – treść",
-   "kind": "text",
-   "value": "Nowe podstrony, rozbudowa i dodatkowe funkcje wymagają osobnego ustalenia.",
-   "sort_order": 6061
-  },
-  {
-   "key": "rules.fine2_title",
-   "section": "Zasady i koszty",
-   "label": "Uwaga 2 – tytuł",
-   "kind": "text",
-   "value": "Błędy wykonania",
-   "sort_order": 6062
-  },
-  {
-   "key": "rules.fine2_text",
-   "section": "Zasady i koszty",
-   "label": "Uwaga 2 – treść",
-   "kind": "text",
-   "value": "Poprawki moich błędów to osobna sprawa — nie są częścią aktualizacji i nie kończą się po 3 miesiącach.",
-   "sort_order": 6063
-  },
-  {
-   "key": "rules.fine3_title",
-   "section": "Zasady i koszty",
-   "label": "Uwaga 3 – tytuł",
-   "kind": "text",
-   "value": "Termin i zakres",
-   "sort_order": 6064
-  },
-  {
-   "key": "rules.fine3_text",
-   "section": "Zasady i koszty",
-   "label": "Uwaga 3 – treść",
-   "kind": "text",
-   "value": "Ustalam indywidualnie. Nie obiecuję nieograniczonych poprawek ani stałej bezpłatnej opieki.",
-   "sort_order": 6065
-  },
-  {
-   "key": "rules.fine4_title",
-   "section": "Zasady i koszty",
-   "label": "Uwaga 4 – tytuł",
-   "kind": "text",
-   "value": "Koszty utrzymania",
-   "sort_order": 6066
-  },
-  {
-   "key": "rules.fine4_text",
-   "section": "Zasady i koszty",
-   "label": "Uwaga 4 – treść",
-   "kind": "long",
-   "value": "Po uruchomieniu stałym kosztem jest zwykle domena, opłacana co roku. Płatny hosting czy poczta w domenie pojawiają się tylko wtedy, gdy są potrzebne. Kwoty zależą od dostawcy, dlatego podaję je przed zakupem.",
-   "sort_order": 6067
-  },
-  {
-   "key": "rules.fine5_title",
-   "section": "Zasady i koszty",
-   "label": "Uwaga 5 – tytuł",
-   "kind": "text",
-   "value": "Usługi zewnętrzne",
-   "sort_order": 6068
-  },
-  {
-   "key": "rules.fine5_text",
-   "section": "Zasady i koszty",
-   "label": "Uwaga 5 – treść",
-   "kind": "long",
-   "value": "Na przykład system rezerwacji online czy płatności mają własne cenniki. Jeśli są potrzebne, mówię o tym przed ich podłączeniem.",
-   "sort_order": 6069
-  },
-  {
-   "key": "rules.fine6_title",
-   "section": "Zasady i koszty",
-   "label": "Uwaga 6 – tytuł",
-   "kind": "text",
-   "value": "Po 3 miesiącach",
-   "sort_order": 6070
-  },
-  {
-   "key": "rules.fine6_text",
-   "section": "Zasady i koszty",
-   "label": "Uwaga 6 – treść",
-   "kind": "long",
-   "value": "Jeśli strona ma panel edycji, treści możesz dalej zmieniać sam. Inne zmiany i rozbudowę ustalamy osobno, przed rozpoczęciem pracy.",
-   "sort_order": 6071
-  },
-  {
-   "key": "materials.eyebrow",
-   "section": "Materiały firmy",
-   "label": "Nad nagłówkiem",
-   "kind": "text",
-   "value": "Materiały firmy",
-   "sort_order": 7072
-  },
-  {
-   "key": "materials.title",
-   "section": "Materiały firmy",
-   "label": "Nagłówek sekcji",
-   "kind": "text",
-   "value": "Twoje materiały, Twoja decyzja",
-   "sort_order": 7073
-  },
-  {
-   "key": "materials.intro",
-   "section": "Materiały firmy",
-   "label": "Wstęp",
-   "kind": "text",
-   "value": "Zanim przygotuję projekt, ustalamy, z czego mogę skorzystać. To proste — i chroni Twoją firmę.",
-   "sort_order": 7074
-  },
-  {
-   "key": "materials.1_title",
-   "section": "Materiały firmy",
-   "label": "Punkt 1 – tytuł",
-   "kind": "text",
-   "value": "Wskazujesz materiały",
-   "sort_order": 7075
-  },
-  {
-   "key": "materials.1_text",
-   "section": "Materiały firmy",
-   "label": "Punkt 1 – opis",
-   "kind": "long",
-   "value": "Logo, zdjęcia, opisy oraz treści z oficjalnego Facebooka, Instagrama lub innych źródeł, które chcesz wykorzystać.",
-   "sort_order": 7076
-  },
-  {
-   "key": "materials.2_title",
-   "section": "Materiały firmy",
-   "label": "Punkt 2 – tytuł",
-   "kind": "text",
-   "value": "Potwierdzasz możliwość ich użycia",
-   "sort_order": 7077
-  },
-  {
-   "key": "materials.2_text",
-   "section": "Materiały firmy",
-   "label": "Punkt 2 – opis",
-   "kind": "long",
-   "value": "Publiczna dostępność nie oznacza zgody na wykorzystanie. Zdjęcia od fotografa, grafiki czy opinie z portali mogą należeć do kogoś innego — dlatego to sprawdzamy.",
-   "sort_order": 7078
-  },
-  {
-   "key": "materials.3_title",
-   "section": "Materiały firmy",
-   "label": "Punkt 3 – tytuł",
-   "kind": "text",
-   "value": "Decydujesz, czego nie używać",
-   "sort_order": 7079
-  },
-  {
-   "key": "materials.3_text",
-   "section": "Materiały firmy",
+   "key": "offer.3_text",
+   "section": "Oferta – skrót na stronie głównej",
    "label": "Punkt 3 – opis",
    "kind": "text",
-   "value": "Możesz wyłączyć wybrane materiały, a zdjęcia i opisy wymienić później.",
-   "sort_order": 7080
-  },
-  {
-   "key": "materials.note",
-   "section": "Materiały firmy",
-   "label": "Dopisek",
-   "kind": "text",
-   "value": "Nie pobieram automatycznie treści z mediów społecznościowych — korzystam wyłącznie z tego, co wskażesz.",
-   "sort_order": 7081
-  },
-  {
-   "key": "ownership.eyebrow",
-   "section": "Własność strony",
-   "label": "Nad nagłówkiem",
-   "kind": "text",
-   "value": "Po uruchomieniu",
-   "sort_order": 7582
-  },
-  {
-   "key": "ownership.title",
-   "section": "Własność strony",
-   "label": "Nagłówek sekcji",
-   "kind": "text",
-   "value": "Kto jest właścicielem strony i domeny",
-   "sort_order": 7583
-  },
-  {
-   "key": "ownership.intro",
-   "section": "Własność strony",
-   "label": "Wstęp",
-   "kind": "long",
-   "value": "Strona ma działać dla Twojej firmy także wtedy, gdy kiedyś zechcesz pracować z kimś innym. Dlatego od początku ustalamy, na kogo są konta i kto ma do nich dostęp.",
-   "sort_order": 7584
-  },
-  {
-   "key": "ownership.1_title",
-   "section": "Własność strony",
-   "label": "Punkt 1 – tytuł",
-   "kind": "text",
-   "value": "Domena jest Twoja",
-   "sort_order": 7585
-  },
-  {
-   "key": "ownership.1_text",
-   "section": "Własność strony",
-   "label": "Punkt 1 – opis",
-   "kind": "long",
-   "value": "Domenę opłaca Twoja firma i to ona powinna być jej abonentem. Dzięki temu sam decydujesz o jej odnowieniu i ewentualnym przeniesieniu.",
-   "sort_order": 7586
-  },
-  {
-   "key": "ownership.2_title",
-   "section": "Własność strony",
-   "label": "Punkt 2 – tytuł",
-   "kind": "text",
-   "value": "Dostajesz wszystkie dostępy",
-   "sort_order": 7587
-  },
-  {
-   "key": "ownership.2_text",
-   "section": "Własność strony",
-   "label": "Punkt 2 – opis",
-   "kind": "long",
-   "value": "Po uruchomieniu przekazuję zestawienie: gdzie jest domena i do kiedy jest opłacona, jakie konta powstały dla strony i jak się do nich zalogować.",
-   "sort_order": 7588
-  },
-  {
-   "key": "ownership.3_title",
-   "section": "Własność strony",
-   "label": "Punkt 3 – tytuł",
-   "kind": "text",
-   "value": "Możesz zmienić wykonawcę",
-   "sort_order": 7589
-  },
-  {
-   "key": "ownership.3_text",
-   "section": "Własność strony",
-   "label": "Punkt 3 – opis",
-   "kind": "long",
-   "value": "Nie wiążę Cię abonamentem ani umową na opiekę. Mając dostępy, możesz później prowadzić stronę sam albo powierzyć ją komuś innemu.",
-   "sort_order": 7590
+   "value": "Zgoda na pokazanie strony w moim portfolio i dyskretny podpis w stopce.",
+   "sort_order": 5857
   },
   {
    "key": "portfolio.eyebrow",
@@ -736,7 +472,7 @@ export const SEED = {
    "label": "Nad nagłówkiem",
    "kind": "text",
    "value": "Portfolio",
-   "sort_order": 8091
+   "sort_order": 8058
   },
   {
    "key": "portfolio.title",
@@ -744,7 +480,7 @@ export const SEED = {
    "label": "Nagłówek sekcji",
    "kind": "text",
    "value": "Realizacje i projekty stron internetowych",
-   "sort_order": 8092
+   "sort_order": 8059
   },
   {
    "key": "portfolio.intro",
@@ -752,7 +488,7 @@ export const SEED = {
    "label": "Wstęp",
    "kind": "long",
    "value": "Projekty zrealizowane dla firm (za ich zgodą) oraz projekty demonstracyjne — kliknij kafelek, aby zobaczyć szczegóły.",
-   "sort_order": 8093
+   "sort_order": 8060
   },
   {
    "key": "portfolio.real_label",
@@ -760,7 +496,7 @@ export const SEED = {
    "label": "Zakładka 1 – nazwa (projekty zrealizowane)",
    "kind": "text",
    "value": "Projekty zrealizowane",
-   "sort_order": 8094
+   "sort_order": 8061
   },
   {
    "key": "portfolio.real_intro",
@@ -768,7 +504,7 @@ export const SEED = {
    "label": "Zakładka 1 – opis",
    "kind": "text",
    "value": "Strony przygotowane dla prawdziwych firm, które zgodziły się na ich prezentację.",
-   "sort_order": 8095
+   "sort_order": 8062
   },
   {
    "key": "portfolio.demo_label",
@@ -776,7 +512,7 @@ export const SEED = {
    "label": "Zakładka 2 – nazwa (projekty demonstracyjne)",
    "kind": "text",
    "value": "Projekty demonstracyjne",
-   "sort_order": 8096
+   "sort_order": 8063
   },
   {
    "key": "portfolio.demo_intro",
@@ -784,7 +520,7 @@ export const SEED = {
    "label": "Zakładka 2 – opis",
    "kind": "text",
    "value": "Koncepcje na przykładzie fikcyjnych firm — pokazują, jak może wyglądać strona dla danej branży.",
-   "sort_order": 8097
+   "sort_order": 8064
   },
   {
    "key": "posts.eyebrow",
@@ -792,7 +528,7 @@ export const SEED = {
    "label": "Nad nagłówkiem",
    "kind": "text",
    "value": "Aktualności",
-   "sort_order": 8598
+   "sort_order": 8565
   },
   {
    "key": "posts.title",
@@ -800,7 +536,7 @@ export const SEED = {
    "label": "Nagłówek sekcji",
    "kind": "text",
    "value": "Co nowego",
-   "sort_order": 8599
+   "sort_order": 8566
   },
   {
    "key": "posts.intro",
@@ -808,7 +544,7 @@ export const SEED = {
    "label": "Wstęp",
    "kind": "text",
    "value": "Nowe projekty, wolne terminy i krótkie informacje o tym, nad czym teraz pracuję.",
-   "sort_order": 8600
+   "sort_order": 8567
   },
   {
    "key": "posts.follow",
@@ -816,95 +552,47 @@ export const SEED = {
    "label": "Zachęta do obserwowania profili",
    "kind": "text",
    "value": "Więcej aktualności znajdziesz na moich profilach:",
-   "sort_order": 8601
+   "sort_order": 8568
   },
   {
    "key": "about.eyebrow",
-   "section": "O mnie",
+   "section": "O mnie (strona główna i /o-mnie/)",
    "label": "Nad nagłówkiem",
    "kind": "text",
    "value": "O mnie",
-   "sort_order": 9102
+   "sort_order": 9069
   },
   {
    "key": "about.title",
-   "section": "O mnie",
+   "section": "O mnie (strona główna i /o-mnie/)",
    "label": "Nagłówek sekcji",
    "kind": "text",
    "value": "Cześć, jestem Grzegorz",
-   "sort_order": 9103
+   "sort_order": 9070
   },
   {
    "key": "about.p1",
-   "section": "O mnie",
+   "section": "O mnie (strona główna i /o-mnie/)",
    "label": "Akapit 1",
    "kind": "long",
    "value": "Jestem z Wrocławia i tworzę strony internetowe dla małych firm. Wykorzystuję narzędzia AI do projektowania i tworzenia stron, a każdy projekt dopasowuję do potrzeb konkretnej firmy.",
-   "sort_order": 9104
+   "sort_order": 9071
   },
   {
    "key": "about.p2",
-   "section": "O mnie",
+   "section": "O mnie (strona główna i /o-mnie/)",
    "label": "Akapit 2",
    "kind": "long",
    "value": "Stawiam pierwsze kroki, rozwijam umiejętności i buduję portfolio — dlatego wybranym firmom wykonuję stronę bezpłatnie. Nie jestem agencją ani zespołem: od pierwszej wiadomości do uruchomienia strony rozmawiasz bezpośrednio ze mną.",
-   "sort_order": 9105
+   "sort_order": 9072
   },
   {
    "key": "about.p3",
-   "section": "O mnie",
+   "section": "O mnie (strona główna i /o-mnie/)",
    "label": "Akapit 3",
    "kind": "long",
    "value": "Jeśli trafiłeś tutaj z mojej wiadomości e-mail — na tej stronie znajdziesz wszystko, co warto wiedzieć, zanim odpowiesz.",
-   "sort_order": 9106
-  },
-  {
-   "key": "about.v1_title",
-   "section": "O mnie",
-   "label": "Wartość 1 – tytuł",
-   "kind": "text",
-   "value": "Jasne zasady",
-   "sort_order": 9107
-  },
-  {
-   "key": "about.v1_text",
-   "section": "O mnie",
-   "label": "Wartość 1 – opis",
-   "kind": "text",
-   "value": "Koszty zewnętrzne i zakres ustalamy przed rozpoczęciem pracy.",
-   "sort_order": 9108
-  },
-  {
-   "key": "about.v2_title",
-   "section": "O mnie",
-   "label": "Wartość 2 – tytuł",
-   "kind": "text",
-   "value": "Szacunek dla materiałów",
-   "sort_order": 9109
-  },
-  {
-   "key": "about.v2_text",
-   "section": "O mnie",
-   "label": "Wartość 2 – opis",
-   "kind": "text",
-   "value": "Używam tylko tego, co wskażesz i na co masz zgodę.",
-   "sort_order": 9110
-  },
-  {
-   "key": "about.v3_title",
-   "section": "O mnie",
-   "label": "Wartość 3 – tytuł",
-   "kind": "text",
-   "value": "Jeden kontakt",
-   "sort_order": 9111
-  },
-  {
-   "key": "about.v3_text",
-   "section": "O mnie",
-   "label": "Wartość 3 – opis",
-   "kind": "text",
-   "value": "Projekt prowadzę osobiście, od rozmowy do uruchomienia.",
-   "sort_order": 9112
+   "sort_order": 9073
   },
   {
    "key": "faq.eyebrow",
@@ -912,7 +600,7 @@ export const SEED = {
    "label": "Nad nagłówkiem",
    "kind": "text",
    "value": "FAQ",
-   "sort_order": 10113
+   "sort_order": 10074
   },
   {
    "key": "faq.title",
@@ -920,7 +608,7 @@ export const SEED = {
    "label": "Nagłówek sekcji",
    "kind": "text",
    "value": "Najczęstsze pytania",
-   "sort_order": 10114
+   "sort_order": 10075
   },
   {
    "key": "faq.intro",
@@ -928,7 +616,7 @@ export const SEED = {
    "label": "Wstęp",
    "kind": "text",
    "value": "Nie znalazłeś odpowiedzi? Napisz — chętnie wyjaśnię.",
-   "sort_order": 10115
+   "sort_order": 10076
   },
   {
    "key": "contact.eyebrow",
@@ -936,7 +624,7 @@ export const SEED = {
    "label": "Nad nagłówkiem",
    "kind": "text",
    "value": "Kontakt",
-   "sort_order": 11116
+   "sort_order": 11077
   },
   {
    "key": "contact.title",
@@ -944,7 +632,7 @@ export const SEED = {
    "label": "Nagłówek sekcji",
    "kind": "text",
    "value": "Zgłoś swoją firmę",
-   "sort_order": 11117
+   "sort_order": 11078
   },
   {
    "key": "contact.intro",
@@ -952,7 +640,7 @@ export const SEED = {
    "label": "Wstęp",
    "kind": "text",
    "value": "Opisz krótko firmę i swoje oczekiwania. Odpowiem mailowo.",
-   "sort_order": 11118
+   "sort_order": 11079
   },
   {
    "key": "contact.nonbinding",
@@ -960,7 +648,7 @@ export const SEED = {
    "label": "Informacja o niezobowiązującym charakterze",
    "kind": "long",
    "value": "Zgłoszenie jest niezobowiązujące i nie oznacza zawarcia współpracy. Zgody na wykorzystanie materiałów i prezentację w portfolio ustalamy później — przed rozpoczęciem projektu.",
-   "sort_order": 11119
+   "sort_order": 11080
   },
   {
    "key": "contact.mail_label",
@@ -968,7 +656,7 @@ export const SEED = {
    "label": "Karta e-mail – etykieta",
    "kind": "text",
    "value": "Wolisz napisać bezpośrednio?",
-   "sort_order": 11120
+   "sort_order": 11081
   },
   {
    "key": "contact.social_label",
@@ -976,7 +664,7 @@ export const SEED = {
    "label": "Media społecznościowe – etykieta",
    "kind": "text",
    "value": "Znajdziesz mnie też tutaj",
-   "sort_order": 11121
+   "sort_order": 11082
   },
   {
    "key": "contact.message_hint",
@@ -984,7 +672,7 @@ export const SEED = {
    "label": "Formularz: podpowiedź nad wiadomością",
    "kind": "text",
    "value": "Uzupełnij szkic albo napisz po swojemu.",
-   "sort_order": 11122
+   "sort_order": 11083
   },
   {
    "key": "contact.message_template",
@@ -992,7 +680,7 @@ export const SEED = {
    "label": "Formularz: szkic wiadomości (wpisz „-”, aby pole było puste)",
    "kind": "long",
    "value": "Dzień dobry,\nchcę nawiązać współpracę przy stworzeniu strony internetowej dla mojej firmy.\n\nCzym się zajmujemy: \nCo chcę pokazać na stronie (np. oferta, cennik, galeria, zespół, rezerwacje): \nCzy mam logo i zdjęcia: \nStrony, które mi się podobają: \nNa kiedy strona byłaby potrzebna: \n\nProszę o kontakt w sprawie dalszych kroków.",
-   "sort_order": 11123
+   "sort_order": 11084
   },
   {
    "key": "contact.message_template_org",
@@ -1000,7 +688,7 @@ export const SEED = {
    "label": "Formularz: szkic wiadomości dla strony wizerunkowej (klub, szkoła, akademia)",
    "kind": "long",
    "value": "Dzień dobry,\nchcę zamówić stronę wizerunkową dla naszej organizacji.\n\nKim jesteśmy (klub / szkoła / akademia / stowarzyszenie): \nCo chcemy pokazać (np. aktualności, drużyny, kadra, terminarz, nabór, sponsorzy): \nCzy mamy herb / logo i zdjęcia: \nNa kiedy strona byłaby potrzebna: \n\nProszę o kontakt w sprawie dalszych kroków.",
-   "sort_order": 11124
+   "sort_order": 11085
   },
   {
    "key": "contact.success_title",
@@ -1008,7 +696,7 @@ export const SEED = {
    "label": "Po wysłaniu – nagłówek",
    "kind": "text",
    "value": "Dziękuję — zgłoszenie zostało zapisane",
-   "sort_order": 11125
+   "sort_order": 11086
   },
   {
    "key": "contact.success_text",
@@ -1016,7 +704,7 @@ export const SEED = {
    "label": "Po wysłaniu – treść",
    "kind": "long",
    "value": "Przeczytam je i odpiszę na podany adres e-mail. Jeśli chcesz coś dodać, napisz bezpośrednio na stronyaiwroclaw@gmail.com.",
-   "sort_order": 11126
+   "sort_order": 11087
   },
   {
    "key": "contact.closed_title",
@@ -1024,7 +712,7 @@ export const SEED = {
    "label": "Nabór wyłączony – nagłówek",
    "kind": "text",
    "value": "Nabór jest chwilowo wstrzymany",
-   "sort_order": 11127
+   "sort_order": 11088
   },
   {
    "key": "contact.closed_text",
@@ -1032,7 +720,7 @@ export const SEED = {
    "label": "Nabór wyłączony – treść",
    "kind": "text",
    "value": "Obecnie realizuję przyjęte projekty. Możesz napisać do mnie, aby zapytać o kolejny termin.",
-   "sort_order": 11128
+   "sort_order": 11089
   },
   {
    "key": "footer.location",
@@ -1040,7 +728,7 @@ export const SEED = {
    "label": "Stopka – lokalizacja",
    "kind": "text",
    "value": "Z Wrocławia — dla firm z całej Polski",
-   "sort_order": 12129
+   "sort_order": 12090
   },
   {
    "key": "footer.author",
@@ -1048,7 +736,7 @@ export const SEED = {
    "label": "Stopka – informacja o autorze",
    "kind": "text",
    "value": "Strony AI Wrocław to projekt Grzegorza — twórcy stron internetowych z Wrocławia.",
-   "sort_order": 12130
+   "sort_order": 12091
   },
   {
    "key": "privacy.updated",
@@ -1097,6 +785,390 @@ export const SEED = {
    "kind": "long",
    "value": "",
    "sort_order": 13005
+  },
+  {
+   "key": "rules.free_items",
+   "section": "Zasady i koszty (strona Oferta)",
+   "label": "Kolumna 1 – punkty (jedna linia = jeden punkt)",
+   "kind": "lines",
+   "value": "Projekt i wykonanie strony w uzgodnionym zakresie\nWersja testowa pod adresem roboczym\nWprowadzenie uzgodnionych poprawek\nPomoc przy uruchomieniu pod domeną firmy\n3 miesiące aktualizacji: teksty, zdjęcia, cennik i dane kontaktowe",
+   "sort_order": 6000
+  },
+  {
+   "key": "rules.paid_items",
+   "section": "Zasady i koszty (strona Oferta)",
+   "label": "Kolumna 2 – punkty (jedna linia = jeden punkt)",
+   "kind": "lines",
+   "value": "Domena — rejestracja i coroczne odnowienie\nPłatny hosting — tylko jeśli bezpłatny nie wystarczy\nEwentualne płatne usługi zewnętrzne",
+   "sort_order": 6001
+  },
+  {
+   "key": "rules.cond_items",
+   "section": "Zasady i koszty (strona Oferta)",
+   "label": "Kolumna 3 – punkty (jedna linia = jeden punkt)",
+   "kind": "lines",
+   "value": "Zgoda na pokazanie nazwy firmy, zrzutów ekranu i linku do strony w moim portfolio\nDyskretny podpis w stopce: „Projekt i wykonanie: Strony AI Wrocław”, z linkiem do mojej strony",
+   "sort_order": 6002
+  },
+  {
+   "key": "rules.eyebrow",
+   "section": "Zasady i koszty (strona Oferta)",
+   "label": "Nad nagłówkiem",
+   "kind": "text",
+   "value": "Zasady",
+   "sort_order": 6003
+  },
+  {
+   "key": "rules.title",
+   "section": "Zasady i koszty (strona Oferta)",
+   "label": "Nagłówek sekcji",
+   "kind": "text",
+   "value": "Uczciwie o kosztach i warunkach",
+   "sort_order": 6004
+  },
+  {
+   "key": "rules.intro",
+   "section": "Zasady i koszty (strona Oferta)",
+   "label": "Wstęp",
+   "kind": "text",
+   "value": "Samo wykonanie strony jest bezpłatne. Poniżej znajdziesz wszystko, co warto wiedzieć, zanim się zgłosisz.",
+   "sort_order": 6005
+  },
+  {
+   "key": "rules.free_title",
+   "section": "Zasady i koszty (strona Oferta)",
+   "label": "Kolumna 1 – tytuł",
+   "kind": "text",
+   "value": "Bezpłatnie",
+   "sort_order": 6006
+  },
+  {
+   "key": "rules.paid_title",
+   "section": "Zasady i koszty (strona Oferta)",
+   "label": "Kolumna 2 – tytuł",
+   "kind": "text",
+   "value": "Po stronie firmy",
+   "sort_order": 6007
+  },
+  {
+   "key": "rules.paid_note",
+   "section": "Zasady i koszty (strona Oferta)",
+   "label": "Kolumna 2 – dopisek",
+   "kind": "text",
+   "value": "Każdy koszt zewnętrzny uzgadniamy, zanim zostanie poniesiony.",
+   "sort_order": 6008
+  },
+  {
+   "key": "rules.cond_title",
+   "section": "Zasady i koszty (strona Oferta)",
+   "label": "Kolumna 3 – tytuł",
+   "kind": "text",
+   "value": "Warunek współpracy",
+   "sort_order": 6009
+  },
+  {
+   "key": "rules.cond_note",
+   "section": "Zasady i koszty (strona Oferta)",
+   "label": "Kolumna 3 – dopisek",
+   "kind": "text",
+   "value": "Zgody ustalamy po pierwszej rozmowie, przed rozpoczęciem projektu.",
+   "sort_order": 6010
+  },
+  {
+   "key": "rules.fine1_title",
+   "section": "Zasady i koszty (strona Oferta)",
+   "label": "Uwaga 1 – tytuł",
+   "kind": "text",
+   "value": "Poza zakresem aktualizacji",
+   "sort_order": 6011
+  },
+  {
+   "key": "rules.fine1_text",
+   "section": "Zasady i koszty (strona Oferta)",
+   "label": "Uwaga 1 – treść",
+   "kind": "text",
+   "value": "Nowe podstrony, rozbudowa i dodatkowe funkcje wymagają osobnego ustalenia.",
+   "sort_order": 6012
+  },
+  {
+   "key": "rules.fine2_title",
+   "section": "Zasady i koszty (strona Oferta)",
+   "label": "Uwaga 2 – tytuł",
+   "kind": "text",
+   "value": "Błędy wykonania",
+   "sort_order": 6013
+  },
+  {
+   "key": "rules.fine2_text",
+   "section": "Zasady i koszty (strona Oferta)",
+   "label": "Uwaga 2 – treść",
+   "kind": "text",
+   "value": "Poprawki moich błędów to osobna sprawa — nie są częścią aktualizacji i nie kończą się po 3 miesiącach.",
+   "sort_order": 6014
+  },
+  {
+   "key": "rules.fine3_title",
+   "section": "Zasady i koszty (strona Oferta)",
+   "label": "Uwaga 3 – tytuł",
+   "kind": "text",
+   "value": "Termin i zakres",
+   "sort_order": 6015
+  },
+  {
+   "key": "rules.fine3_text",
+   "section": "Zasady i koszty (strona Oferta)",
+   "label": "Uwaga 3 – treść",
+   "kind": "text",
+   "value": "Ustalam indywidualnie. Nie obiecuję nieograniczonych poprawek ani stałej bezpłatnej opieki.",
+   "sort_order": 6016
+  },
+  {
+   "key": "rules.fine4_title",
+   "section": "Zasady i koszty (strona Oferta)",
+   "label": "Uwaga 4 – tytuł",
+   "kind": "text",
+   "value": "Koszty utrzymania",
+   "sort_order": 6017
+  },
+  {
+   "key": "rules.fine4_text",
+   "section": "Zasady i koszty (strona Oferta)",
+   "label": "Uwaga 4 – treść",
+   "kind": "long",
+   "value": "Po uruchomieniu stałym kosztem jest zwykle domena, opłacana co roku. Płatny hosting czy poczta w domenie pojawiają się tylko wtedy, gdy są potrzebne. Kwoty zależą od dostawcy, dlatego podaję je przed zakupem.",
+   "sort_order": 6018
+  },
+  {
+   "key": "rules.fine5_title",
+   "section": "Zasady i koszty (strona Oferta)",
+   "label": "Uwaga 5 – tytuł",
+   "kind": "text",
+   "value": "Usługi zewnętrzne",
+   "sort_order": 6019
+  },
+  {
+   "key": "rules.fine5_text",
+   "section": "Zasady i koszty (strona Oferta)",
+   "label": "Uwaga 5 – treść",
+   "kind": "long",
+   "value": "Na przykład system rezerwacji online czy płatności mają własne cenniki. Jeśli są potrzebne, mówię o tym przed ich podłączeniem.",
+   "sort_order": 6020
+  },
+  {
+   "key": "rules.fine6_title",
+   "section": "Zasady i koszty (strona Oferta)",
+   "label": "Uwaga 6 – tytuł",
+   "kind": "text",
+   "value": "Po 3 miesiącach",
+   "sort_order": 6021
+  },
+  {
+   "key": "rules.fine6_text",
+   "section": "Zasady i koszty (strona Oferta)",
+   "label": "Uwaga 6 – treść",
+   "kind": "long",
+   "value": "Jeśli strona ma panel edycji, treści możesz dalej zmieniać sam. Inne zmiany i rozbudowę ustalamy osobno, przed rozpoczęciem pracy.",
+   "sort_order": 6022
+  },
+  {
+   "key": "materials.eyebrow",
+   "section": "Materiały firmy (strona Oferta)",
+   "label": "Nad nagłówkiem",
+   "kind": "text",
+   "value": "Materiały firmy",
+   "sort_order": 7023
+  },
+  {
+   "key": "materials.title",
+   "section": "Materiały firmy (strona Oferta)",
+   "label": "Nagłówek sekcji",
+   "kind": "text",
+   "value": "Twoje materiały, Twoja decyzja",
+   "sort_order": 7024
+  },
+  {
+   "key": "materials.intro",
+   "section": "Materiały firmy (strona Oferta)",
+   "label": "Wstęp",
+   "kind": "text",
+   "value": "Zanim przygotuję projekt, ustalamy, z czego mogę skorzystać. To proste — i chroni Twoją firmę.",
+   "sort_order": 7025
+  },
+  {
+   "key": "materials.1_title",
+   "section": "Materiały firmy (strona Oferta)",
+   "label": "Punkt 1 – tytuł",
+   "kind": "text",
+   "value": "Wskazujesz materiały",
+   "sort_order": 7026
+  },
+  {
+   "key": "materials.1_text",
+   "section": "Materiały firmy (strona Oferta)",
+   "label": "Punkt 1 – opis",
+   "kind": "long",
+   "value": "Logo, zdjęcia, opisy oraz treści z oficjalnego Facebooka, Instagrama lub innych źródeł, które chcesz wykorzystać.",
+   "sort_order": 7027
+  },
+  {
+   "key": "materials.2_title",
+   "section": "Materiały firmy (strona Oferta)",
+   "label": "Punkt 2 – tytuł",
+   "kind": "text",
+   "value": "Potwierdzasz możliwość ich użycia",
+   "sort_order": 7028
+  },
+  {
+   "key": "materials.2_text",
+   "section": "Materiały firmy (strona Oferta)",
+   "label": "Punkt 2 – opis",
+   "kind": "long",
+   "value": "Publiczna dostępność nie oznacza zgody na wykorzystanie. Zdjęcia od fotografa, grafiki czy opinie z portali mogą należeć do kogoś innego — dlatego to sprawdzamy.",
+   "sort_order": 7029
+  },
+  {
+   "key": "materials.3_title",
+   "section": "Materiały firmy (strona Oferta)",
+   "label": "Punkt 3 – tytuł",
+   "kind": "text",
+   "value": "Decydujesz, czego nie używać",
+   "sort_order": 7030
+  },
+  {
+   "key": "materials.3_text",
+   "section": "Materiały firmy (strona Oferta)",
+   "label": "Punkt 3 – opis",
+   "kind": "text",
+   "value": "Możesz wyłączyć wybrane materiały, a zdjęcia i opisy wymienić później.",
+   "sort_order": 7031
+  },
+  {
+   "key": "materials.note",
+   "section": "Materiały firmy (strona Oferta)",
+   "label": "Dopisek",
+   "kind": "text",
+   "value": "Nie pobieram automatycznie treści z mediów społecznościowych — korzystam wyłącznie z tego, co wskażesz.",
+   "sort_order": 7032
+  },
+  {
+   "key": "ownership.eyebrow",
+   "section": "Własność strony (strona Oferta)",
+   "label": "Nad nagłówkiem",
+   "kind": "text",
+   "value": "Po uruchomieniu",
+   "sort_order": 7533
+  },
+  {
+   "key": "ownership.title",
+   "section": "Własność strony (strona Oferta)",
+   "label": "Nagłówek sekcji",
+   "kind": "text",
+   "value": "Kto jest właścicielem strony i domeny",
+   "sort_order": 7534
+  },
+  {
+   "key": "ownership.intro",
+   "section": "Własność strony (strona Oferta)",
+   "label": "Wstęp",
+   "kind": "long",
+   "value": "Strona ma działać dla Twojej firmy także wtedy, gdy kiedyś zechcesz pracować z kimś innym. Dlatego od początku ustalamy, na kogo są konta i kto ma do nich dostęp.",
+   "sort_order": 7535
+  },
+  {
+   "key": "ownership.1_title",
+   "section": "Własność strony (strona Oferta)",
+   "label": "Punkt 1 – tytuł",
+   "kind": "text",
+   "value": "Domena jest Twoja",
+   "sort_order": 7536
+  },
+  {
+   "key": "ownership.1_text",
+   "section": "Własność strony (strona Oferta)",
+   "label": "Punkt 1 – opis",
+   "kind": "long",
+   "value": "Domenę opłaca Twoja firma i to ona powinna być jej abonentem. Dzięki temu sam decydujesz o jej odnowieniu i ewentualnym przeniesieniu.",
+   "sort_order": 7537
+  },
+  {
+   "key": "ownership.2_title",
+   "section": "Własność strony (strona Oferta)",
+   "label": "Punkt 2 – tytuł",
+   "kind": "text",
+   "value": "Dostajesz wszystkie dostępy",
+   "sort_order": 7538
+  },
+  {
+   "key": "ownership.2_text",
+   "section": "Własność strony (strona Oferta)",
+   "label": "Punkt 2 – opis",
+   "kind": "long",
+   "value": "Po uruchomieniu przekazuję zestawienie: gdzie jest domena i do kiedy jest opłacona, jakie konta powstały dla strony i jak się do nich zalogować.",
+   "sort_order": 7539
+  },
+  {
+   "key": "ownership.3_title",
+   "section": "Własność strony (strona Oferta)",
+   "label": "Punkt 3 – tytuł",
+   "kind": "text",
+   "value": "Możesz zmienić wykonawcę",
+   "sort_order": 7540
+  },
+  {
+   "key": "ownership.3_text",
+   "section": "Własność strony (strona Oferta)",
+   "label": "Punkt 3 – opis",
+   "kind": "long",
+   "value": "Nie wiążę Cię abonamentem ani umową na opiekę. Mając dostępy, możesz później prowadzić stronę sam albo powierzyć ją komuś innemu.",
+   "sort_order": 7541
+  },
+  {
+   "key": "about.v1_title",
+   "section": "O mnie (strona główna i /o-mnie/)",
+   "label": "Wartość 1 – tytuł",
+   "kind": "text",
+   "value": "Jasne zasady",
+   "sort_order": 9000
+  },
+  {
+   "key": "about.v1_text",
+   "section": "O mnie (strona główna i /o-mnie/)",
+   "label": "Wartość 1 – opis",
+   "kind": "text",
+   "value": "Koszty zewnętrzne i zakres ustalamy przed rozpoczęciem pracy.",
+   "sort_order": 9001
+  },
+  {
+   "key": "about.v2_title",
+   "section": "O mnie (strona główna i /o-mnie/)",
+   "label": "Wartość 2 – tytuł",
+   "kind": "text",
+   "value": "Szacunek dla materiałów",
+   "sort_order": 9002
+  },
+  {
+   "key": "about.v2_text",
+   "section": "O mnie (strona główna i /o-mnie/)",
+   "label": "Wartość 2 – opis",
+   "kind": "text",
+   "value": "Używam tylko tego, co wskażesz i na co masz zgodę.",
+   "sort_order": 9003
+  },
+  {
+   "key": "about.v3_title",
+   "section": "O mnie (strona główna i /o-mnie/)",
+   "label": "Wartość 3 – tytuł",
+   "kind": "text",
+   "value": "Jeden kontakt",
+   "sort_order": 9004
+  },
+  {
+   "key": "about.v3_text",
+   "section": "O mnie (strona główna i /o-mnie/)",
+   "label": "Wartość 3 – opis",
+   "kind": "text",
+   "value": "Projekt prowadzę osobiście, od rozmowy do uruchomienia.",
+   "sort_order": 9005
   }
  ],
  "industries": [

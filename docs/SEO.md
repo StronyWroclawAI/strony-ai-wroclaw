@@ -1,4 +1,4 @@
-# SEO — struktura strony (etapy 1–2)
+# SEO — struktura strony (wersja 1.0, etapy 1–5)
 
 ## Adresy i ich zadania
 | Adres | Główny temat | Uwagi |
@@ -17,6 +17,11 @@
 | `/dla-branz/salon-kosmetyczny/` | strona internetowa dla salonu kosmetycznego | priorytet: cennik, rezerwacja, galeria |
 | `/dla-branz/fryzjer/` | strona internetowa dla fryzjera | priorytet: cennik zależny od włosów, zespół, zapisy |
 | `/dla-branz/warsztat-samochodowy/` | strona internetowa dla warsztatu samochodowego | priorytet: telefon, dojazd, zapytanie o wycenę |
+| `/dla-branz/fotograf/` | strona internetowa dla fotografa | portfolio, szybkość galerii; bez celowania w miasto |
+| `/portfolio/anna-niedobitek-fotografia/` | realizacja: strona fotografki (prawdziwy klient, za zgodą) | opis realizacji, nie poradnik |
+| `/oferta/` | co oferuje Strony AI Wrocław: zakres, przebieg współpracy, zasady i koszty, własność strony | intencja „oferta / zasady”, NIE fraza „tworzenie stron Wrocław” (ta zostaje na `/`) |
+| `/o-mnie/` | kim jest autor (Grzegorz Rejszel), podejście, rola AI | marka i zaufanie; Person w danych strukturalnych |
+| `/kontakt/` | formularz zgłoszenia i e-mail | strona użytkowa, bez pozycjonowania |
 
 Nie tworzymy osobnej strony `/tworzenie-stron-internetowych-wroclaw/` ani stron pod kolejne miasta.
 `/strony-internetowe-dla-firm/` — ODROCZONE (etap 2): intencja zbyt bliska stronie głównej (oferta dla firm, praca zdalnie w całej Polsce)
@@ -80,3 +85,47 @@ Podstrony mają og:title, og:description i og:url. Nie mają og:image — do prz
 - Zapytania: na które strona główna pokazuje się bez słowa „Wrocław” (sygnał dla ewentualnej `/strony-internetowe-dla-firm/`);
   czy zapytania branżowe trafiają na właściwe strony branżowe, a nie na stronę główną.
 - Decyzje o nowych stronach dopiero przy powtarzalnych zapytaniach z wyświetleniami (nie pojedynczych), z kilku tygodni danych.
+
+## Etap 5 — wersja 1.0: nawigacja wielostronicowa
+- **Menu główne:** Start (`/`), Oferta (`/oferta/`), Realizacje (`/realizacje/`), Dla branż (`/dla-branz/`), Poradnik (`/poradnik/`), O mnie (`/o-mnie/`), Kontakt (`/kontakt/`, wyróżniony przycisk).
+  Każda pozycja to zwykły link `<a href>` do osobnego adresu — działa bez JavaScriptu, przejście robi przeglądarka (View Transitions).
+  Menu nie zawiera kotwic (`#…`) ani pozycji pojedynczych branż. Strony funkcjonalne (`/brief/`, `/wybor-logo/`) są poza menu.
+- **Aktywna pozycja:** `aria-current="page"` (bieżąca strona) albo `aria-current="true"` (dział: artykuł → Poradnik, branża → Dla branż, realizacja → Realizacje); podkreślenie, nie tylko kolor. Ustawia build (`markNav` w `build.mjs`).
+- **Menu mobilne:** do 1023 px (pełne menu potrzebuje ok. 945 px). Bez JS: link `#menu` otwiera panel (`:target`), link `#` zamyka.
+- **Kotwice strony głównej** (`/#kontakt`, `/#zasady`, `/#faq`, `/#o-mnie`) nadal działają dla starych linków; nowe linki w CTA prowadzą do `/kontakt/` i `/oferta/#zasady`.
+- **Formularz:** jeden formularz i jeden backend (`/api/zgloszenie`). Ta sama sekcja jest na stronie głównej i na `/kontakt/` (build kopiuje ją z `index.src.html`), treści edytuje się w panelu w jednym miejscu.
+  Na stronie głównej formularz zostaje — tam trafiają osoby z wiadomości e-mail i stare linki `/#kontakt`.
+- **Treści z panelu na podstronach:** sekcje „Zasady i koszty”, „Materiały firmy” i „Własność strony” są na `/oferta/`, wartości współpracy na `/o-mnie/` — z tymi samymi kluczami, więc edycja w panelu działa jak wcześniej.
+  Na stronie głównej: krótki skrót oferty (nowe pola „Oferta – skrót na stronie głównej”), skrót „O mnie” z linkiem i trzy artykuły poradnika.
+- **Daty (hash v2):** zmiana adresu linku wewnętrznego (`href="/…"`) nie zmienia daty strony — to zmiana nawigacji, nie treści. Zmiana tekstu nadal wymaga nowej daty `modified`.
+- **Dane strukturalne:** `/o-mnie/` — AboutPage + Person (`@id …/o-mnie/#osoba`, bez sameAs i jobTitle); autor artykułów i `founder` na stronie głównej wskazują tę samą osobę. `/kontakt/` — ContactPage. `/oferta/` — tylko BreadcrumbList (usługa jest opisana na stronie głównej).
+- **Turnstile:** skrypt tylko na stronach z formularzem (`/`, `/kontakt/`).
+- **Karty projektów:** HTML karty z `Cache-Control: no-store` (nagłówek `<head>` powstaje z bazy — zmiany z panelu widać od razu).
+- **Font (CLS przy podmianie):** artykuł o domenie i hostingu przy 390 px ma CLS ≈ 0,04 (długi H1 na granicy liczby wierszy: krój zastępczy 5 wierszy, Jakarta 4). Sprawdzone poprawki: `text-wrap` (bez efektu), preload fontów (CLS 0, ale FCP/LCP na telefonie +≈280 ms; na stronie głównej +≈150 ms). Zostawione świadomie — wynik mieści się w progu „dobry” (< 0,1).
+
+## Mapa słów kluczowych (wersja 1.0)
+| Adres | Główna intencja | Tematy wspierające | Linkują tu m.in. |
+|---|---|---|---|
+| `/` | tworzenie stron internetowych Wrocław | korzyści, branże, możliwości, przebieg współpracy, FAQ | wszystkie strony (logo, „Start”, okruszki) |
+| `/oferta/` | oferta i zasady współpracy Strony AI Wrocław | zakres, koszty, materiały, własność domeny | menu, strona główna (skrót oferty), /o-mnie/, /kontakt/, artykuł o czasie |
+| `/realizacje/` | przykłady wykonanych stron | realne vs demonstracyjne | menu, strona główna, /oferta/, /o-mnie/, /dla-branz/fotograf/ |
+| `/portfolio/anna-niedobitek-fotografia/` | realizacja strony fotografki | zrzuty, funkcje | /realizacje/, /dla-branz/fotograf/, /oferta/, /o-mnie/, artykuł „czy Facebook” |
+| `/dla-branz/` + 4 branże | strona internetowa dla [branży] | priorytety branży | menu, strona główna, poradnik |
+| `/poradnik/` + 6 artykułów | pytania przed zamówieniem strony | koszty, domena, czas, zawartość | menu, strona główna (3 artykuły), /oferta/, /o-mnie/ |
+| `/o-mnie/` | kim jest autor | podejście, AI, współpraca | menu, strona główna (skrót), podpis autora w artykułach |
+| `/kontakt/` | kontakt (użytkowa) | — | menu, CTA na podstronach, stopka |
+
+Kanibalizacja: `/` i `/oferta/` mają różne TITLE/H1 i intencje (fraza lokalna vs „oferta i zasady”); `/oferta/` nie używa frazy „tworzenie stron internetowych Wrocław”.
+`/realizacje/` (lista) vs karta Anny (jeden projekt); `/o-mnie/` vs skrót na stronie głównej (inne teksty); `/kontakt/` bez treści sprzedażowych.
+
+## SEO — dalsze utrzymanie po wersji 1.0
+Wersja 1.0 jest kompletna technicznie i treściowo. Dalszy rozwój wynika z danych i prawdziwych realizacji, nie z chęci posiadania większej liczby adresów.
+- **Search Console (co tydzień przez pierwsze 8–12 tygodni, potem co miesiąc):** wyświetlenia, kliknięcia, CTR, średnia pozycja — osobno dla `/`, `/oferta/`, poradnika, stron branżowych i realizacji.
+- **Indeksowanie:** raport „Strony” — czy nowe adresy (`/oferta/`, `/o-mnie/`, `/kontakt/`) są zaindeksowane; czy nie pojawiają się `/portfolio/` bez ukośnika, adresy z parametrami ani `*.pages.dev`.
+- **Zapytania:** które frazy pokazują stronę główną, a które podstrony. Jeśli strona główna pokazuje się często na zapytania bez „Wrocław” (np. „strony internetowe dla firm”) — wtedy wrócić do decyzji o `/strony-internetowe-dla-firm/`.
+- **CTR:** strony z dużą liczbą wyświetleń i niskim CTR — poprawić TITLE/opis (bez zmiany H1 strony głównej bez potrzeby).
+- **Pozycje:** obserwować trend, nie pojedyncze dni. Nie obiecywać klientom pozycji.
+- **Nowe realizacje:** każda prawdziwa realizacja (za zgodą) = karta w panelu, a przy mocnym materiale — opis jak dla Anny (`kind: 'case'`), z prawdziwymi zrzutami.
+- **Nowe branże:** dopiero gdy są realizacja, zapytania w Search Console albo realne pytania klientów (kolejność wstępna: masaż/fizjoterapia, restauracja, szkoła; kancelaria — z ostrożnością ze względu na zasady reklamy zawodów prawniczych).
+- **Nowe artykuły:** tylko na pytania, które realnie się pojawiają (od klientów albo w zapytaniach Search Console).
+- **Po każdej zmianie treści:** `node build.mjs` (pilnuje dat), sprawdzenie sitemapy, ponowne zgłoszenie zmienionego adresu w Search Console tylko przy większych zmianach.

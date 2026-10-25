@@ -26,9 +26,9 @@
 <link rel="icon" href="/assets/img/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
-<link rel="stylesheet" href="/assets/css/style.css?v=22">
+<link rel="stylesheet" href="/assets/css/style.css?v=23">
 <script src="/assets/js/industry-combo.js?v=1" defer></script>
-<script src="/assets/js/main.js?v=11" defer></script>
+<script src="/assets/js/main.js?v=12" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#tresc">Przejdź do treści</a>
@@ -44,17 +44,19 @@
       <span class="nav-toggle__bars" aria-hidden="true"></span>
       <span class="visually-hidden">Menu</span>
     </button>
+    <!-- Bez JavaScriptu: menu na telefonie otwiera się przez #menu (:target), zamyka linkiem „#” -->
+    <a class="nav-toggle nav-toggle--nojs nav-toggle--open" href="#menu"><span class="nav-toggle__bars" aria-hidden="true"></span><span class="visually-hidden">Menu</span></a>
+    <a class="nav-toggle nav-toggle--nojs nav-toggle--close" href="#"><span class="nav-toggle__bars" aria-hidden="true"></span><span class="visually-hidden">Zamknij menu</span></a>
     <nav class="nav" id="menu" aria-label="Główna nawigacja">
       <ul class="nav__list">
-        <li><a href="#mozliwosci">Możliwości</a></li>
-        <li><a href="#zasady">Zasady</a></li>
-        <li data-cms-block="nav-portfolio" hidden><a href="/realizacje/">Realizacje</a></li>
+        <li><a href="/" aria-current="page">Start</a></li>
+        <li><a href="/oferta/">Oferta</a></li>
+        <li><a href="/realizacje/">Realizacje</a></li>
+        <li><a href="/dla-branz/">Dla branż</a></li>
         <li><a href="/poradnik/">Poradnik</a></li>
-        <li data-cms-block="nav-posts" hidden><a href="#aktualnosci">Aktualności</a></li>
-        <li><a href="#o-mnie">O mnie</a></li>
-        <li><a href="#faq">FAQ</a></li>
+        <li><a href="/o-mnie/">O mnie</a></li>
       </ul>
-      <a class="btn btn--light btn--sm nav__cta" href="#kontakt">Napisz do mnie</a>
+      <a class="btn btn--light btn--sm nav__cta" href="/kontakt/">Kontakt</a>
     </nav>
   </div>
 </header>
@@ -270,88 +272,31 @@
   </div>
 </section>
 
-<!-- ============ ZASADY ============ -->
-<section class="section rules" id="zasady" aria-labelledby="rules-title">
+<!-- ============ OFERTA — SKRÓT (pełne zasady, materiały i własność strony: /oferta/) ============ -->
+<section class="section rules rules--teaser" id="zasady" aria-labelledby="rules-title">
   <span class="aurora a2" aria-hidden="true"></span>
   <div class="container">
     <div class="section-head">
-      <p class="eyebrow eyebrow--light" data-cms="rules.eyebrow">Zasady</p>
-      <h2 class="h2 h2--light" id="rules-title" data-cms="rules.title">Uczciwie o kosztach i warunkach</h2>
-      <p class="lead lead--light" data-cms="rules.intro">Samo wykonanie strony jest bezpłatne. Poniżej znajdziesz wszystko, co warto wiedzieć, zanim się zgłosisz.</p>
+      <p class="eyebrow eyebrow--light" data-cms="offer.eyebrow">Oferta i zasady</p>
+      <h2 class="h2 h2--light" id="rules-title" data-cms="offer.title">Wykonanie strony bezpłatnie, koszty zewnętrzne uzgadniane z góry</h2>
+      <p class="lead lead--light" data-cms="offer.intro">Buduję portfolio, dlatego projekt i wykonanie strony są bezpłatne. Po stronie firmy zostaje domena i ewentualne płatne usługi — zawsze uzgodnione przed zakupem.</p>
     </div>
     <div class="rules__grid">
       <div class="rule-col rule-col--free reveal">
         <span class="sticker" aria-hidden="true">0&nbsp;zł</span>
-        <h3 class="rule-col__title" data-cms="rules.free_title">Bezpłatnie</h3>
-        <ul class="checklist" data-cms-lines="rules.free_items">
-          <li>Projekt i wykonanie strony w uzgodnionym zakresie</li>
-          <li>Wersja testowa pod adresem roboczym</li>
-          <li>Wprowadzenie uzgodnionych poprawek</li>
-          <li>Pomoc przy uruchomieniu pod domeną firmy</li>
-          <li>3 miesiące aktualizacji: teksty, zdjęcia, cennik i dane kontaktowe</li>
-        </ul>
+        <h3 class="rule-col__title" data-cms="offer.1_title">Bezpłatnie</h3>
+        <p class="rule-col__text" data-cms="offer.1_text">Projekt i wykonanie strony, wersja testowa, poprawki, pomoc przy uruchomieniu i 3 miesiące aktualizacji.</p>
       </div>
       <div class="rule-col reveal">
-        <h3 class="rule-col__title" data-cms="rules.paid_title">Po stronie firmy</h3>
-        <ul class="checklist checklist--dot" data-cms-lines="rules.paid_items">
-          <li>Domena — rejestracja i coroczne odnowienie</li>
-          <li>Płatny hosting — tylko jeśli bezpłatny nie wystarczy</li>
-          <li>Ewentualne płatne usługi zewnętrzne</li>
-        </ul>
-        <p class="rule-col__note" data-cms="rules.paid_note">Każdy koszt zewnętrzny uzgadniamy, zanim zostanie poniesiony.</p>
+        <h3 class="rule-col__title" data-cms="offer.2_title">Po stronie firmy</h3>
+        <p class="rule-col__text" data-cms="offer.2_text">Domena, a jeśli okaże się potrzebny — płatny hosting lub inne usługi zewnętrzne.</p>
       </div>
       <div class="rule-col reveal">
-        <h3 class="rule-col__title" data-cms="rules.cond_title">Warunek współpracy</h3>
-        <ul class="checklist checklist--dot" data-cms-lines="rules.cond_items">
-          <li>Zgoda na pokazanie nazwy firmy, zrzutów ekranu i linku do strony w moim portfolio</li>
-          <li>Dyskretny podpis w stopce: „Projekt i wykonanie: Strony AI Wrocław”, z linkiem do mojej strony</li>
-        </ul>
-        <p class="rule-col__note" data-cms="rules.cond_note">Zgody ustalamy po pierwszej rozmowie, przed rozpoczęciem projektu.</p>
+        <h3 class="rule-col__title" data-cms="offer.3_title">Warunek współpracy</h3>
+        <p class="rule-col__text" data-cms="offer.3_text">Zgoda na pokazanie strony w moim portfolio i dyskretny podpis w stopce.</p>
       </div>
     </div>
-    <dl class="fine-print">
-      <div class="fine-print__item reveal"><dt data-cms="rules.fine1_title">Poza zakresem aktualizacji</dt><dd data-cms="rules.fine1_text">Nowe podstrony, rozbudowa i dodatkowe funkcje wymagają osobnego ustalenia.</dd></div>
-      <div class="fine-print__item reveal"><dt data-cms="rules.fine2_title">Błędy wykonania</dt><dd data-cms="rules.fine2_text">Poprawki moich błędów to osobna sprawa — nie są częścią aktualizacji i nie kończą się po 3 miesiącach.</dd></div>
-      <div class="fine-print__item reveal"><dt data-cms="rules.fine3_title">Termin i zakres</dt><dd data-cms="rules.fine3_text">Ustalam indywidualnie. Nie obiecuję nieograniczonych poprawek ani stałej bezpłatnej opieki.</dd></div>
-      <div class="fine-print__item reveal"><dt data-cms="rules.fine4_title">Koszty utrzymania</dt><dd data-cms="rules.fine4_text">Po uruchomieniu stałym kosztem jest zwykle domena, opłacana co roku. Płatny hosting czy poczta w domenie pojawiają się tylko wtedy, gdy są potrzebne. Kwoty zależą od dostawcy, dlatego podaję je przed zakupem.</dd></div>
-      <div class="fine-print__item reveal"><dt data-cms="rules.fine5_title">Usługi zewnętrzne</dt><dd data-cms="rules.fine5_text">Na przykład system rezerwacji online czy płatności mają własne cenniki. Jeśli są potrzebne, mówię o tym przed ich podłączeniem.</dd></div>
-      <div class="fine-print__item reveal"><dt data-cms="rules.fine6_title">Po 3 miesiącach</dt><dd data-cms="rules.fine6_text">Jeśli strona ma panel edycji, treści możesz dalej zmieniać sam. Inne zmiany i rozbudowę ustalamy osobno, przed rozpoczęciem pracy.</dd></div>
-    </dl>
-    <p class="rules__more"><a class="link-arrow" href="/poradnik/ile-kosztuje-strona-internetowa/">Z czego składa się koszt strony — wyjaśniam w poradniku</a></p>
-  </div>
-</section>
-
-<!-- ============ MATERIAŁY ============ -->
-<section class="section materials" id="materialy" aria-labelledby="materials-title">
-  <div class="container materials__grid">
-    <div>
-      <p class="eyebrow" data-cms="materials.eyebrow">Materiały firmy</p>
-      <h2 class="h2" id="materials-title" data-cms="materials.title">Twoje materiały, Twoja decyzja</h2>
-      <p class="lead" data-cms="materials.intro">Zanim przygotuję projekt, ustalamy, z czego mogę skorzystać. To proste — i chroni Twoją firmę.</p>
-    </div>
-    <ol class="materials__list">
-      <li class="reveal tone-1"><span class="mat__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-8 9"/></svg></span><h3 data-cms="materials.1_title">Wskazujesz materiały</h3><p data-cms="materials.1_text">Logo, zdjęcia, opisy oraz treści z oficjalnego Facebooka, Instagrama lub innych źródeł, które chcesz wykorzystać.</p></li>
-      <li class="reveal tone-2"><span class="mat__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg></span><h3 data-cms="materials.2_title">Potwierdzasz możliwość ich użycia</h3><p data-cms="materials.2_text">Publiczna dostępność nie oznacza zgody na wykorzystanie. Zdjęcia od fotografa, grafiki czy opinie z portali mogą należeć do kogoś innego — dlatego to sprawdzamy.</p></li>
-      <li class="reveal tone-3"><span class="mat__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></span><h3 data-cms="materials.3_title">Decydujesz, czego nie używać</h3><p data-cms="materials.3_text">Możesz wyłączyć wybrane materiały, a zdjęcia i opisy wymienić później.</p></li>
-    </ol>
-    <p class="materials__note" data-cms="materials.note">Nie pobieram automatycznie treści z mediów społecznościowych — korzystam wyłącznie z tego, co wskażesz.</p>
-  </div>
-</section>
-
-<!-- ============ WŁASNOŚĆ STRONY ============ -->
-<section class="section ownership" id="wlasnosc" aria-labelledby="ownership-title">
-  <div class="container materials__grid">
-    <div>
-      <p class="eyebrow" data-cms="ownership.eyebrow">Po uruchomieniu</p>
-      <h2 class="h2" id="ownership-title" data-cms="ownership.title">Kto jest właścicielem strony i domeny</h2>
-      <p class="lead" data-cms="ownership.intro">Strona ma działać dla Twojej firmy także wtedy, gdy kiedyś zechcesz pracować z kimś innym. Dlatego od początku ustalamy, na kogo są konta i kto ma do nich dostęp.</p>
-    </div>
-    <ol class="materials__list">
-      <li class="reveal tone-4"><span class="mat__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.5 2.5 3.8 5.5 3.8 9s-1.3 6.5-3.8 9c-2.5-2.5-3.8-5.5-3.8-9S9.5 5.5 12 3z"/></svg></span><h3 data-cms="ownership.1_title">Domena jest Twoja</h3><p data-cms="ownership.1_text">Domenę opłaca Twoja firma i to ona powinna być jej abonentem. Dzięki temu sam decydujesz o jej odnowieniu i ewentualnym przeniesieniu.</p></li>
-      <li class="reveal tone-5"><span class="mat__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><h3 data-cms="ownership.2_title">Dostajesz wszystkie dostępy</h3><p data-cms="ownership.2_text">Po uruchomieniu przekazuję zestawienie: gdzie jest domena i do kiedy jest opłacona, jakie konta powstały dla strony i jak się do nich zalogować.</p></li>
-      <li class="reveal tone-1"><span class="mat__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 6h10"/><path d="M18 6h2"/><circle cx="16" cy="6" r="2"/><path d="M4 12h4"/><path d="M12 12h8"/><circle cx="10" cy="12" r="2"/><path d="M4 18h12"/><path d="M20 18h0"/><circle cx="18" cy="18" r="2"/></svg></span><h3 data-cms="ownership.3_title">Możesz zmienić wykonawcę</h3><p data-cms="ownership.3_text">Nie wiążę Cię abonamentem ani umową na opiekę. Mając dostępy, możesz później prowadzić stronę sam albo powierzyć ją komuś innemu.</p></li>
-    </ol>
-    <p class="materials__note"><a href="/poradnik/domena-i-hosting/">Czym są domena i hosting i za co się płaci — wyjaśniam w poradniku</a></p>
+    <p class="rules__more rules__more--actions"><a class="btn btn--light" href="/oferta/">Poznaj ofertę i zasady</a><a class="link-arrow link-arrow--light" href="/poradnik/ile-kosztuje-strona-internetowa/">Z czego składa się koszt strony</a></p>
   </div>
 </section>
 
@@ -438,12 +383,26 @@
       <p class="lead" data-cms="about.p1">Jestem z Wrocławia i tworzę strony internetowe dla małych firm. Wykorzystuję narzędzia AI do projektowania i tworzenia stron, a każdy projekt dopasowuję do potrzeb konkretnej firmy.</p>
       <p data-cms="about.p2">Stawiam pierwsze kroki, rozwijam umiejętności i buduję portfolio — dlatego wybranym firmom wykonuję stronę bezpłatnie. Nie jestem agencją ani zespołem: od pierwszej wiadomości do uruchomienia strony rozmawiasz bezpośrednio ze mną.</p>
       <p data-cms="about.p3">Jeśli trafiłeś tutaj z mojej wiadomości e-mail — na tej stronie znajdziesz wszystko, co warto wiedzieć, zanim odpowiesz.</p>
-      <ul class="values">
-        <li><strong data-cms="about.v1_title">Jasne zasady</strong><span data-cms="about.v1_text">Koszty zewnętrzne i zakres ustalamy przed rozpoczęciem pracy.</span></li>
-        <li><strong data-cms="about.v2_title">Szacunek dla materiałów</strong><span data-cms="about.v2_text">Używam tylko tego, co wskażesz i na co masz zgodę.</span></li>
-        <li><strong data-cms="about.v3_title">Jeden kontakt</strong><span data-cms="about.v3_text">Projekt prowadzę osobiście, od rozmowy do uruchomienia.</span></li>
-      </ul>
+      <p class="about__more"><a class="link-arrow" href="/o-mnie/">Więcej o mnie i o tym, jak pracuję</a></p>
     </div>
+  </div>
+</section>
+
+<!-- ============ PORADNIK — WYBRANE ARTYKUŁY (generowane z work/pages/pages.mjs) ============ -->
+<section class="section guide-teaser" id="poradnik" aria-labelledby="guide-title">
+  <div class="container">
+    <div class="section-head section-head--split">
+      <div>
+        <p class="eyebrow">Poradnik</p>
+        <h2 class="h2" id="guide-title">Zanim zamówisz stronę</h2>
+      </div>
+      <p class="lead">Krótko i bez żargonu o kosztach, domenie i o tym, co powinno znaleźć się na stronie firmy.</p>
+    </div>
+    <ul class="hub-grid">
+        <li class="hub-card"><h3 class="hub-card__title"><a href="/poradnik/domena-i-hosting/">Domena i hosting dla firmy — co to jest, kto powinien być właścicielem i za co się płaci?</a></h3><p>Domena, hosting, poczta i SSL wyjaśnione po kolei — oraz lista dostępów, które powinna mieć Twoja firma.</p><a class="link-arrow" href="/poradnik/domena-i-hosting/" aria-hidden="true" tabindex="-1">Czytaj</a></li>
+        <li class="hub-card"><h3 class="hub-card__title"><a href="/poradnik/czy-mala-firma-potrzebuje-strony-internetowej/">Czy mała firma potrzebuje własnej strony internetowej?</a></h3><p>Kiedy strona ma dla małej firmy dużą wartość, kiedy wystarczy wizytówka w Google i profil w mediach społecznościowych — i pięć pytań, które pomogą zdecydować.</p><a class="link-arrow" href="/poradnik/czy-mala-firma-potrzebuje-strony-internetowej/" aria-hidden="true" tabindex="-1">Czytaj</a></li>
+        <li class="hub-card"><h3 class="hub-card__title"><a href="/poradnik/co-powinna-zawierac-strona-firmowa/">Co powinna zawierać dobra strona internetowa firmy?</a></h3><p>Elementy, bez których strona firmy słabo działa, i dodatki, które zależą od branży — z krótkim wyjaśnieniem każdego punktu.</p><a class="link-arrow" href="/poradnik/co-powinna-zawierac-strona-firmowa/" aria-hidden="true" tabindex="-1">Czytaj</a></li></ul>
+    <p class="section-more"><a class="link-arrow" href="/poradnik/">Zobacz cały poradnik</a></p>
   </div>
 </section>
 
@@ -679,20 +638,23 @@ Proszę o kontakt w sprawie dalszych kroków.</textarea>
     <div class="site-footer__col">
       <p class="site-footer__h">Kontakt</p>
       <a href="mailto:stronyaiwroclaw@gmail.com" data-cms-email>stronyaiwroclaw@gmail.com</a>
+      <a href="/kontakt/">Formularz kontaktowy</a>
       <ul class="social-links social-links--footer" data-cms-block="social" data-social-list hidden></ul>
     </div>
     <div class="site-footer__col">
-      <p class="site-footer__h">Dla firm</p>
+      <p class="site-footer__h">Serwis</p>
       <ul>
+        <li><a href="/oferta/">Oferta</a></li>
         <li><a href="/realizacje/">Realizacje</a></li>
         <li><a href="/dla-branz/">Strony dla branż</a></li>
         <li><a href="/poradnik/">Poradnik</a></li>
+        <li><a href="/o-mnie/">O mnie</a></li>
       </ul>
     </div>
     <div class="site-footer__col">
       <p class="site-footer__h">Informacje</p>
       <ul>
-        <li><a href="#zasady">Zasady współpracy</a></li>
+        <li><a href="/oferta/#zasady">Zasady współpracy</a></li>
         <li><a href="#faq">Najczęstsze pytania</a></li>
         <li><a href="/polityka-prywatnosci">Polityka prywatności</a></li>
       </ul>

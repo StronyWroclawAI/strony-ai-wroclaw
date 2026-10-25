@@ -58,5 +58,17 @@ export const SITE_PAGES = [
   "lastmod": "2026-10-24",
   "kind": "case",
   "site": "https://www.annanfoto.pl/"
+ },
+ {
+  "path": "/oferta/",
+  "lastmod": "2026-10-25"
+ },
+ {
+  "path": "/o-mnie/",
+  "lastmod": "2026-10-25"
+ },
+ {
+  "path": "/kontakt/",
+  "lastmod": "2026-10-25"
  }
 ];

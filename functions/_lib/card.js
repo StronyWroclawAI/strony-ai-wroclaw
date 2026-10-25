@@ -110,7 +110,9 @@ export function cardHeaders(contentType, { html = false, preview = false } = {})
     'Referrer-Policy': 'strict-origin-when-cross-origin',
     'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), interest-cohort=()',
     'X-Frame-Options': 'DENY',
-    'Cache-Control': preview ? 'no-store' : html ? 'public, max-age=0, must-revalidate' : 'public, max-age=600',
+    // HTML karty ma <head> (tytuł, opis, canonical) budowany z bazy — jak strony z renderPage: bez zapisu w pamięci podręcznej,
+    // żeby zmiana nazwy/branży w panelu była od razu widoczna (także dla Google). Obrazy i pliki karty: 10 minut.
+    'Cache-Control': html || preview ? 'no-store' : 'public, max-age=600',
   });
   if (preview) h.set('X-Robots-Tag', 'noindex, nofollow');
   return h;
