@@ -76,6 +76,21 @@ Zestawienie wszystkich briefów. Brief tworzysz w konkretnym zgłoszeniu i tam p
 
 Puste pole = link ukryty. Adresy profili trafiają też do danych dla Google (`sameAs`). Teksty sekcji (nagłówek, wstęp, zachęta, etykieta przy formularzu) zmienisz w *Treściach strony* → „Aktualności – nagłówek” oraz „Kontakt i formularz”.
 
+## Tryb oferty: Portfolio (bezpłatnie) ↔ Cennik (płatnie)
+**Ustawienia → Tryb oferty** — jedno kliknięcie przełącza całą stronę, bez wdrażania:
+- **Portfolio — wykonanie bezpłatne:** karta „0 zł” w pierwszym ekranie, skrót „Oferta i zasady”, na `/oferta/` kolumna „Bezpłatnie” i warunek portfolio/podpisu, pytania FAQ o bezpłatnej ofercie, grafika do udostępniania „Bezpłatna strona dla Twojej firmy”.
+- **Cennik — strony płatne:** karta „od … zł”, sekcja **Cennik** (3 pakiety) na stronie głównej i na `/oferta/#cennik`, kolumny „W cenie pakietu” i „Portfolio i podpis w stopce” (dobrowolne), pytania FAQ o cenie, akapity w „O mnie” i w artykule o kosztach, grafika „…z przejrzystym cennikiem”.
+
+Co edytujesz:
+- **Treści strony → „Tryb Cennik – pakiety i ceny”:** nazwy pakietów, ceny (np. „od 990 zł” albo „wycena indywidualna”), opisy, punkty „co zawiera”, etykieta „Polecany” („-” ukrywa), przycisk i informacja pod cennikiem („Ceny brutto…”).
+- **Treści strony → „Tryb Cennik – teksty”:** opis w pierwszym ekranie, karta ceny (zmień ją razem z ceną pakietu 1), nagłówek cennika, krok 6, akapit „O mnie”, teksty sekcji Zasady na `/oferta/`.
+- **FAQ:** pole „Widoczne w trybie” — Zawsze / tylko Portfolio / tylko Cennik. Nowe pytanie o cenach ustaw na „tylko Cennik”.
+
+Podgląd: przycisk „Podgląd trybu …” w Ustawieniach otwiera stronę w drugim trybie — widzisz go tylko Ty (zalogowany), z paskiem informacyjnym i bez indeksowania.
+Przycisk „Zapytaj o ten pakiet” otwiera `/kontakt/` i dopisuje nazwę pakietu na początku wiadomości.
+Po przełączeniu sitemap.xml podaje datę przełączenia jako lastmod stron z treścią zależną od trybu (`/oferta/`, `/o-mnie/`, artykuł o kosztach).
+Pamiętaj też o tekstach poza stroną: wiadomości e-mail do firm i posty, które mówią o bezpłatnym wykonaniu.
+
 ## Zdjęcia
 - Wybierz plik JPG, PNG lub WebP i **koniecznie opisz zdjęcie** (tekst alternatywny dla osób niewidomych i dla wyszukiwarek).
 - Panel sam zmniejszy zdjęcie (maksymalnie 1920 px) i zapisze je jako WebP. Po optymalizacji plik musi mieć mniej niż 5 MB.

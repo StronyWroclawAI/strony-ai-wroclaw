@@ -11,12 +11,36 @@ export const SEED = {
    "sort_order": 1000
   },
   {
+   "key": "pricing.1_items",
+   "section": "Tryb „Cennik” – pakiety i ceny",
+   "label": "Pakiet 1 – co zawiera (jedna linia = jeden punkt)",
+   "kind": "lines",
+   "value": "Jedna strona z sekcjami: o firmie, oferta, zdjęcia, kontakt\nFormularz kontaktowy i mapa dojazdu\nWersja na telefon i podstawy SEO\nPomoc przy uruchomieniu pod domeną firmy\n3 miesiące aktualizacji treści",
+   "sort_order": 15001
+  },
+  {
+   "key": "pricing.2_items",
+   "section": "Tryb „Cennik” – pakiety i ceny",
+   "label": "Pakiet 2 – co zawiera (jedna linia = jeden punkt)",
+   "kind": "lines",
+   "value": "Do 5 podstron, np. oferta, cennik, galeria, o firmie, kontakt\nGaleria zdjęć lub portfolio\nLink do rezerwacji online (np. Booksy)\nWersja na telefon i podstawy SEO\n3 miesiące aktualizacji treści",
+   "sort_order": 15002
+  },
+  {
+   "key": "pricing.3_items",
+   "section": "Tryb „Cennik” – pakiety i ceny",
+   "label": "Pakiet 3 – co zawiera (jedna linia = jeden punkt)",
+   "kind": "lines",
+   "value": "Wszystko z pakietu Strona firmowa\nPanel do samodzielnej edycji tekstów, zdjęć i cennika\nAktualności, np. promocje i wolne terminy\nPrzekazanie dostępów i krótkie wprowadzenie do panelu\n3 miesiące aktualizacji treści",
+   "sort_order": 15003
+  },
+  {
    "key": "hero.h1",
    "section": "Pierwszy ekran",
    "label": "Nagłówek H1 (najważniejszy dla Google — o czym jest strona)",
    "kind": "text",
    "value": "Tworzenie stron internetowych dla firm we Wrocławiu",
-   "sort_order": 1001
+   "sort_order": 1004
   },
   {
    "key": "hero.title",
@@ -24,7 +48,7 @@ export const SEED = {
    "label": "Nagłówek główny",
    "kind": "text",
    "value": "Strony, które budują wizerunek",
-   "sort_order": 1002
+   "sort_order": 1005
   },
   {
    "key": "hero.title_accent",
@@ -32,7 +56,7 @@ export const SEED = {
    "label": "Nagłówek główny – druga linia (bez animacji i dla czytników ekranu)",
    "kind": "text",
    "value": "Twojej firmy",
-   "sort_order": 1003
+   "sort_order": 1006
   },
   {
    "key": "hero.lead",
@@ -40,7 +64,15 @@ export const SEED = {
    "label": "Opis pod nagłówkiem",
    "kind": "long",
    "value": "Projektuję nowoczesne strony internetowe dla małych firm, usługodawców i lokalnych biznesów z Wrocławia i całej Polski. Każda strona powstaje indywidualnie, działa wygodnie na telefonach i komputerach i jest przygotowana tak, aby dobrze prezentować firmę w internecie. Buduję portfolio, dlatego wybranym firmom wykonuję stronę bezpłatnie.",
-   "sort_order": 1004
+   "sort_order": 1007
+  },
+  {
+   "key": "paid.hero_lead",
+   "section": "Tryb „Cennik” – teksty",
+   "label": "Pierwszy ekran – opis pod nagłówkiem",
+   "kind": "long",
+   "value": "Projektuję nowoczesne strony internetowe dla małych firm, usługodawców i lokalnych biznesów z Wrocławia i całej Polski. Każda strona powstaje indywidualnie, działa wygodnie na telefonach i komputerach i jest przygotowana tak, aby dobrze prezentować firmę w internecie. Cenę i zakres znasz przed rozpoczęciem pracy.",
+   "sort_order": 14008
   },
   {
    "key": "hero.offer_label",
@@ -48,7 +80,7 @@ export const SEED = {
    "label": "Karta oferty – etykieta",
    "kind": "text",
    "value": "Wykonanie strony",
-   "sort_order": 1005
+   "sort_order": 1009
   },
   {
    "key": "hero.offer_value",
@@ -56,7 +88,7 @@ export const SEED = {
    "label": "Karta oferty – wartość",
    "kind": "text",
    "value": "0 zł",
-   "sort_order": 1006
+   "sort_order": 1010
   },
   {
    "key": "hero.offer_note",
@@ -64,7 +96,31 @@ export const SEED = {
    "label": "Karta oferty – informacja o kosztach zewnętrznych",
    "kind": "long",
    "value": "Po Twojej stronie są tylko koszty zewnętrzne: domena oraz — jeśli okaże się potrzebny — płatny hosting lub inne płatne usługi. Każdy koszt uzgadniamy przed zakupem.",
-   "sort_order": 1007
+   "sort_order": 1011
+  },
+  {
+   "key": "paid.offer_label",
+   "section": "Tryb „Cennik” – teksty",
+   "label": "Karta oferty – etykieta",
+   "kind": "text",
+   "value": "Strona dla firmy",
+   "sort_order": 14012
+  },
+  {
+   "key": "paid.offer_value",
+   "section": "Tryb „Cennik” – teksty",
+   "label": "Karta oferty – cena (zmień razem z ceną pakietu 1)",
+   "kind": "text",
+   "value": "od 990 zł",
+   "sort_order": 14013
+  },
+  {
+   "key": "paid.offer_note",
+   "section": "Tryb „Cennik” – teksty",
+   "label": "Karta oferty – informacja pod ceną",
+   "kind": "long",
+   "value": "Cena brutto pakietu Wizytówka. Domena i ewentualny płatny hosting są osobno — każdy koszt zewnętrzny uzgadniamy przed zakupem.",
+   "sort_order": 14014
   },
   {
    "key": "hero.cta_primary",
@@ -72,7 +128,7 @@ export const SEED = {
    "label": "Przycisk główny",
    "kind": "text",
    "value": "Zgłoś swoją firmę",
-   "sort_order": 1008
+   "sort_order": 1015
   },
   {
    "key": "hero.cta_secondary",
@@ -80,7 +136,7 @@ export const SEED = {
    "label": "Przycisk drugi",
    "kind": "text",
    "value": "Zobacz, jak wygląda współpraca",
-   "sort_order": 1009
+   "sort_order": 1016
   },
   {
    "key": "hero.remote",
@@ -88,7 +144,7 @@ export const SEED = {
    "label": "Informacja pod przyciskami",
    "kind": "text",
    "value": "Pracuję zdalnie — współpracuję z firmami z całej Polski.",
-   "sort_order": 1010
+   "sort_order": 1017
   },
   {
    "key": "benefits.eyebrow",
@@ -96,7 +152,7 @@ export const SEED = {
    "label": "Nad nagłówkiem",
    "kind": "text",
    "value": "Korzyści",
-   "sort_order": 2011
+   "sort_order": 2018
   },
   {
    "key": "benefits.title",
@@ -104,7 +160,7 @@ export const SEED = {
    "label": "Nagłówek sekcji",
    "kind": "text",
    "value": "Co zyskuje firma dzięki dobrej stronie internetowej",
-   "sort_order": 2012
+   "sort_order": 2019
   },
   {
    "key": "benefits.intro",
@@ -112,7 +168,7 @@ export const SEED = {
    "label": "Wstęp",
    "kind": "long",
    "value": "Strona internetowa to często pierwsze miejsce, w którym klient poznaje Twoją firmę. Moim zadaniem jest przedstawić ją tak, jak na to zasługuje.",
-   "sort_order": 2013
+   "sort_order": 2020
   },
   {
    "key": "benefits.honest",
@@ -120,7 +176,7 @@ export const SEED = {
    "label": "Uczciwa uwaga",
    "kind": "long",
    "value": "Nie obiecuję wzrostu sprzedaży ani pozycji w Google. Obiecuję dopracowaną stronę, która jasno i profesjonalnie przedstawia Twoją firmę.",
-   "sort_order": 2014
+   "sort_order": 2021
   },
   {
    "key": "benefits.seo",
@@ -128,7 +184,7 @@ export const SEED = {
    "label": "Podstawy SEO (co dostaje każda strona)",
    "kind": "long",
    "value": "Każdą stronę przygotowuję z technicznymi podstawami SEO: czytelną strukturą nagłówków, tytułem i opisem dla wyszukiwarki, wersją mobilną, szybkim ładowaniem i mapą strony dla Google. To pomaga wyszukiwarce zrozumieć stronę — ale nie jest gwarancją pozycji.",
-   "sort_order": 2015
+   "sort_order": 2022
   },
   {
    "key": "benefits.1_title",
@@ -136,7 +192,7 @@ export const SEED = {
    "label": "Korzyść 1 – tytuł",
    "kind": "text",
    "value": "Profesjonalna prezentacja firmy",
-   "sort_order": 2016
+   "sort_order": 2023
   },
   {
    "key": "benefits.1_text",
@@ -144,7 +200,7 @@ export const SEED = {
    "label": "Korzyść 1 – opis",
    "kind": "text",
    "value": "Dopracowany wygląd pokazuje, że firma dba o szczegóły — zanim klient zadzwoni lub przyjdzie osobiście.",
-   "sort_order": 2017
+   "sort_order": 2024
   },
   {
    "key": "benefits.2_title",
@@ -152,7 +208,7 @@ export const SEED = {
    "label": "Korzyść 2 – tytuł",
    "kind": "text",
    "value": "Czytelna oferta",
-   "sort_order": 2018
+   "sort_order": 2025
   },
   {
    "key": "benefits.2_text",
@@ -160,7 +216,7 @@ export const SEED = {
    "label": "Korzyść 2 – opis",
    "kind": "long",
    "value": "Usługi, ceny i najważniejsze informacje w jednym miejscu — bez przewijania dziesiątek postów w mediach społecznościowych.",
-   "sort_order": 2019
+   "sort_order": 2026
   },
   {
    "key": "benefits.3_title",
@@ -168,7 +224,7 @@ export const SEED = {
    "label": "Korzyść 3 – tytuł",
    "kind": "text",
    "value": "Wygoda na telefonie",
-   "sort_order": 2020
+   "sort_order": 2027
   },
   {
    "key": "benefits.3_text",
@@ -176,7 +232,7 @@ export const SEED = {
    "label": "Korzyść 3 – opis",
    "kind": "long",
    "value": "Strona dobrze wygląda i łatwo się z niej korzysta na małym ekranie, gdzie wiele osób szuka informacji o firmach.",
-   "sort_order": 2021
+   "sort_order": 2028
   },
   {
    "key": "benefits.4_title",
@@ -184,7 +240,7 @@ export const SEED = {
    "label": "Korzyść 4 – tytuł",
    "kind": "text",
    "value": "Prosty kontakt",
-   "sort_order": 2022
+   "sort_order": 2029
   },
   {
    "key": "benefits.4_text",
@@ -192,7 +248,7 @@ export const SEED = {
    "label": "Korzyść 4 – opis",
    "kind": "text",
    "value": "Telefon, e-mail, formularz, mapa i link do rezerwacji są tam, gdzie klient ich szuka.",
-   "sort_order": 2023
+   "sort_order": 2030
   },
   {
    "key": "benefits.5_title",
@@ -200,7 +256,7 @@ export const SEED = {
    "label": "Korzyść 5 – tytuł",
    "kind": "text",
    "value": "Samodzielne aktualizacje",
-   "sort_order": 2024
+   "sort_order": 2031
   },
   {
    "key": "benefits.5_text",
@@ -208,7 +264,7 @@ export const SEED = {
    "label": "Korzyść 5 – opis",
    "kind": "text",
    "value": "Z panelem edycji zmienisz cennik, zdjęcia czy godziny otwarcia wtedy, kiedy potrzebujesz.",
-   "sort_order": 2025
+   "sort_order": 2032
   },
   {
    "key": "industries.eyebrow",
@@ -216,7 +272,7 @@ export const SEED = {
    "label": "Nad nagłówkiem",
    "kind": "text",
    "value": "Dla kogo",
-   "sort_order": 3026
+   "sort_order": 3033
   },
   {
    "key": "industries.title",
@@ -224,7 +280,7 @@ export const SEED = {
    "label": "Nagłówek sekcji",
    "kind": "text",
    "value": "Projekt dopasowany do charakteru firmy",
-   "sort_order": 3027
+   "sort_order": 3034
   },
   {
    "key": "industries.intro",
@@ -232,7 +288,7 @@ export const SEED = {
    "label": "Wstęp",
    "kind": "long",
    "value": "Salon kosmetyczny potrzebuje innego klimatu niż kancelaria notarialna, a warsztat — innych informacji niż szkoła. Wygląd, układ i treści dobieram do tego, czym zajmuje się konkretna firma i kim są jej klienci.",
-   "sort_order": 3028
+   "sort_order": 3035
   },
   {
    "key": "capabilities.eyebrow",
@@ -240,7 +296,7 @@ export const SEED = {
    "label": "Nad nagłówkiem",
    "kind": "text",
    "value": "Możliwości",
-   "sort_order": 4029
+   "sort_order": 4036
   },
   {
    "key": "capabilities.title",
@@ -248,7 +304,7 @@ export const SEED = {
    "label": "Nagłówek sekcji",
    "kind": "text",
    "value": "Co mogę stworzyć dla Twojej firmy",
-   "sort_order": 4030
+   "sort_order": 4037
   },
   {
    "key": "capabilities.intro",
@@ -256,7 +312,7 @@ export const SEED = {
    "label": "Wstęp",
    "kind": "long",
    "value": "Integracje i funkcje dobieram do potrzeb firmy — nie każda strona potrzebuje wszystkiego. Oto, co może się na niej znaleźć.",
-   "sort_order": 4031
+   "sort_order": 4038
   },
   {
    "key": "process.eyebrow",
@@ -264,7 +320,7 @@ export const SEED = {
    "label": "Nad nagłówkiem",
    "kind": "text",
    "value": "Przebieg współpracy",
-   "sort_order": 5032
+   "sort_order": 5039
   },
   {
    "key": "process.title",
@@ -272,7 +328,7 @@ export const SEED = {
    "label": "Nagłówek sekcji",
    "kind": "text",
    "value": "Jak powstaje strona WWW — od pierwszej rozmowy do publikacji",
-   "sort_order": 5033
+   "sort_order": 5040
   },
   {
    "key": "process.intro",
@@ -280,7 +336,7 @@ export const SEED = {
    "label": "Wstęp",
    "kind": "long",
    "value": "Każdy etap jest jasny, a Ty wiesz, na co się zgadzasz, zanim zaczniemy pracę. Termin i zakres ustalam indywidualnie.",
-   "sort_order": 5034
+   "sort_order": 5041
   },
   {
    "key": "process.time_title",
@@ -288,7 +344,7 @@ export const SEED = {
    "label": "Czas realizacji – nagłówek",
    "kind": "text",
    "value": "Ile to trwa?",
-   "sort_order": 5035
+   "sort_order": 5042
   },
   {
    "key": "process.time_text",
@@ -296,7 +352,7 @@ export const SEED = {
    "label": "Czas realizacji – treść",
    "kind": "long",
    "value": "Nie podaję jednego terminu dla wszystkich. Czas zależy głównie od tego, jak szybko otrzymam materiały (teksty, zdjęcia, logo), od liczby podstron i funkcji oraz od liczby rund poprawek. Termin ustalamy przed rozpoczęciem pracy.",
-   "sort_order": 5036
+   "sort_order": 5043
   },
   {
    "key": "process.1_title",
@@ -304,7 +360,7 @@ export const SEED = {
    "label": "Krok 1 – tytuł",
    "kind": "text",
    "value": "Poznaję Twoją firmę",
-   "sort_order": 5037
+   "sort_order": 5044
   },
   {
    "key": "process.1_text",
@@ -312,7 +368,7 @@ export const SEED = {
    "label": "Krok 1 – opis",
    "kind": "text",
    "value": "Opowiadasz o potrzebach, oczekiwaniach i preferencjach wizualnych oraz przekazujesz materiały.",
-   "sort_order": 5038
+   "sort_order": 5045
   },
   {
    "key": "process.2_title",
@@ -320,7 +376,7 @@ export const SEED = {
    "label": "Krok 2 – tytuł",
    "kind": "text",
    "value": "Ustalamy zakres i zgody",
-   "sort_order": 5039
+   "sort_order": 5046
   },
   {
    "key": "process.2_text",
@@ -328,7 +384,7 @@ export const SEED = {
    "label": "Krok 2 – opis",
    "kind": "text",
    "value": "Wspólnie określamy zakres strony oraz zgody na wykorzystanie materiałów i prezentację realizacji w portfolio.",
-   "sort_order": 5040
+   "sort_order": 5047
   },
   {
    "key": "process.3_title",
@@ -336,7 +392,7 @@ export const SEED = {
    "label": "Krok 3 – tytuł",
    "kind": "text",
    "value": "Przygotowuję wersję testową",
-   "sort_order": 5041
+   "sort_order": 5048
   },
   {
    "key": "process.3_text",
@@ -344,7 +400,7 @@ export const SEED = {
    "label": "Krok 3 – opis",
    "kind": "text",
    "value": "Tworzę działającą stronę na bezpłatnym hostingu, pod adresem roboczym — do obejrzenia i przetestowania.",
-   "sort_order": 5042
+   "sort_order": 5049
   },
   {
    "key": "process.4_title",
@@ -352,7 +408,7 @@ export const SEED = {
    "label": "Krok 4 – tytuł",
    "kind": "text",
    "value": "Wprowadzam poprawki",
-   "sort_order": 5043
+   "sort_order": 5050
   },
   {
    "key": "process.4_text",
@@ -360,7 +416,7 @@ export const SEED = {
    "label": "Krok 4 – opis",
    "kind": "text",
    "value": "Przekazujesz uwagi, a ja wprowadzam uzgodnione zmiany.",
-   "sort_order": 5044
+   "sort_order": 5051
   },
   {
    "key": "process.5_title",
@@ -368,7 +424,7 @@ export const SEED = {
    "label": "Krok 5 – tytuł",
    "kind": "text",
    "value": "Uruchamiamy stronę",
-   "sort_order": 5045
+   "sort_order": 5052
   },
   {
    "key": "process.5_text",
@@ -376,7 +432,7 @@ export const SEED = {
    "label": "Krok 5 – opis",
    "kind": "text",
    "value": "Po akceptacji pomagam uruchomić stronę pod indywidualną domeną firmy.",
-   "sort_order": 5046
+   "sort_order": 5053
   },
   {
    "key": "process.6_title",
@@ -384,7 +440,7 @@ export const SEED = {
    "label": "Krok 6 – tytuł",
    "kind": "text",
    "value": "3 miesiące aktualizacji",
-   "sort_order": 5047
+   "sort_order": 5054
   },
   {
    "key": "process.6_text",
@@ -392,7 +448,15 @@ export const SEED = {
    "label": "Krok 6 – opis",
    "kind": "long",
    "value": "Przez 3 miesiące od uruchomienia bezpłatnie aktualizuję teksty, zdjęcia, cennik i dane kontaktowe w uzgodnionym zakresie.",
-   "sort_order": 5048
+   "sort_order": 5055
+  },
+  {
+   "key": "paid.process6_text",
+   "section": "Tryb „Cennik” – teksty",
+   "label": "Przebieg współpracy – krok 6 (opis)",
+   "kind": "long",
+   "value": "W cenie: przez 3 miesiące od uruchomienia aktualizuję teksty, zdjęcia, cennik i dane kontaktowe w uzgodnionym zakresie.",
+   "sort_order": 14056
   },
   {
    "key": "offer.eyebrow",
@@ -400,7 +464,7 @@ export const SEED = {
    "label": "Nad nagłówkiem",
    "kind": "text",
    "value": "Oferta i zasady",
-   "sort_order": 5849
+   "sort_order": 5857
   },
   {
    "key": "offer.title",
@@ -408,7 +472,7 @@ export const SEED = {
    "label": "Nagłówek sekcji",
    "kind": "text",
    "value": "Wykonanie strony bezpłatnie, koszty zewnętrzne uzgadniane z góry",
-   "sort_order": 5850
+   "sort_order": 5858
   },
   {
    "key": "offer.intro",
@@ -416,7 +480,7 @@ export const SEED = {
    "label": "Wstęp",
    "kind": "long",
    "value": "Buduję portfolio, dlatego projekt i wykonanie strony są bezpłatne. Po stronie firmy zostaje domena i ewentualne płatne usługi — zawsze uzgodnione przed zakupem.",
-   "sort_order": 5851
+   "sort_order": 5859
   },
   {
    "key": "offer.1_title",
@@ -424,7 +488,7 @@ export const SEED = {
    "label": "Punkt 1 – tytuł",
    "kind": "text",
    "value": "Bezpłatnie",
-   "sort_order": 5852
+   "sort_order": 5860
   },
   {
    "key": "offer.1_text",
@@ -432,7 +496,7 @@ export const SEED = {
    "label": "Punkt 1 – opis",
    "kind": "text",
    "value": "Projekt i wykonanie strony, wersja testowa, poprawki, pomoc przy uruchomieniu i 3 miesiące aktualizacji.",
-   "sort_order": 5853
+   "sort_order": 5861
   },
   {
    "key": "offer.2_title",
@@ -440,7 +504,7 @@ export const SEED = {
    "label": "Punkt 2 – tytuł",
    "kind": "text",
    "value": "Po stronie firmy",
-   "sort_order": 5854
+   "sort_order": 5862
   },
   {
    "key": "offer.2_text",
@@ -448,7 +512,7 @@ export const SEED = {
    "label": "Punkt 2 – opis",
    "kind": "text",
    "value": "Domena, a jeśli okaże się potrzebny — płatny hosting lub inne usługi zewnętrzne.",
-   "sort_order": 5855
+   "sort_order": 5863
   },
   {
    "key": "offer.3_title",
@@ -456,7 +520,7 @@ export const SEED = {
    "label": "Punkt 3 – tytuł",
    "kind": "text",
    "value": "Warunek współpracy",
-   "sort_order": 5856
+   "sort_order": 5864
   },
   {
    "key": "offer.3_text",
@@ -464,7 +528,127 @@ export const SEED = {
    "label": "Punkt 3 – opis",
    "kind": "text",
    "value": "Zgoda na pokazanie strony w moim portfolio i dyskretny podpis w stopce.",
-   "sort_order": 5857
+   "sort_order": 5865
+  },
+  {
+   "key": "paid.pricing_eyebrow",
+   "section": "Tryb „Cennik” – teksty",
+   "label": "Cennik – nad nagłówkiem",
+   "kind": "text",
+   "value": "Cennik",
+   "sort_order": 14066
+  },
+  {
+   "key": "paid.pricing_title",
+   "section": "Tryb „Cennik” – teksty",
+   "label": "Cennik – nagłówek",
+   "kind": "text",
+   "value": "Przejrzyste ceny, kwota znana przed startem",
+   "sort_order": 14067
+  },
+  {
+   "key": "paid.pricing_intro",
+   "section": "Tryb „Cennik” – teksty",
+   "label": "Cennik – wstęp",
+   "kind": "text",
+   "value": "Trzy pakiety dla małych firm. Zakres i cenę potwierdzam mailowo, zanim zacznę pracę — bez ukrytych kosztów.",
+   "sort_order": 14068
+  },
+  {
+   "key": "pricing.1_name",
+   "section": "Tryb „Cennik” – pakiety i ceny",
+   "label": "Pakiet 1 – nazwa",
+   "kind": "text",
+   "value": "Wizytówka",
+   "sort_order": 15069
+  },
+  {
+   "key": "pricing.1_price",
+   "section": "Tryb „Cennik” – pakiety i ceny",
+   "label": "Pakiet 1 – cena (np. „od 990 zł” albo „wycena indywidualna”)",
+   "kind": "text",
+   "value": "od 990 zł",
+   "sort_order": 15070
+  },
+  {
+   "key": "pricing.1_desc",
+   "section": "Tryb „Cennik” – pakiety i ceny",
+   "label": "Pakiet 1 – opis",
+   "kind": "text",
+   "value": "Jedna strona z najważniejszymi informacjami — dla firm, które chcą szybko i niedrogo pokazać się w internecie.",
+   "sort_order": 15071
+  },
+  {
+   "key": "pricing.cta",
+   "section": "Tryb „Cennik” – pakiety i ceny",
+   "label": "Przycisk pod pakietem",
+   "kind": "text",
+   "value": "Zapytaj o ten pakiet",
+   "sort_order": 15072
+  },
+  {
+   "key": "pricing.2_badge",
+   "section": "Tryb „Cennik” – pakiety i ceny",
+   "label": "Pakiet 2 – wyróżnienie (np. „Polecany”; „-” ukrywa)",
+   "kind": "text",
+   "value": "Polecany",
+   "sort_order": 15073
+  },
+  {
+   "key": "pricing.2_name",
+   "section": "Tryb „Cennik” – pakiety i ceny",
+   "label": "Pakiet 2 – nazwa",
+   "kind": "text",
+   "value": "Strona firmowa",
+   "sort_order": 15074
+  },
+  {
+   "key": "pricing.2_price",
+   "section": "Tryb „Cennik” – pakiety i ceny",
+   "label": "Pakiet 2 – cena",
+   "kind": "text",
+   "value": "od 1 690 zł",
+   "sort_order": 15075
+  },
+  {
+   "key": "pricing.2_desc",
+   "section": "Tryb „Cennik” – pakiety i ceny",
+   "label": "Pakiet 2 – opis",
+   "kind": "text",
+   "value": "Kilka podstron, galeria i czytelna oferta — dla firm, które chcą pokazać więcej niż dane kontaktowe.",
+   "sort_order": 15076
+  },
+  {
+   "key": "pricing.3_name",
+   "section": "Tryb „Cennik” – pakiety i ceny",
+   "label": "Pakiet 3 – nazwa",
+   "kind": "text",
+   "value": "Strona z panelem edycji",
+   "sort_order": 15077
+  },
+  {
+   "key": "pricing.3_price",
+   "section": "Tryb „Cennik” – pakiety i ceny",
+   "label": "Pakiet 3 – cena",
+   "kind": "text",
+   "value": "od 2 490 zł",
+   "sort_order": 15078
+  },
+  {
+   "key": "pricing.3_desc",
+   "section": "Tryb „Cennik” – pakiety i ceny",
+   "label": "Pakiet 3 – opis",
+   "kind": "text",
+   "value": "Strona, której treści zmieniasz sam — bez znajomości programowania i bez czekania na wykonawcę.",
+   "sort_order": 15079
+  },
+  {
+   "key": "pricing.note",
+   "section": "Tryb „Cennik” – pakiety i ceny",
+   "label": "Informacja pod cennikiem",
+   "kind": "long",
+   "value": "Ceny brutto. Domena i ewentualny płatny hosting — osobno, według cennika dostawcy; podaję je przed zakupem. Dodatkowe podstrony i funkcje wyceniam indywidualnie.",
+   "sort_order": 15080
   },
   {
    "key": "portfolio.eyebrow",
@@ -472,7 +656,7 @@ export const SEED = {
    "label": "Nad nagłówkiem",
    "kind": "text",
    "value": "Portfolio",
-   "sort_order": 8058
+   "sort_order": 8081
   },
   {
    "key": "portfolio.title",
@@ -480,7 +664,7 @@ export const SEED = {
    "label": "Nagłówek sekcji",
    "kind": "text",
    "value": "Realizacje i projekty stron internetowych",
-   "sort_order": 8059
+   "sort_order": 8082
   },
   {
    "key": "portfolio.intro",
@@ -488,7 +672,7 @@ export const SEED = {
    "label": "Wstęp",
    "kind": "long",
    "value": "Projekty zrealizowane dla firm (za ich zgodą) oraz projekty demonstracyjne — kliknij kafelek, aby zobaczyć szczegóły.",
-   "sort_order": 8060
+   "sort_order": 8083
   },
   {
    "key": "portfolio.real_label",
@@ -496,7 +680,7 @@ export const SEED = {
    "label": "Zakładka 1 – nazwa (projekty zrealizowane)",
    "kind": "text",
    "value": "Projekty zrealizowane",
-   "sort_order": 8061
+   "sort_order": 8084
   },
   {
    "key": "portfolio.real_intro",
@@ -504,7 +688,7 @@ export const SEED = {
    "label": "Zakładka 1 – opis",
    "kind": "text",
    "value": "Strony przygotowane dla prawdziwych firm, które zgodziły się na ich prezentację.",
-   "sort_order": 8062
+   "sort_order": 8085
   },
   {
    "key": "portfolio.demo_label",
@@ -512,7 +696,7 @@ export const SEED = {
    "label": "Zakładka 2 – nazwa (projekty demonstracyjne)",
    "kind": "text",
    "value": "Projekty demonstracyjne",
-   "sort_order": 8063
+   "sort_order": 8086
   },
   {
    "key": "portfolio.demo_intro",
@@ -520,7 +704,7 @@ export const SEED = {
    "label": "Zakładka 2 – opis",
    "kind": "text",
    "value": "Koncepcje na przykładzie fikcyjnych firm — pokazują, jak może wyglądać strona dla danej branży.",
-   "sort_order": 8064
+   "sort_order": 8087
   },
   {
    "key": "posts.eyebrow",
@@ -528,7 +712,7 @@ export const SEED = {
    "label": "Nad nagłówkiem",
    "kind": "text",
    "value": "Aktualności",
-   "sort_order": 8565
+   "sort_order": 8588
   },
   {
    "key": "posts.title",
@@ -536,7 +720,7 @@ export const SEED = {
    "label": "Nagłówek sekcji",
    "kind": "text",
    "value": "Co nowego",
-   "sort_order": 8566
+   "sort_order": 8589
   },
   {
    "key": "posts.intro",
@@ -544,7 +728,7 @@ export const SEED = {
    "label": "Wstęp",
    "kind": "text",
    "value": "Nowe projekty, wolne terminy i krótkie informacje o tym, nad czym teraz pracuję.",
-   "sort_order": 8567
+   "sort_order": 8590
   },
   {
    "key": "posts.follow",
@@ -552,7 +736,7 @@ export const SEED = {
    "label": "Zachęta do obserwowania profili",
    "kind": "text",
    "value": "Więcej aktualności znajdziesz na moich profilach:",
-   "sort_order": 8568
+   "sort_order": 8591
   },
   {
    "key": "about.eyebrow",
@@ -560,7 +744,7 @@ export const SEED = {
    "label": "Nad nagłówkiem",
    "kind": "text",
    "value": "O mnie",
-   "sort_order": 9069
+   "sort_order": 9092
   },
   {
    "key": "about.title",
@@ -568,7 +752,7 @@ export const SEED = {
    "label": "Nagłówek sekcji",
    "kind": "text",
    "value": "Cześć, jestem Grzegorz",
-   "sort_order": 9070
+   "sort_order": 9093
   },
   {
    "key": "about.p1",
@@ -576,7 +760,7 @@ export const SEED = {
    "label": "Akapit 1",
    "kind": "long",
    "value": "Jestem z Wrocławia i tworzę strony internetowe dla małych firm. Wykorzystuję narzędzia AI do projektowania i tworzenia stron, a każdy projekt dopasowuję do potrzeb konkretnej firmy.",
-   "sort_order": 9071
+   "sort_order": 9094
   },
   {
    "key": "about.p2",
@@ -584,7 +768,15 @@ export const SEED = {
    "label": "Akapit 2",
    "kind": "long",
    "value": "Stawiam pierwsze kroki, rozwijam umiejętności i buduję portfolio — dlatego wybranym firmom wykonuję stronę bezpłatnie. Nie jestem agencją ani zespołem: od pierwszej wiadomości do uruchomienia strony rozmawiasz bezpośrednio ze mną.",
-   "sort_order": 9072
+   "sort_order": 9095
+  },
+  {
+   "key": "paid.about_p2",
+   "section": "Tryb „Cennik” – teksty",
+   "label": "O mnie – akapit 2",
+   "kind": "long",
+   "value": "Projekty prowadzę osobiście — nie jestem agencją ani zespołem. Od pierwszej wiadomości do uruchomienia strony rozmawiasz bezpośrednio ze mną, a cenę i zakres znasz, zanim zacznę pracę.",
+   "sort_order": 14096
   },
   {
    "key": "about.p3",
@@ -592,7 +784,7 @@ export const SEED = {
    "label": "Akapit 3",
    "kind": "long",
    "value": "Jeśli trafiłeś tutaj z mojej wiadomości e-mail — na tej stronie znajdziesz wszystko, co warto wiedzieć, zanim odpowiesz.",
-   "sort_order": 9073
+   "sort_order": 9097
   },
   {
    "key": "faq.eyebrow",
@@ -600,7 +792,7 @@ export const SEED = {
    "label": "Nad nagłówkiem",
    "kind": "text",
    "value": "FAQ",
-   "sort_order": 10074
+   "sort_order": 10098
   },
   {
    "key": "faq.title",
@@ -608,7 +800,7 @@ export const SEED = {
    "label": "Nagłówek sekcji",
    "kind": "text",
    "value": "Najczęstsze pytania",
-   "sort_order": 10075
+   "sort_order": 10099
   },
   {
    "key": "faq.intro",
@@ -616,7 +808,7 @@ export const SEED = {
    "label": "Wstęp",
    "kind": "text",
    "value": "Nie znalazłeś odpowiedzi? Napisz — chętnie wyjaśnię.",
-   "sort_order": 10076
+   "sort_order": 10100
   },
   {
    "key": "contact.eyebrow",
@@ -624,7 +816,7 @@ export const SEED = {
    "label": "Nad nagłówkiem",
    "kind": "text",
    "value": "Kontakt",
-   "sort_order": 11077
+   "sort_order": 11101
   },
   {
    "key": "contact.title",
@@ -632,7 +824,7 @@ export const SEED = {
    "label": "Nagłówek sekcji",
    "kind": "text",
    "value": "Zgłoś swoją firmę",
-   "sort_order": 11078
+   "sort_order": 11102
   },
   {
    "key": "contact.intro",
@@ -640,7 +832,7 @@ export const SEED = {
    "label": "Wstęp",
    "kind": "text",
    "value": "Opisz krótko firmę i swoje oczekiwania. Odpowiem mailowo.",
-   "sort_order": 11079
+   "sort_order": 11103
   },
   {
    "key": "contact.nonbinding",
@@ -648,7 +840,7 @@ export const SEED = {
    "label": "Informacja o niezobowiązującym charakterze",
    "kind": "long",
    "value": "Zgłoszenie jest niezobowiązujące i nie oznacza zawarcia współpracy. Zgody na wykorzystanie materiałów i prezentację w portfolio ustalamy później — przed rozpoczęciem projektu.",
-   "sort_order": 11080
+   "sort_order": 11104
   },
   {
    "key": "contact.mail_label",
@@ -656,7 +848,7 @@ export const SEED = {
    "label": "Karta e-mail – etykieta",
    "kind": "text",
    "value": "Wolisz napisać bezpośrednio?",
-   "sort_order": 11081
+   "sort_order": 11105
   },
   {
    "key": "contact.social_label",
@@ -664,7 +856,7 @@ export const SEED = {
    "label": "Media społecznościowe – etykieta",
    "kind": "text",
    "value": "Znajdziesz mnie też tutaj",
-   "sort_order": 11082
+   "sort_order": 11106
   },
   {
    "key": "contact.message_hint",
@@ -672,7 +864,7 @@ export const SEED = {
    "label": "Formularz: podpowiedź nad wiadomością",
    "kind": "text",
    "value": "Uzupełnij szkic albo napisz po swojemu.",
-   "sort_order": 11083
+   "sort_order": 11107
   },
   {
    "key": "contact.message_template",
@@ -680,7 +872,7 @@ export const SEED = {
    "label": "Formularz: szkic wiadomości (wpisz „-”, aby pole było puste)",
    "kind": "long",
    "value": "Dzień dobry,\nchcę nawiązać współpracę przy stworzeniu strony internetowej dla mojej firmy.\n\nCzym się zajmujemy: \nCo chcę pokazać na stronie (np. oferta, cennik, galeria, zespół, rezerwacje): \nCzy mam logo i zdjęcia: \nStrony, które mi się podobają: \nNa kiedy strona byłaby potrzebna: \n\nProszę o kontakt w sprawie dalszych kroków.",
-   "sort_order": 11084
+   "sort_order": 11108
   },
   {
    "key": "contact.message_template_org",
@@ -688,7 +880,7 @@ export const SEED = {
    "label": "Formularz: szkic wiadomości dla strony wizerunkowej (klub, szkoła, akademia)",
    "kind": "long",
    "value": "Dzień dobry,\nchcę zamówić stronę wizerunkową dla naszej organizacji.\n\nKim jesteśmy (klub / szkoła / akademia / stowarzyszenie): \nCo chcemy pokazać (np. aktualności, drużyny, kadra, terminarz, nabór, sponsorzy): \nCzy mamy herb / logo i zdjęcia: \nNa kiedy strona byłaby potrzebna: \n\nProszę o kontakt w sprawie dalszych kroków.",
-   "sort_order": 11085
+   "sort_order": 11109
   },
   {
    "key": "contact.success_title",
@@ -696,7 +888,7 @@ export const SEED = {
    "label": "Po wysłaniu – nagłówek",
    "kind": "text",
    "value": "Dziękuję — zgłoszenie zostało zapisane",
-   "sort_order": 11086
+   "sort_order": 11110
   },
   {
    "key": "contact.success_text",
@@ -704,7 +896,7 @@ export const SEED = {
    "label": "Po wysłaniu – treść",
    "kind": "long",
    "value": "Przeczytam je i odpiszę na podany adres e-mail. Jeśli chcesz coś dodać, napisz bezpośrednio na stronyaiwroclaw@gmail.com.",
-   "sort_order": 11087
+   "sort_order": 11111
   },
   {
    "key": "contact.closed_title",
@@ -712,7 +904,7 @@ export const SEED = {
    "label": "Nabór wyłączony – nagłówek",
    "kind": "text",
    "value": "Nabór jest chwilowo wstrzymany",
-   "sort_order": 11088
+   "sort_order": 11112
   },
   {
    "key": "contact.closed_text",
@@ -720,7 +912,7 @@ export const SEED = {
    "label": "Nabór wyłączony – treść",
    "kind": "text",
    "value": "Obecnie realizuję przyjęte projekty. Możesz napisać do mnie, aby zapytać o kolejny termin.",
-   "sort_order": 11089
+   "sort_order": 11113
   },
   {
    "key": "footer.location",
@@ -728,7 +920,7 @@ export const SEED = {
    "label": "Stopka – lokalizacja",
    "kind": "text",
    "value": "Z Wrocławia — dla firm z całej Polski",
-   "sort_order": 12090
+   "sort_order": 12114
   },
   {
    "key": "footer.author",
@@ -736,7 +928,7 @@ export const SEED = {
    "label": "Stopka – informacja o autorze",
    "kind": "text",
    "value": "Strony AI Wrocław to projekt Grzegorza — twórcy stron internetowych z Wrocławia.",
-   "sort_order": 12091
+   "sort_order": 12115
   },
   {
    "key": "privacy.updated",
@@ -792,7 +984,7 @@ export const SEED = {
    "label": "Kolumna 1 – punkty (jedna linia = jeden punkt)",
    "kind": "lines",
    "value": "Projekt i wykonanie strony w uzgodnionym zakresie\nWersja testowa pod adresem roboczym\nWprowadzenie uzgodnionych poprawek\nPomoc przy uruchomieniu pod domeną firmy\n3 miesiące aktualizacji: teksty, zdjęcia, cennik i dane kontaktowe",
-   "sort_order": 6000
+   "sort_order": 6003
   },
   {
    "key": "rules.paid_items",
@@ -800,7 +992,7 @@ export const SEED = {
    "label": "Kolumna 2 – punkty (jedna linia = jeden punkt)",
    "kind": "lines",
    "value": "Domena — rejestracja i coroczne odnowienie\nPłatny hosting — tylko jeśli bezpłatny nie wystarczy\nEwentualne płatne usługi zewnętrzne",
-   "sort_order": 6001
+   "sort_order": 6004
   },
   {
    "key": "rules.cond_items",
@@ -808,7 +1000,23 @@ export const SEED = {
    "label": "Kolumna 3 – punkty (jedna linia = jeden punkt)",
    "kind": "lines",
    "value": "Zgoda na pokazanie nazwy firmy, zrzutów ekranu i linku do strony w moim portfolio\nDyskretny podpis w stopce: „Projekt i wykonanie: Strony AI Wrocław”, z linkiem do mojej strony",
-   "sort_order": 6002
+   "sort_order": 6005
+  },
+  {
+   "key": "paid.incl_items",
+   "section": "Tryb „Cennik” – teksty",
+   "label": "Zasady (strona Oferta) – kolumna 1, punkty",
+   "kind": "lines",
+   "value": "Projekt i wykonanie strony w zakresie pakietu\nWersja testowa pod adresem roboczym\nWprowadzenie uzgodnionych poprawek\nPomoc przy uruchomieniu pod domeną firmy\n3 miesiące aktualizacji: teksty, zdjęcia, cennik i dane kontaktowe",
+   "sort_order": 14006
+  },
+  {
+   "key": "paid.port_items",
+   "section": "Tryb „Cennik” – teksty",
+   "label": "Zasady (strona Oferta) – kolumna 3, punkty",
+   "kind": "lines",
+   "value": "Stronę pokazuję w portfolio tylko za Twoją zgodą\nPodpis „Projekt i wykonanie: Strony AI Wrocław” w stopce — tylko jeśli się na niego zgodzisz",
+   "sort_order": 14007
   },
   {
    "key": "rules.eyebrow",
@@ -816,7 +1024,7 @@ export const SEED = {
    "label": "Nad nagłówkiem",
    "kind": "text",
    "value": "Zasady",
-   "sort_order": 6003
+   "sort_order": 6020
   },
   {
    "key": "rules.title",
@@ -824,7 +1032,7 @@ export const SEED = {
    "label": "Nagłówek sekcji",
    "kind": "text",
    "value": "Uczciwie o kosztach i warunkach",
-   "sort_order": 6004
+   "sort_order": 6021
   },
   {
    "key": "rules.intro",
@@ -832,7 +1040,15 @@ export const SEED = {
    "label": "Wstęp",
    "kind": "text",
    "value": "Samo wykonanie strony jest bezpłatne. Poniżej znajdziesz wszystko, co warto wiedzieć, zanim się zgłosisz.",
-   "sort_order": 6005
+   "sort_order": 6022
+  },
+  {
+   "key": "paid.rules_intro",
+   "section": "Tryb „Cennik” – teksty",
+   "label": "Zasady (strona Oferta) – wstęp",
+   "kind": "long",
+   "value": "Cena pakietu jest stała i znana przed startem. Poniżej znajdziesz, co obejmuje, co zostaje po stronie firmy i na jakich zasadach pracuję.",
+   "sort_order": 14023
   },
   {
    "key": "rules.free_title",
@@ -840,7 +1056,7 @@ export const SEED = {
    "label": "Kolumna 1 – tytuł",
    "kind": "text",
    "value": "Bezpłatnie",
-   "sort_order": 6006
+   "sort_order": 6024
   },
   {
    "key": "rules.paid_title",
@@ -848,7 +1064,7 @@ export const SEED = {
    "label": "Kolumna 2 – tytuł",
    "kind": "text",
    "value": "Po stronie firmy",
-   "sort_order": 6007
+   "sort_order": 6025
   },
   {
    "key": "rules.paid_note",
@@ -856,7 +1072,7 @@ export const SEED = {
    "label": "Kolumna 2 – dopisek",
    "kind": "text",
    "value": "Każdy koszt zewnętrzny uzgadniamy, zanim zostanie poniesiony.",
-   "sort_order": 6008
+   "sort_order": 6026
   },
   {
    "key": "rules.cond_title",
@@ -864,7 +1080,7 @@ export const SEED = {
    "label": "Kolumna 3 – tytuł",
    "kind": "text",
    "value": "Warunek współpracy",
-   "sort_order": 6009
+   "sort_order": 6027
   },
   {
    "key": "rules.cond_note",
@@ -872,7 +1088,31 @@ export const SEED = {
    "label": "Kolumna 3 – dopisek",
    "kind": "text",
    "value": "Zgody ustalamy po pierwszej rozmowie, przed rozpoczęciem projektu.",
-   "sort_order": 6010
+   "sort_order": 6028
+  },
+  {
+   "key": "paid.incl_title",
+   "section": "Tryb „Cennik” – teksty",
+   "label": "Zasady (strona Oferta) – kolumna 1, tytuł",
+   "kind": "text",
+   "value": "W cenie pakietu",
+   "sort_order": 14029
+  },
+  {
+   "key": "paid.port_title",
+   "section": "Tryb „Cennik” – teksty",
+   "label": "Zasady (strona Oferta) – kolumna 3, tytuł",
+   "kind": "text",
+   "value": "Portfolio i podpis w stopce",
+   "sort_order": 14030
+  },
+  {
+   "key": "paid.port_note",
+   "section": "Tryb „Cennik” – teksty",
+   "label": "Zasady (strona Oferta) – kolumna 3, dopisek",
+   "kind": "text",
+   "value": "Zgody nie są warunkiem współpracy.",
+   "sort_order": 14031
   },
   {
    "key": "rules.fine1_title",
@@ -880,7 +1120,7 @@ export const SEED = {
    "label": "Uwaga 1 – tytuł",
    "kind": "text",
    "value": "Poza zakresem aktualizacji",
-   "sort_order": 6011
+   "sort_order": 6032
   },
   {
    "key": "rules.fine1_text",
@@ -888,7 +1128,7 @@ export const SEED = {
    "label": "Uwaga 1 – treść",
    "kind": "text",
    "value": "Nowe podstrony, rozbudowa i dodatkowe funkcje wymagają osobnego ustalenia.",
-   "sort_order": 6012
+   "sort_order": 6033
   },
   {
    "key": "rules.fine2_title",
@@ -896,7 +1136,7 @@ export const SEED = {
    "label": "Uwaga 2 – tytuł",
    "kind": "text",
    "value": "Błędy wykonania",
-   "sort_order": 6013
+   "sort_order": 6034
   },
   {
    "key": "rules.fine2_text",
@@ -904,7 +1144,7 @@ export const SEED = {
    "label": "Uwaga 2 – treść",
    "kind": "text",
    "value": "Poprawki moich błędów to osobna sprawa — nie są częścią aktualizacji i nie kończą się po 3 miesiącach.",
-   "sort_order": 6014
+   "sort_order": 6035
   },
   {
    "key": "rules.fine3_title",
@@ -912,7 +1152,7 @@ export const SEED = {
    "label": "Uwaga 3 – tytuł",
    "kind": "text",
    "value": "Termin i zakres",
-   "sort_order": 6015
+   "sort_order": 6036
   },
   {
    "key": "rules.fine3_text",
@@ -920,7 +1160,7 @@ export const SEED = {
    "label": "Uwaga 3 – treść",
    "kind": "text",
    "value": "Ustalam indywidualnie. Nie obiecuję nieograniczonych poprawek ani stałej bezpłatnej opieki.",
-   "sort_order": 6016
+   "sort_order": 6037
   },
   {
    "key": "rules.fine4_title",
@@ -928,7 +1168,7 @@ export const SEED = {
    "label": "Uwaga 4 – tytuł",
    "kind": "text",
    "value": "Koszty utrzymania",
-   "sort_order": 6017
+   "sort_order": 6038
   },
   {
    "key": "rules.fine4_text",
@@ -936,7 +1176,7 @@ export const SEED = {
    "label": "Uwaga 4 – treść",
    "kind": "long",
    "value": "Po uruchomieniu stałym kosztem jest zwykle domena, opłacana co roku. Płatny hosting czy poczta w domenie pojawiają się tylko wtedy, gdy są potrzebne. Kwoty zależą od dostawcy, dlatego podaję je przed zakupem.",
-   "sort_order": 6018
+   "sort_order": 6039
   },
   {
    "key": "rules.fine5_title",
@@ -944,7 +1184,7 @@ export const SEED = {
    "label": "Uwaga 5 – tytuł",
    "kind": "text",
    "value": "Usługi zewnętrzne",
-   "sort_order": 6019
+   "sort_order": 6040
   },
   {
    "key": "rules.fine5_text",
@@ -952,7 +1192,7 @@ export const SEED = {
    "label": "Uwaga 5 – treść",
    "kind": "long",
    "value": "Na przykład system rezerwacji online czy płatności mają własne cenniki. Jeśli są potrzebne, mówię o tym przed ich podłączeniem.",
-   "sort_order": 6020
+   "sort_order": 6041
   },
   {
    "key": "rules.fine6_title",
@@ -960,7 +1200,7 @@ export const SEED = {
    "label": "Uwaga 6 – tytuł",
    "kind": "text",
    "value": "Po 3 miesiącach",
-   "sort_order": 6021
+   "sort_order": 6042
   },
   {
    "key": "rules.fine6_text",
@@ -968,7 +1208,7 @@ export const SEED = {
    "label": "Uwaga 6 – treść",
    "kind": "long",
    "value": "Jeśli strona ma panel edycji, treści możesz dalej zmieniać sam. Inne zmiany i rozbudowę ustalamy osobno, przed rozpoczęciem pracy.",
-   "sort_order": 6022
+   "sort_order": 6043
   },
   {
    "key": "materials.eyebrow",
@@ -976,7 +1216,7 @@ export const SEED = {
    "label": "Nad nagłówkiem",
    "kind": "text",
    "value": "Materiały firmy",
-   "sort_order": 7023
+   "sort_order": 7044
   },
   {
    "key": "materials.title",
@@ -984,7 +1224,7 @@ export const SEED = {
    "label": "Nagłówek sekcji",
    "kind": "text",
    "value": "Twoje materiały, Twoja decyzja",
-   "sort_order": 7024
+   "sort_order": 7045
   },
   {
    "key": "materials.intro",
@@ -992,7 +1232,7 @@ export const SEED = {
    "label": "Wstęp",
    "kind": "text",
    "value": "Zanim przygotuję projekt, ustalamy, z czego mogę skorzystać. To proste — i chroni Twoją firmę.",
-   "sort_order": 7025
+   "sort_order": 7046
   },
   {
    "key": "materials.1_title",
@@ -1000,7 +1240,7 @@ export const SEED = {
    "label": "Punkt 1 – tytuł",
    "kind": "text",
    "value": "Wskazujesz materiały",
-   "sort_order": 7026
+   "sort_order": 7047
   },
   {
    "key": "materials.1_text",
@@ -1008,7 +1248,7 @@ export const SEED = {
    "label": "Punkt 1 – opis",
    "kind": "long",
    "value": "Logo, zdjęcia, opisy oraz treści z oficjalnego Facebooka, Instagrama lub innych źródeł, które chcesz wykorzystać.",
-   "sort_order": 7027
+   "sort_order": 7048
   },
   {
    "key": "materials.2_title",
@@ -1016,7 +1256,7 @@ export const SEED = {
    "label": "Punkt 2 – tytuł",
    "kind": "text",
    "value": "Potwierdzasz możliwość ich użycia",
-   "sort_order": 7028
+   "sort_order": 7049
   },
   {
    "key": "materials.2_text",
@@ -1024,7 +1264,7 @@ export const SEED = {
    "label": "Punkt 2 – opis",
    "kind": "long",
    "value": "Publiczna dostępność nie oznacza zgody na wykorzystanie. Zdjęcia od fotografa, grafiki czy opinie z portali mogą należeć do kogoś innego — dlatego to sprawdzamy.",
-   "sort_order": 7029
+   "sort_order": 7050
   },
   {
    "key": "materials.3_title",
@@ -1032,7 +1272,7 @@ export const SEED = {
    "label": "Punkt 3 – tytuł",
    "kind": "text",
    "value": "Decydujesz, czego nie używać",
-   "sort_order": 7030
+   "sort_order": 7051
   },
   {
    "key": "materials.3_text",
@@ -1040,7 +1280,7 @@ export const SEED = {
    "label": "Punkt 3 – opis",
    "kind": "text",
    "value": "Możesz wyłączyć wybrane materiały, a zdjęcia i opisy wymienić później.",
-   "sort_order": 7031
+   "sort_order": 7052
   },
   {
    "key": "materials.note",
@@ -1048,7 +1288,7 @@ export const SEED = {
    "label": "Dopisek",
    "kind": "text",
    "value": "Nie pobieram automatycznie treści z mediów społecznościowych — korzystam wyłącznie z tego, co wskażesz.",
-   "sort_order": 7032
+   "sort_order": 7053
   },
   {
    "key": "ownership.eyebrow",
@@ -1056,7 +1296,7 @@ export const SEED = {
    "label": "Nad nagłówkiem",
    "kind": "text",
    "value": "Po uruchomieniu",
-   "sort_order": 7533
+   "sort_order": 7554
   },
   {
    "key": "ownership.title",
@@ -1064,7 +1304,7 @@ export const SEED = {
    "label": "Nagłówek sekcji",
    "kind": "text",
    "value": "Kto jest właścicielem strony i domeny",
-   "sort_order": 7534
+   "sort_order": 7555
   },
   {
    "key": "ownership.intro",
@@ -1072,7 +1312,7 @@ export const SEED = {
    "label": "Wstęp",
    "kind": "long",
    "value": "Strona ma działać dla Twojej firmy także wtedy, gdy kiedyś zechcesz pracować z kimś innym. Dlatego od początku ustalamy, na kogo są konta i kto ma do nich dostęp.",
-   "sort_order": 7535
+   "sort_order": 7556
   },
   {
    "key": "ownership.1_title",
@@ -1080,7 +1320,7 @@ export const SEED = {
    "label": "Punkt 1 – tytuł",
    "kind": "text",
    "value": "Domena jest Twoja",
-   "sort_order": 7536
+   "sort_order": 7557
   },
   {
    "key": "ownership.1_text",
@@ -1088,7 +1328,7 @@ export const SEED = {
    "label": "Punkt 1 – opis",
    "kind": "long",
    "value": "Domenę opłaca Twoja firma i to ona powinna być jej abonentem. Dzięki temu sam decydujesz o jej odnowieniu i ewentualnym przeniesieniu.",
-   "sort_order": 7537
+   "sort_order": 7558
   },
   {
    "key": "ownership.2_title",
@@ -1096,7 +1336,7 @@ export const SEED = {
    "label": "Punkt 2 – tytuł",
    "kind": "text",
    "value": "Dostajesz wszystkie dostępy",
-   "sort_order": 7538
+   "sort_order": 7559
   },
   {
    "key": "ownership.2_text",
@@ -1104,7 +1344,7 @@ export const SEED = {
    "label": "Punkt 2 – opis",
    "kind": "long",
    "value": "Po uruchomieniu przekazuję zestawienie: gdzie jest domena i do kiedy jest opłacona, jakie konta powstały dla strony i jak się do nich zalogować.",
-   "sort_order": 7539
+   "sort_order": 7560
   },
   {
    "key": "ownership.3_title",
@@ -1112,7 +1352,7 @@ export const SEED = {
    "label": "Punkt 3 – tytuł",
    "kind": "text",
    "value": "Możesz zmienić wykonawcę",
-   "sort_order": 7540
+   "sort_order": 7561
   },
   {
    "key": "ownership.3_text",
@@ -1120,7 +1360,7 @@ export const SEED = {
    "label": "Punkt 3 – opis",
    "kind": "long",
    "value": "Nie wiążę Cię abonamentem ani umową na opiekę. Mając dostępy, możesz później prowadzić stronę sam albo powierzyć ją komuś innemu.",
-   "sort_order": 7541
+   "sort_order": 7562
   },
   {
    "key": "about.v1_title",
@@ -1241,67 +1481,113 @@ export const SEED = {
  "faq": [
   {
    "question": "Dlaczego wykonujesz strony bezpłatnie?",
-   "answer": "Stawiam pierwsze kroki w tworzeniu stron i buduję portfolio. Prawdziwe realizacje dla prawdziwych firm są dla mnie najlepszym sposobem, żeby pokazać, co potrafię.\n\nW zamian proszę o dwie rzeczy, ustalone przed rozpoczęciem projektu: zgodę na pokazanie strony w moim portfolio oraz dyskretny podpis w stopce Twojej strony."
+   "answer": "Stawiam pierwsze kroki w tworzeniu stron i buduję portfolio. Prawdziwe realizacje dla prawdziwych firm są dla mnie najlepszym sposobem, żeby pokazać, co potrafię.\n\nW zamian proszę o dwie rzeczy, ustalone przed rozpoczęciem projektu: zgodę na pokazanie strony w moim portfolio oraz dyskretny podpis w stopce Twojej strony.",
+   "mode": "free"
+  },
+  {
+   "question": "Ile kosztuje strona?",
+   "answer": "Przygotowuję strony w trzech pakietach: Wizytówka, Strona firmowa i Strona z panelem edycji. Aktualne ceny i zakres pakietów znajdziesz w cenniku na stronie oferty.\n\nCena jest stała — zakres i kwotę potwierdzam mailowo, zanim zacznę pracę. Dodatkowe podstrony i funkcje wyceniam indywidualnie.",
+   "mode": "paid"
   },
   {
    "question": "Co obejmuje bezpłatna oferta?",
-   "answer": "Projekt i wykonanie strony w uzgodnionym zakresie, działającą wersję testową pod adresem roboczym, wprowadzenie uzgodnionych poprawek, pomoc przy uruchomieniu strony pod domeną firmy oraz 3 miesiące bezpłatnych aktualizacji od uruchomienia.\n\nNie obiecuję nieograniczonych poprawek ani stałej bezpłatnej opieki — zakres ustalamy wspólnie na początku."
+   "answer": "Projekt i wykonanie strony w uzgodnionym zakresie, działającą wersję testową pod adresem roboczym, wprowadzenie uzgodnionych poprawek, pomoc przy uruchomieniu strony pod domeną firmy oraz 3 miesiące bezpłatnych aktualizacji od uruchomienia.\n\nNie obiecuję nieograniczonych poprawek ani stałej bezpłatnej opieki — zakres ustalamy wspólnie na początku.",
+   "mode": "free"
+  },
+  {
+   "question": "Co obejmuje cena pakietu?",
+   "answer": "Projekt i wykonanie strony w zakresie pakietu, działającą wersję testową pod adresem roboczym, wprowadzenie uzgodnionych poprawek, pomoc przy uruchomieniu strony pod domeną firmy oraz 3 miesiące aktualizacji od uruchomienia.\n\nDomena i ewentualny płatny hosting nie są częścią ceny — to koszty zewnętrzne, które uzgadniamy przed zakupem.",
+   "mode": "paid"
   },
   {
    "question": "Kto płaci za domenę i hosting?",
-   "answer": "Domenę (np. twojafirma.pl) opłaca firma — dzięki temu pozostaje ona jej własnością. Płaci się za jej rejestrację i coroczne odnowienie.\n\nW wielu przypadkach wystarcza bezpłatny hosting. Płatny hosting lub inne płatne usługi zewnętrzne proponuję tylko wtedy, gdy są naprawdę potrzebne — i zawsze uzgadniamy je, zanim ktokolwiek poniesie koszt."
+   "answer": "Domenę (np. twojafirma.pl) opłaca firma — dzięki temu pozostaje ona jej własnością. Płaci się za jej rejestrację i coroczne odnowienie.\n\nW wielu przypadkach wystarcza bezpłatny hosting. Płatny hosting lub inne płatne usługi zewnętrzne proponuję tylko wtedy, gdy są naprawdę potrzebne — i zawsze uzgadniamy je, zanim ktokolwiek poniesie koszt.",
+   "mode": "all"
   },
   {
    "question": "Ile kosztuje utrzymanie strony po uruchomieniu?",
-   "answer": "Wykonanie strony w ramach portfolio jest bezpłatne, ale utrzymanie strony w internecie ma koszty zewnętrzne. Zwykle jest to domena, opłacana co roku. Płatny hosting, poczta w domenie czy płatne usługi (np. system rezerwacji) dochodzą tylko wtedy, gdy są potrzebne.\n\nKonkretne kwoty zależą od dostawcy i wybranej domeny, dlatego podaję je przed zakupem — nic nie jest kupowane bez Twojej zgody."
+   "answer": "Wykonanie strony w ramach portfolio jest bezpłatne, ale utrzymanie strony w internecie ma koszty zewnętrzne. Zwykle jest to domena, opłacana co roku. Płatny hosting, poczta w domenie czy płatne usługi (np. system rezerwacji) dochodzą tylko wtedy, gdy są potrzebne.\n\nKonkretne kwoty zależą od dostawcy i wybranej domeny, dlatego podaję je przed zakupem — nic nie jest kupowane bez Twojej zgody.",
+   "mode": "free"
+  },
+  {
+   "question": "Ile kosztuje utrzymanie strony po uruchomieniu?",
+   "answer": "Po uruchomieniu stałym kosztem jest zwykle domena, opłacana co roku. Płatny hosting, poczta w domenie czy płatne usługi (np. system rezerwacji) dochodzą tylko wtedy, gdy są potrzebne.\n\nKonkretne kwoty zależą od dostawcy i wybranej domeny, dlatego podaję je przed zakupem — nic nie jest kupowane bez Twojej zgody.",
+   "mode": "paid"
   },
   {
    "question": "Kto ma dostęp do strony i kont po uruchomieniu?",
-   "answer": "Ty. Po uruchomieniu przekazuję zestawienie: gdzie jest zarejestrowana domena i do kiedy jest opłacona, jakie konta powstały dla strony i jak się do nich zalogować. Domena powinna być zarejestrowana na Twoją firmę — wtedy to Ty decydujesz o jej odnowieniu i przeniesieniu.\n\nNie wiążę Cię abonamentem ani umową na opiekę. Mając dostępy, możesz później prowadzić stronę sam albo powierzyć ją komuś innemu."
+   "answer": "Ty. Po uruchomieniu przekazuję zestawienie: gdzie jest zarejestrowana domena i do kiedy jest opłacona, jakie konta powstały dla strony i jak się do nich zalogować. Domena powinna być zarejestrowana na Twoją firmę — wtedy to Ty decydujesz o jej odnowieniu i przeniesieniu.\n\nNie wiążę Cię abonamentem ani umową na opiekę. Mając dostępy, możesz później prowadzić stronę sam albo powierzyć ją komuś innemu.",
+   "mode": "all"
   },
   {
    "question": "Jak wygląda wersja testowa?",
-   "answer": "Przygotowuję działającą stronę na bezpłatnym hostingu, pod roboczym adresem internetowym. Możesz ją otworzyć na telefonie i komputerze, przeklikać, sprawdzić teksty i zdjęcia, a potem przekazać mi uwagi. Pod domeną firmy strona pojawia się dopiero po Twojej akceptacji."
+   "answer": "Przygotowuję działającą stronę na bezpłatnym hostingu, pod roboczym adresem internetowym. Możesz ją otworzyć na telefonie i komputerze, przeklikać, sprawdzić teksty i zdjęcia, a potem przekazać mi uwagi. Pod domeną firmy strona pojawia się dopiero po Twojej akceptacji.",
+   "mode": "all"
   },
   {
    "question": "Jakie materiały będą potrzebne?",
-   "answer": "Najczęściej: logo, zdjęcia, opis firmy i usług, cennik, godziny otwarcia, dane kontaktowe i ewentualny link do systemu rezerwacji. Jeśli czegoś brakuje, podpowiem, co można przygotować, i razem ustalimy, jak to uzupełnić."
+   "answer": "Najczęściej: logo, zdjęcia, opis firmy i usług, cennik, godziny otwarcia, dane kontaktowe i ewentualny link do systemu rezerwacji. Jeśli czegoś brakuje, podpowiem, co można przygotować, i razem ustalimy, jak to uzupełnić.",
+   "mode": "all"
   },
   {
    "question": "Czy możesz wykorzystać materiały z naszego Facebooka lub Instagrama?",
-   "answer": "Tak — jeśli wskażesz, które materiały z oficjalnych profili mam wykorzystać, i potwierdzisz, że firma może ich użyć. To, że coś jest publicznie dostępne, nie oznacza jeszcze zgody na wykorzystanie. Zdjęcia od fotografa, grafiki czy opinie klientów z portali mogą mieć innych właścicieli.\n\nMożesz też wskazać materiały, których nie chcesz używać, a zdjęcia i opisy wymienić później. Nie pobieram automatycznie treści z mediów społecznościowych."
+   "answer": "Tak — jeśli wskażesz, które materiały z oficjalnych profili mam wykorzystać, i potwierdzisz, że firma może ich użyć. To, że coś jest publicznie dostępne, nie oznacza jeszcze zgody na wykorzystanie. Zdjęcia od fotografa, grafiki czy opinie klientów z portali mogą mieć innych właścicieli.\n\nMożesz też wskazać materiały, których nie chcesz używać, a zdjęcia i opisy wymienić później. Nie pobieram automatycznie treści z mediów społecznościowych.",
+   "mode": "all"
   },
   {
    "question": "Jak działa panel edycji?",
-   "answer": "Jeśli ustalimy, że strona ma mieć panel, otrzymasz bezpieczny login. Po zalogowaniu zmienisz przygotowane elementy — na przykład teksty, zdjęcia czy cennik — bez znajomości programowania. Zakres panelu dopasowuję do tego, co firma rzeczywiście chce aktualizować."
+   "answer": "Jeśli ustalimy, że strona ma mieć panel, otrzymasz bezpieczny login. Po zalogowaniu zmienisz przygotowane elementy — na przykład teksty, zdjęcia czy cennik — bez znajomości programowania. Zakres panelu dopasowuję do tego, co firma rzeczywiście chce aktualizować.",
+   "mode": "all"
   },
   {
    "question": "Czy strona będzie przygotowana pod Google?",
-   "answer": "Tak, w zakresie technicznych podstaw: czytelna struktura nagłówków, tytuł i opis dla wyszukiwarki, wersja mobilna, szybkie ładowanie, mapa strony (sitemap) i możliwość indeksowania przez Google.\n\nNie obiecuję konkretnej pozycji w wynikach wyszukiwania — zależy ona też od konkurencji, opinii i wielu czynników poza samą stroną."
+   "answer": "Tak, w zakresie technicznych podstaw: czytelna struktura nagłówków, tytuł i opis dla wyszukiwarki, wersja mobilna, szybkie ładowanie, mapa strony (sitemap) i możliwość indeksowania przez Google.\n\nNie obiecuję konkretnej pozycji w wynikach wyszukiwania — zależy ona też od konkurencji, opinii i wielu czynników poza samą stroną.",
+   "mode": "all"
   },
   {
    "question": "Co obejmują 3 miesiące bezpłatnych aktualizacji?",
-   "answer": "Przez 3 miesiące od uruchomienia strony bezpłatnie wprowadzam zmiany tekstów, zdjęć, cennika i danych kontaktowych w uzgodnionym zakresie. Nowe podstrony, rozbudowa i dodatkowe funkcje wymagają osobnego ustalenia.\n\nPoprawki błędów wykonania to osobna sprawa — nie są częścią aktualizacji i nie kończą się razem z tym okresem. Jeśli coś nie działa tak, jak uzgodniliśmy, daj mi znać."
+   "answer": "Przez 3 miesiące od uruchomienia strony bezpłatnie wprowadzam zmiany tekstów, zdjęć, cennika i danych kontaktowych w uzgodnionym zakresie. Nowe podstrony, rozbudowa i dodatkowe funkcje wymagają osobnego ustalenia.\n\nPoprawki błędów wykonania to osobna sprawa — nie są częścią aktualizacji i nie kończą się razem z tym okresem. Jeśli coś nie działa tak, jak uzgodniliśmy, daj mi znać.",
+   "mode": "free"
+  },
+  {
+   "question": "Co obejmują 3 miesiące aktualizacji?",
+   "answer": "W cenie pakietu przez 3 miesiące od uruchomienia strony wprowadzam zmiany tekstów, zdjęć, cennika i danych kontaktowych w uzgodnionym zakresie. Nowe podstrony, rozbudowa i dodatkowe funkcje wymagają osobnego ustalenia.\n\nPoprawki błędów wykonania to osobna sprawa — nie są częścią aktualizacji i nie kończą się razem z tym okresem. Jeśli coś nie działa tak, jak uzgodniliśmy, daj mi znać.",
+   "mode": "paid"
   },
   {
    "question": "Co dzieje się po 3 miesiącach bezpłatnych aktualizacji?",
-   "answer": "Strona działa dalej. Jeśli ma panel edycji, treści możesz zmieniać sam. Zmiany, których nie zrobisz w panelu, oraz rozbudowę ustalamy osobno — zakres i warunki poznasz przed rozpoczęciem pracy.\n\nPoprawki moich błędów wykonania nie kończą się po 3 miesiącach."
+   "answer": "Strona działa dalej. Jeśli ma panel edycji, treści możesz zmieniać sam. Zmiany, których nie zrobisz w panelu, oraz rozbudowę ustalamy osobno — zakres i warunki poznasz przed rozpoczęciem pracy.\n\nPoprawki moich błędów wykonania nie kończą się po 3 miesiącach.",
+   "mode": "free"
+  },
+  {
+   "question": "Co dzieje się po 3 miesiącach aktualizacji?",
+   "answer": "Strona działa dalej. Jeśli ma panel edycji, treści możesz zmieniać sam. Zmiany, których nie zrobisz w panelu, oraz rozbudowę ustalamy osobno — zakres i cenę poznasz przed rozpoczęciem pracy.\n\nPoprawki moich błędów wykonania nie kończą się po 3 miesiącach.",
+   "mode": "paid"
   },
   {
    "question": "Jakie są warunki portfolio i podpisu w stopce?",
-   "answer": "Warunkiem bezpłatnej współpracy jest wcześniej uzgodniona zgoda na pokazanie nazwy firmy, zrzutów ekranu i linku do strony w moim portfolio oraz na dyskretny podpis w stopce Twojej strony: „Projekt i wykonanie: Strony AI Wrocław”, z linkiem do mojej strony.\n\nZgody ustalamy po pierwszej rozmowie, przed rozpoczęciem projektu — samo wysłanie zgłoszenia ich nie oznacza."
+   "answer": "Warunkiem bezpłatnej współpracy jest wcześniej uzgodniona zgoda na pokazanie nazwy firmy, zrzutów ekranu i linku do strony w moim portfolio oraz na dyskretny podpis w stopce Twojej strony: „Projekt i wykonanie: Strony AI Wrocław”, z linkiem do mojej strony.\n\nZgody ustalamy po pierwszej rozmowie, przed rozpoczęciem projektu — samo wysłanie zgłoszenia ich nie oznacza.",
+   "mode": "free"
+  },
+  {
+   "question": "Czy pokazujesz moją stronę w portfolio?",
+   "answer": "Tylko za Twoją zgodą. Jeśli się zgodzisz, pokażę nazwę firmy, zrzuty ekranu i link do strony w moim portfolio, a w stopce Twojej strony może pojawić się dyskretny podpis „Projekt i wykonanie: Strony AI Wrocław”.\n\nNie jest to warunek współpracy — ustalamy to po pierwszej rozmowie.",
+   "mode": "paid"
   },
   {
    "question": "Jak ustalany jest termin realizacji?",
-   "answer": "Indywidualnie. Zależy od zakresu strony, gotowości materiałów i liczby projektów, które w danym momencie realizuję. Szacunkowy termin podaję po ustaleniu zakresu, zanim zaczniemy pracę."
+   "answer": "Indywidualnie. Zależy od zakresu strony, gotowości materiałów i liczby projektów, które w danym momencie realizuję. Szacunkowy termin podaję po ustaleniu zakresu, zanim zaczniemy pracę.",
+   "mode": "all"
   },
   {
    "question": "Czy robisz strony tylko dla firm z Wrocławia?",
-   "answer": "Nie. Jestem z Wrocławia, ale pracuję zdalnie, więc współpracuję z firmami z całej Polski. Rozmowy, przekazywanie materiałów i poprawki odbywają się zdalnie."
+   "answer": "Nie. Jestem z Wrocławia, ale pracuję zdalnie, więc współpracuję z firmami z całej Polski. Rozmowy, przekazywanie materiałów i poprawki odbywają się zdalnie.",
+   "mode": "all"
   },
   {
    "question": "Czy wysłanie zgłoszenia zobowiązuje do współpracy?",
-   "answer": "Nie. Zgłoszenie to początek rozmowy — nie jest zamówieniem ani zawarciem współpracy. Po jego przeczytaniu odezwę się mailowo, a o szczegółach i zgodach rozmawiamy dopiero wtedy."
+   "answer": "Nie. Zgłoszenie to początek rozmowy — nie jest zamówieniem ani zawarciem współpracy. Po jego przeczytaniu odezwę się mailowo, a o szczegółach i zgodach rozmawiamy dopiero wtedy.",
+   "mode": "all"
   }
  ]
 };

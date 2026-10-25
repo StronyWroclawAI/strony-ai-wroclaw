@@ -20,7 +20,7 @@ const MAX_UPLOAD = 5 * 1024 * 1024;
 const TYPES = { 'image/webp': 'webp', 'image/jpeg': 'jpg', 'image/png': 'png' };
 
 const LISTS = {
-  faq: { table: 'faq_items', fields: { question: [1, 300], answer: [1, 5000] } },
+  faq: { table: 'faq_items', fields: { question: [1, 300], answer: [1, 5000], mode: [1, 10, ['all', 'free', 'paid']] } },
   industries: { table: 'industries', fields: { name: [1, 80], description: [0, 600] } },
   capabilities: { table: 'capabilities', fields: { title: [1, 120], description: [0, 800], size: [1, 10, ['normal', 'wide']] } },
 };
@@ -34,7 +34,7 @@ class HttpError extends Error {
 const bad = (msg) => new HttpError(400, msg);
 const notFound = (msg = 'Nie znaleziono.') => new HttpError(404, msg);
 
-const LABELS = { question: 'Pytanie', answer: 'Odpowiedź', name: 'Nazwa branży', description: 'Opis', title: 'Tytuł', size: 'Szerokość kafelka' };
+const LABELS = { mode: 'Widoczne w trybie', question: 'Pytanie', answer: 'Odpowiedź', name: 'Nazwa branży', description: 'Opis', title: 'Tytuł', size: 'Szerokość kafelka' };
 
 function str(v, [min, max, allowed], label) {
   const s = typeof v === 'string' ? v.trim() : '';
@@ -502,7 +502,7 @@ export async function onRequest(context) {
 
       // ===== Ustawienia =====
       case 'GET /settings':
-        return json({ ok: true, settings: await first(env, `SELECT recruitment_open, contact_email, posts_enabled, facebook_url, instagram_url FROM settings WHERE id = 1`) });
+        return json({ ok: true, settings: await first(env, `SELECT recruitment_open, contact_email, posts_enabled, facebook_url, instagram_url, offer_mode, offer_mode_at FROM settings WHERE id = 1`) });
       case 'PUT /settings': {
         const b = await body(request);
         const sets = [];
@@ -516,6 +516,12 @@ export async function onRequest(context) {
           if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) throw bad('Podaj poprawny adres e-mail.');
           sets.push('contact_email = ?');
           vals.push(e);
+        }
+        if ('offer_mode' in b) {
+          // Tryb oferty: „free” — portfolio (bezpłatne wykonanie), „paid” — cennik. Data przełączenia trafia do sitemap.xml (lastmod).
+          if (!['free', 'paid'].includes(b.offer_mode)) throw bad('Nieznany tryb oferty.');
+          sets.push('offer_mode = ?', 'offer_mode_at = CASE WHEN offer_mode = ? THEN offer_mode_at ELSE ? END');
+          vals.push(b.offer_mode, b.offer_mode, nowIso());
         }
         if ('posts_enabled' in b) {
           sets.push('posts_enabled = ?');

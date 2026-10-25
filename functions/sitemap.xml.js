@@ -10,10 +10,14 @@ const day = (v) => (/^\d{4}-\d{2}-\d{2}/.test(String(v || '')) ? String(v).slice
 
 export async function onRequestGet({ env, request }) {
   const origin = siteOrigin(env, request);
-  const urls = [{ loc: '/' }, ...SITE_PAGES.map((p) => ({ loc: p.path, lastmod: day(p.lastmod) })), { loc: '/polityka-prywatnosci' }];
+  const urls = [{ loc: '/' }, ...SITE_PAGES.map((p) => ({ loc: p.path, lastmod: day(p.lastmod), offer: p.offer })), { loc: '/polityka-prywatnosci' }];
   if (hasDb(env)) {
     try {
       await ensureSchema(env);
+      // Strony z treścią zależną od trybu oferty: lastmod = data przełączenia trybu, jeśli jest późniejsza niż ostatnia zmiana treści
+      const st = await env.DB.prepare(`SELECT offer_mode_at FROM settings WHERE id = 1`).first();
+      const switched = day(st && st.offer_mode_at);
+      if (switched) for (const u of urls) if (u.offer && u.lastmod && switched > u.lastmod) u.lastmod = switched;
       const r = await env.DB.prepare(`SELECT slug, card_at FROM portfolio_projects WHERE status = 'published' AND card_ver IS NOT NULL AND slug IS NOT NULL ORDER BY sort_order`).all();
       for (const row of r.results || []) {
         const loc = `/portfolio/${row.slug}/`;

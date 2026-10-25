@@ -1243,3 +1243,24 @@ html { background: var(--white); }
 .subpage--offer .ownership + .container > .prose { padding-top: 8px; }
 /* Wąskie telefony: adres e-mail w karcie kontaktu mieści się w jednym wierszu (zamiast łamania „…gmail.co / m”) */
 @media (max-width: 380px) { .mail-card { padding: 18px; } .mail-card__link { font-size: .9688rem; } }
+/* ===== Tryb oferty „Cennik”: pakiety z cenami (strona główna, /oferta/) ===== */
+.pricing-section { position: relative; }
+.pricing { list-style: none; margin: 8px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; align-items: stretch; }
+.price-card { position: relative; display: flex; flex-direction: column; gap: 14px; padding: 30px 26px 26px; border-radius: var(--radius-lg); background: var(--white); border: 1px solid var(--gray-200); box-shadow: 0 24px 50px -40px rgba(20, 46, 80, .45); }
+.price-card--featured { border: 2px solid var(--navy); box-shadow: 0 30px 60px -36px rgba(20, 46, 80, .55); }
+.price-card__badge { position: absolute; top: -13px; left: 24px; margin: 0; padding: 4px 12px; border-radius: 999px; background: var(--navy); color: var(--white); font-size: .8125rem; font-weight: 700; letter-spacing: .02em; }
+.price-card__name { margin: 0; font-size: 1.25rem; font-weight: 800; color: var(--navy-900); }
+.price-card__price { margin: 0; font-size: clamp(1.75rem, 2.6vw, 2.15rem); font-weight: 800; letter-spacing: -.02em; color: var(--navy-900); line-height: 1.1; }
+.price-card__desc { margin: 0; color: var(--muted); line-height: 1.55; }
+.price-card__list { margin: 4px 0 6px; gap: 10px; }
+.price-card__list li { color: #2c3950; font-size: .9688rem; }
+.price-card__cta { margin-top: auto; width: 100%; }
+.pricing__note { margin: 22px 0 0; font-size: .9375rem; color: var(--muted); max-width: 70ch; }
+.pricing-section .section-more { display: flex; flex-wrap: wrap; gap: 12px 28px; }
+.anchor-alias { position: absolute; top: 0; }
+.offer-jump { margin: 0 0 8px; }
+@media (max-width: 980px) {
+  .pricing { grid-template-columns: minmax(0, 1fr); max-width: 560px; }
+}
+/* Podgląd trybu oferty (tylko zalogowany administrator) */
+.preview-bar { position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 100; max-width: calc(100% - 32px); padding: 10px 16px; border-radius: 12px; background: #fff4d6; color: #4a3500; border: 1px solid #e8c56a; font-size: .875rem; line-height: 1.4; box-shadow: 0 12px 30px -12px rgba(0, 0, 0, .35); }

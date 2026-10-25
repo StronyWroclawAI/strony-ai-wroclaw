@@ -32,6 +32,7 @@ const CASES = new Map(SITE_PAGES.filter((p) => p.kind === 'case' && p.site).map(
 
 const POSTS_LIMIT = 6;
 import { recordVisit } from './stats.js';
+import { hasValidSession } from './auth.js';
 
 /**
  * Dane strukturalne (schema.org) — wyłącznie informacje widoczne na stronie:
@@ -93,10 +94,10 @@ export async function loadContent(context) {
     const db = env.DB;
     const [content, settings, industries, capabilities, faq, projects, images, posts] = await db.batch([
       db.prepare(`SELECT key, value FROM site_content`),
-      db.prepare(`SELECT recruitment_open, contact_email, posts_enabled, facebook_url, instagram_url FROM settings WHERE id = 1`),
+      db.prepare(`SELECT recruitment_open, contact_email, posts_enabled, facebook_url, instagram_url, offer_mode, offer_mode_at FROM settings WHERE id = 1`),
       db.prepare(`SELECT name, description FROM industries WHERE is_published = 1 ORDER BY sort_order, created_at`),
       db.prepare(`SELECT title, description, size FROM capabilities WHERE is_published = 1 ORDER BY sort_order, created_at`),
-      db.prepare(`SELECT question, answer FROM faq_items WHERE is_published = 1 ORDER BY sort_order, created_at`),
+      db.prepare(`SELECT question, answer, mode FROM faq_items WHERE is_published = 1 ORDER BY sort_order, created_at`),
       db.prepare(`SELECT id, title, industry, description, site_url, slug, tags, is_demo, card_ver, card_cover, seo_for FROM portfolio_projects WHERE status = 'published' ORDER BY sort_order, created_at DESC`),
       db.prepare(`SELECT pi.project_id, m.id AS media_id, m.kv_key, m.alt, m.width, m.height, m.variants FROM portfolio_images pi
                   JOIN media m ON m.id = pi.media_id
@@ -113,6 +114,7 @@ export async function loadContent(context) {
     return {
       content: map,
       recruitmentOpen: s.recruitment_open !== 0,
+      offerMode: s.offer_mode === 'paid' ? 'paid' : 'free',
       contactEmail: s.contact_email || null,
       postsEnabled: s.posts_enabled === 1,
       social: { facebook: s.facebook_url || null, instagram: s.instagram_url || null },
@@ -156,15 +158,30 @@ export async function renderPage(context) {
   const origin = siteOrigin(env, request);
   const data = await loadContent(context);
   const c = data ? data.content : {};
+  // Tryb oferty: „free” (portfolio, wykonanie bezpłatne) albo „paid” (cennik) — przełącznik w panelu (Ustawienia).
+  // Podgląd drugiego trybu tylko dla zalogowanego administratora: ?podglad=cennik / ?podglad=portfolio (z noindex).
+  const reqUrl = new URL(request.url);
+  const previewParam = reqUrl.searchParams.get('podglad');
+  const preview = (previewParam === 'cennik' || previewParam === 'portfolio') && (await hasValidSession(env, request)) ? (previewParam === 'cennik' ? 'paid' : 'free') : null;
+  const offerMode = preview || (data ? data.offerMode : 'free');
+  if (data) data.faq = data.faq.filter((f) => !f.mode || f.mode === 'all' || f.mode === offerMode);
   const turnstileKey = (env.TURNSTILE_SITE_KEY || '').trim();
   // Skrypt Turnstile tylko na stronach z formularzem zgłoszenia (strona główna i /kontakt/) — pozostałe strony nie łączą się z Cloudflare Challenges.
   const pathname = new URL(request.url).pathname;
   const hasForm = pathname === '/' || pathname === '/kontakt/';
 
   let rw = new HTMLRewriter()
+    // Treści zależne od trybu oferty: zostaje tylko wersja aktywnego trybu (druga nie trafia do HTML — także dla Google)
+    .on('[data-offer]', {
+      element(el) {
+        if (el.getAttribute('data-offer') === offerMode) el.removeAttribute('data-offer');
+        else el.remove();
+      },
+    })
     // Adresy bezwzględne dla canonical i Open Graph
     .on('[data-abs]', {
       element(el) {
+        if (el.removed) return; // element innego trybu oferty — usunięty wyżej
         const attr = el.getAttribute('data-abs');
         const v = el.getAttribute(attr) || '';
         if (v.startsWith('/')) el.setAttribute(attr, origin + v);
@@ -174,6 +191,7 @@ export async function renderPage(context) {
     // Cloudflare Turnstile — tylko gdy skonfigurowano klucz
     .on('[data-turnstile]', {
       element(el) {
+        if (el.removed) return; // element innego trybu oferty — usunięty wyżej
         if (!turnstileKey) return;
         el.setAttribute('class', 'turnstile-box cf-turnstile');
         el.setAttribute('data-sitekey', turnstileKey);
@@ -213,7 +231,8 @@ export async function renderPage(context) {
       industries: () => (data.industries.length ? renderIndustries(data.industries) : null),
       'industry-options': () => renderIndustryOptions(data.industries),
       capabilities: () => (data.capabilities.length ? renderCapabilities(data.capabilities) : null),
-      faq: () => (data.faq.length ? renderFaq(data.faq) : null),
+      // lista już przefiltrowana według trybu oferty — bez atrybutu data-offer (wstawiony HTML nie jest ponownie przetwarzany)
+      faq: () => (data.faq.length ? renderFaq(data.faq.map((f) => ({ ...f, mode: 'all' }))) : null),
       portfolio: () => renderPortfolio(data.projects, c),
       realizacje: () => renderPortfolioHub(data.projects),
       'case-images': (el) => renderCaseImages(data.projects, el.getAttribute('data-case-site')),
@@ -224,6 +243,7 @@ export async function renderPage(context) {
     rw = rw
       .on('[data-cms]', {
         element(el) {
+          if (el.removed) return; // element innego trybu oferty — usunięty wyżej
           const v = c[el.getAttribute('data-cms')];
           if (v === undefined || v === null) return;
           const t = String(v).trim();
@@ -237,12 +257,14 @@ export async function renderPage(context) {
       })
       .on('[data-cms-lines]', {
         element(el) {
+          if (el.removed) return; // element innego trybu oferty — usunięty wyżej
           const v = c[el.getAttribute('data-cms-lines')];
           if (v && v.trim()) el.setInnerContent(renderLines(v), { html: true });
         },
       })
       .on('[data-cms-email]', {
         element(el) {
+          if (el.removed) return; // element innego trybu oferty — usunięty wyżej
           if (!email) return;
           el.setAttribute('href', `mailto:${email}`);
           el.setInnerContent(email);
@@ -250,6 +272,7 @@ export async function renderPage(context) {
       })
       .on('[data-cms-list]', {
         element(el) {
+          if (el.removed) return; // element innego trybu oferty — usunięty wyżej
           const fn = lists[el.getAttribute('data-cms-list')];
           const html = fn ? fn(el) : null;
           if (html !== null && html !== undefined) el.setInnerContent(html, { html: true });
@@ -257,6 +280,7 @@ export async function renderPage(context) {
       })
       .on('[data-cms-block]', {
         element(el) {
+          if (el.removed) return; // element innego trybu oferty — usunięty wyżej
           const name = el.getAttribute('data-cms-block');
           const show = (cond) => {
             if (cond) el.removeAttribute('hidden');
@@ -272,17 +296,27 @@ export async function renderPage(context) {
       })
       .on('[data-social-list]', {
         element(el) {
+          if (el.removed) return; // element innego trybu oferty — usunięty wyżej
           el.setInnerContent(socialHtml, { html: true });
           el.removeAttribute('data-social-list');
         },
       });
   }
 
+  if (preview) {
+    const label = preview === 'paid' ? 'Cennik (strony płatne)' : 'Portfolio (wykonanie bezpłatne)';
+    rw = rw.on('body', {
+      element(el) {
+        el.prepend(`<div class="preview-bar" role="status">Podgląd trybu oferty: <strong>${label}</strong> — widzisz go tylko Ty (zalogowany w panelu). Przełączasz w panelu: Ustawienia → Tryb oferty.</div>`, { html: true });
+      },
+    });
+  }
   const res = rw.transform(asset);
   const headers = withSecurityHeaders(res.headers);
   // Treść zależy od bazy, więc nie podajemy ETag/Last-Modified pliku i nie pozwalamy na pamięć podręczną.
   headers.delete('ETag');
   headers.delete('Last-Modified');
   headers.set('Cache-Control', 'no-store');
+  if (preview) headers.set('X-Robots-Tag', 'noindex, nofollow');
   return new Response(res.body, { status: res.status, headers });
 }

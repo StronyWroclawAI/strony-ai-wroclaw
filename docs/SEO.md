@@ -129,3 +129,9 @@ Wersja 1.0 jest kompletna technicznie i treściowo. Dalszy rozwój wynika z dany
 - **Nowe branże:** dopiero gdy są realizacja, zapytania w Search Console albo realne pytania klientów (kolejność wstępna: masaż/fizjoterapia, restauracja, szkoła; kancelaria — z ostrożnością ze względu na zasady reklamy zawodów prawniczych).
 - **Nowe artykuły:** tylko na pytania, które realnie się pojawiają (od klientów albo w zapytaniach Search Console).
 - **Po każdej zmianie treści:** `node build.mjs` (pilnuje dat), sprawdzenie sitemapy, ponowne zgłoszenie zmienionego adresu w Search Console tylko przy większych zmianach.
+
+## Tryb oferty (Portfolio ↔ Cennik)
+- Przełączanie po stronie serwera (`renderPage`, atrybut `data-offer="free|paid"`): HTML zawiera tylko aktywną wersję — Google nie widzi obu naraz. Bez zmian adresów, TITLE i H1.
+- Daty: hash treści w buildzie (v3) liczony z tekstu widocznego w trybie „Portfolio” (bez bloków `data-offer="paid"`); po przełączeniu trybu sitemap.xml podaje datę przełączenia jako lastmod stron z blokami trybu (`offer: true` w `functions/_lib/pages.js`).
+- Strona główna: w trybie Cennik og:image `og-image-cennik.png` i inny og:description. Ceny nie trafiają do danych strukturalnych (są edytowane w panelu i mogłyby się rozjechać).
+- Po przełączeniu warto w Search Console poprosić o ponowne zindeksowanie `/` i `/oferta/`.

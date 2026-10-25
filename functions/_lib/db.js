@@ -4,7 +4,7 @@
 
 import { SEED } from './seed.js';
 
-export const SCHEMA_VERSION = '22';
+export const SCHEMA_VERSION = '23';
 
 // Każda instrukcja w osobnym elemencie (D1 wykonuje je w jednej transakcji przez batch()).
 export const SCHEMA = [
@@ -106,6 +106,10 @@ export const SCHEMA = [
 
 // Kolumny dodane w kolejnych wersjach (ALTER TABLE nie ma „IF NOT EXISTS” w SQLite).
 export const MIGRATIONS = [
+  // v23: tryb oferty (free = portfolio, bezpłatne wykonanie; paid = cennik) i widoczność pytań FAQ w trybach
+  `ALTER TABLE settings ADD COLUMN offer_mode TEXT NOT NULL DEFAULT 'free'`,
+  `ALTER TABLE settings ADD COLUMN offer_mode_at TEXT`,
+  `ALTER TABLE faq_items ADD COLUMN mode TEXT NOT NULL DEFAULT 'all'`,
   `ALTER TABLE briefs ADD COLUMN lead_id TEXT`,
   `ALTER TABLE leads ADD COLUMN source TEXT NOT NULL DEFAULT 'formularz'`,
   `CREATE INDEX IF NOT EXISTS briefs_lead_idx ON briefs (lead_id)`,
@@ -182,6 +186,17 @@ const FAQ_ADDED_V20 = [
   ['Co dzieje się po 3 miesiącach bezpłatnych aktualizacji?', 85],
   ['Czy robisz strony tylko dla firm z Wrocławia?', 105],
 ];
+// v23: pytania FAQ dotyczące bezpłatnego wykonania — widoczne tylko w trybie „Portfolio” (dopasowanie po dokładnej treści pytania,
+// a przy pytaniu o utrzymanie także po początku odpowiedzi — instr zamiast LIKE, bo D1 ogranicza długość wzorca LIKE;
+// więc pytania zmienione w panelu nie są ruszane), a obok nich odpowiedniki dla trybu „Cennik” (z SEED.faq, mode = 'paid').
+const FAQ_FREE_V23 = [
+  ['Dlaczego wykonujesz strony bezpłatnie?', null],
+  ['Co obejmuje bezpłatna oferta?', null],
+  ['Ile kosztuje utrzymanie strony po uruchomieniu?', 'Wykonanie strony w ramach portfolio jest bezpłatne'],
+  ['Co obejmują 3 miesiące bezpłatnych aktualizacji?', null],
+  ['Co dzieje się po 3 miesiącach bezpłatnych aktualizacji?', null],
+  ['Jakie są warunki portfolio i podpisu w stopce?', null],
+];
 // v21 (etap 3): projekt demonstracyjny kancelarii — poprawka branży, nazwy i „Dla kogo”.
 // Zmiana TYLKO wtedy, gdy pola mają dokładnie stare wartości (nic, co zmieniono w panelu, nie jest nadpisywane).
 const PORTFOLIO_FIXES_V21 = [
@@ -249,7 +264,7 @@ async function init(env) {
   const lists = [
     ['industries', ['name', 'description'], SEED.industries],
     ['capabilities', ['title', 'description', 'size'], SEED.capabilities],
-    ['faq_items', ['question', 'answer'], SEED.faq],
+    ['faq_items', ['question', 'answer', 'mode'], SEED.faq],
   ];
   for (const [table, cols, rows] of lists) {
     const all = ['id', ...cols, 'sort_order', 'is_published', 'created_at', 'updated_at'];
@@ -276,6 +291,29 @@ async function init(env) {
     );
   }
   stmts.push(db.prepare(`INSERT OR IGNORE INTO meta (key, value) VALUES ('faq_v20', ?)`).bind(t));
+  // v23: tryby FAQ (jednorazowo — znacznik faq_v23 w meta)
+  const freeSeed = SEED.faq.filter((f) => f.mode === 'free');
+  FAQ_FREE_V23.forEach(([question, answerLike], i) => {
+    stmts.push(
+      db
+        .prepare(`UPDATE faq_items SET mode = 'free' WHERE question = ? AND mode = 'all' ${answerLike ? 'AND instr(answer, ?) = 1' : ''} AND NOT EXISTS (SELECT 1 FROM meta WHERE key = 'faq_v23')`)
+        .bind(...(answerLike ? [question, answerLike] : [question]))
+    );
+    // odpowiednik płatny: element SEED.faq bezpośrednio po wolnym (ta sama kolejność w content-defaults.json)
+    const idx = SEED.faq.indexOf(freeSeed[i]);
+    const twin = idx >= 0 ? SEED.faq[idx + 1] : null;
+    if (!twin || twin.mode !== 'paid') return;
+    stmts.push(
+      db
+        .prepare(
+          `INSERT INTO faq_items (id, question, answer, mode, sort_order, is_published, created_at, updated_at)
+           SELECT ?, ?, ?, 'paid', COALESCE((SELECT sort_order FROM faq_items WHERE question = ? AND mode = 'free' LIMIT 1), 990) + 1, 1, ?, ?
+           WHERE NOT EXISTS (SELECT 1 FROM faq_items WHERE question = ? AND mode = 'paid') AND NOT EXISTS (SELECT 1 FROM meta WHERE key = 'faq_v23')`
+        )
+        .bind(uuid(), twin.question, twin.answer, question, t, t, twin.question)
+    );
+  });
+  stmts.push(db.prepare(`INSERT OR IGNORE INTO meta (key, value) VALUES ('faq_v23', ?)`).bind(t));
   for (const [slug, col, oldValue, newValue] of PORTFOLIO_FIXES_V21) {
     if (!['industry', 'title', 'seo_for'].includes(col)) continue;
     stmts.push(db.prepare(`UPDATE portfolio_projects SET ${col} = ?, updated_at = ? WHERE slug = ? AND is_demo = 1 AND ${col} = ?`).bind(newValue, t, slug, oldValue));

@@ -68,7 +68,7 @@ export function renderFaq(items) {
   return items
     .map(
       (it) => `
-<details class="faq__item">
+<details class="faq__item"${it.mode === 'free' || it.mode === 'paid' ? ` data-offer="${it.mode}"` : ''}>
   <summary class="faq__q"><span>${esc(it.question)}</span><span class="faq__icon" aria-hidden="true"></span></summary>
   <div class="faq__a">${String(it.answer ?? '')
     .split(/\n\s*\n/)

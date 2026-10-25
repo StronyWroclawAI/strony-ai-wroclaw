@@ -11,7 +11,8 @@ export const SITE_PAGES = [
  },
  {
   "path": "/poradnik/ile-kosztuje-strona-internetowa/",
-  "lastmod": "2026-10-23"
+  "lastmod": "2026-10-25",
+  "offer": true
  },
  {
   "path": "/poradnik/strona-internetowa-czy-facebook/",
@@ -61,11 +62,13 @@ export const SITE_PAGES = [
  },
  {
   "path": "/oferta/",
-  "lastmod": "2026-10-25"
+  "lastmod": "2026-10-25",
+  "offer": true
  },
  {
   "path": "/o-mnie/",
-  "lastmod": "2026-10-25"
+  "lastmod": "2026-10-25",
+  "offer": true
  },
  {
   "path": "/kontakt/",

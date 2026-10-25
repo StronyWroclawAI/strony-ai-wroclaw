@@ -1956,12 +1956,13 @@
     faq: {
       table: 'faq',
       title: 'FAQ — najczęstsze pytania',
-      desc: 'Pytania i odpowiedzi w sekcji FAQ. Pusta linia w odpowiedzi tworzy nowy akapit.',
+      desc: 'Pytania i odpowiedzi w sekcji FAQ. Pusta linia w odpowiedzi tworzy nowy akapit. Pole „Widoczne w trybie” decyduje, czy pytanie jest pokazywane zawsze, czy tylko w jednym trybie oferty (Ustawienia → Tryb oferty).',
       noun: 'pytanie',
-      label: (it) => it.question || 'Nowe pytanie',
+      label: (it) => (it.mode === 'free' ? '[Portfolio] ' : it.mode === 'paid' ? '[Cennik] ' : '') + (it.question || 'Nowe pytanie'),
       fields: [
         { name: 'question', label: 'Pytanie', type: 'text', max: 300, required: true },
         { name: 'answer', label: 'Odpowiedź', type: 'textarea', max: 5000, required: true },
+        { name: 'mode', label: 'Widoczne w trybie', type: 'select', options: [['all', 'Zawsze (oba tryby)'], ['free', 'Tylko „Portfolio — wykonanie bezpłatne”'], ['paid', 'Tylko „Cennik — strony płatne”']] },
       ],
     },
     branze: {
@@ -3374,6 +3375,52 @@
       drawToggle();
     });
 
+    // Tryb oferty — jeden przełącznik dla całej strony (teksty, cennik, FAQ, grafika do udostępniania)
+    const offerPanel = (() => {
+      let mode = settings.offer_mode === 'paid' ? 'paid' : 'free';
+      const info = h('p', { class: 'small muted' });
+      const opt = (value, title, desc) => {
+        const input = h('input', { type: 'radio', name: 'offer_mode', value, checked: mode === value });
+        input.addEventListener('change', async () => {
+          if (!input.checked || value === mode) return;
+          const prev = mode;
+          radios.forEach((r) => (r.disabled = true));
+          const { error: e } = await q(api('settings', { method: 'PUT', body: { offer_mode: value } }));
+          radios.forEach((r) => (r.disabled = false));
+          if (e) {
+            radios.find((r) => r.value === prev).checked = true;
+            return toast(`Nie zapisano: ${errMsg(e)}`, 'error');
+          }
+          mode = value;
+          draw();
+          toast(value === 'paid' ? 'Włączono tryb „Cennik”. Strona już pokazuje pakiety i ceny.' : 'Włączono tryb „Portfolio”. Strona już pokazuje ofertę bezpłatnego wykonania.');
+        });
+        return { input, el: h('label', { class: 'offer-choice' }, input, h('span', null, h('strong', { text: title }), h('span', { class: 'small muted', text: desc }))) };
+      };
+      const a = opt('free', 'Portfolio — wykonanie bezpłatne', '„0 zł”, warunek portfolio i podpisu w stopce, pytania FAQ o bezpłatnej ofercie.');
+      const b = opt('paid', 'Cennik — strony płatne', 'Pakiety z cenami (Treści strony → „Tryb Cennik – pakiety i ceny”), teksty z grupy „Tryb Cennik – teksty”, pytania FAQ o cenie.');
+      const radios = [a.input, b.input];
+      const previewLink = h('a', { class: 'btn btn--sm', target: '_blank', rel: 'noopener' });
+      function draw() {
+        const other = mode === 'paid' ? 'portfolio' : 'cennik';
+        previewLink.href = `/?podglad=${other}`;
+        previewLink.textContent = mode === 'paid' ? 'Podgląd trybu „Portfolio” ↗' : 'Podgląd trybu „Cennik” ↗';
+        info.textContent = mode === 'paid'
+          ? 'Aktywny: Cennik. Odwiedzający widzą pakiety z cenami; informacje o bezpłatnym wykonaniu są ukryte.'
+          : 'Aktywny: Portfolio. Odwiedzający widzą ofertę bezpłatnego wykonania; cennik jest ukryty.';
+      }
+      draw();
+      return h(
+        'section',
+        { class: 'panel' },
+        h('h2', { text: 'Tryb oferty' }),
+        h('fieldset', { class: 'offer-choices' }, h('legend', { class: 'visually-hidden', text: 'Tryb oferty' }), a.el, b.el),
+        info,
+        h('p', { class: 'small muted', text: 'Zmiana działa od razu na całej stronie (strona główna, oferta, „O mnie”, FAQ, poradnik) — bez wdrażania. Podgląd drugiego trybu widzisz tylko Ty, gdy jesteś zalogowany; przy podglądzie przewiń całą stronę.' }),
+        previewLink
+      );
+    })();
+
     // E-mail kontaktowy
     const email = h('input', { type: 'email', maxlength: '254', value: settings.contact_email });
     const emailBtn = h('button', {
@@ -3431,6 +3478,7 @@
 
     main.replaceChildren(
       head('Ustawienia'),
+      offerPanel,
       h(
         'section',
         { class: 'panel' },
