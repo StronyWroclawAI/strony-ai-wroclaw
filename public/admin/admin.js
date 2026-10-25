@@ -4,6 +4,7 @@
    Sesja jest w ciasteczku HttpOnly — ten skrypt nie zna hasła ani kluczy.
    ========================================================= */
 (function () {
+  const PANEL_VERSION = '2026-10-25 · cennik i promocje';
   'use strict';
 
   // ---------- Pomocnicze ----------
@@ -405,6 +406,7 @@
     faq: () => viewList(LISTS.faq),
     branze: () => viewList(LISTS.branze),
     mozliwosci: () => viewList(LISTS.mozliwosci),
+    cennik: () => viewList(LISTS.cennik),
     portfolio: viewPortfolio,
     aktualnosci: viewPosts,
     zdjecia: viewMedia,
@@ -1976,6 +1978,24 @@
         { name: 'description', label: 'Opis', type: 'textarea', max: 600 },
       ],
     },
+    cennik: {
+      table: 'pricing',
+      title: 'Cennik — pakiety',
+      desc: 'Pakiety widoczne w trybie oferty „Cennik” (Ustawienia → Tryb oferty) na stronie głównej i na /oferta/#cennik. Kolejność ustawiasz strzałkami — cena „od …” w pierwszym ekranie strony głównej to cena PIERWSZEGO opublikowanego pakietu. Promocja: wpisz cenę promocyjną (regularna zostanie przekreślona), krótki opis i — opcjonalnie — datę końca; po tej dacie promocja wyłączy się sama.',
+      noun: 'pakiet',
+      label: (it) => it.name || 'Nowy pakiet',
+      fields: [
+        { name: 'name', label: 'Nazwa pakietu', type: 'text', max: 80, required: true },
+        { name: 'price', label: 'Cena regularna', type: 'text', max: 40, hint: 'Np. „od 990 zł”. Puste pole = „Wycena indywidualna”.' },
+        { name: 'description', label: 'Opis', type: 'textarea', max: 400 },
+        { name: 'items', label: 'Co zawiera (jedna linia = jeden punkt)', type: 'textarea', max: 1500 },
+        { name: 'badge', label: 'Wyróżnienie nad nazwą', type: 'text', max: 40, hint: 'Np. „Polecany”. Puste = brak (przy aktywnej promocji pojawi się „Promocja”).' },
+        { name: 'featured', label: 'Wyróżniony wygląd (granatowa ramka)', type: 'select', options: [['no', 'Nie'], ['yes', 'Tak']] },
+        { name: 'promo_price', label: 'Promocja — cena promocyjna', type: 'text', max: 40, hint: 'Np. „od 790 zł”. Puste = bez promocji.' },
+        { name: 'promo_label', label: 'Promocja — opis', type: 'text', max: 80, hint: 'Np. „Promocja na start” albo „Dla pierwszych 5 firm”.' },
+        { name: 'promo_until', label: 'Promocja — ważna do (włącznie)', type: 'date', max: 10, hint: 'Opcjonalnie. Po tej dacie strona sama wróci do ceny regularnej.' },
+      ],
+    },
     mozliwosci: {
       table: 'capabilities',
       title: 'Możliwości',
@@ -2020,13 +2040,16 @@
             } else if (f.type === 'select') {
               input = h('select', null, f.options.map(([v, l]) => h('option', { value: v, text: l })));
               input.value = it[f.name] || f.options[0][0];
+            } else if (f.type === 'date') {
+              input = h('input', { type: 'date', value: it[f.name] || '' });
             } else {
               input = h('input', { type: 'text', maxlength: String(f.max), value: it[f.name] || '' });
             }
             if (f.required) input.required = true;
             input.addEventListener('input', () => (dirty = true));
             inputs[f.name] = input;
-            return f.max ? h('div', null, field(f.label + (f.required ? ' *' : ''), input), h('div', null, withCounter(input, f.max)[1])) : field(f.label, input);
+            if (f.type === 'date') return field(f.label, input, f.hint);
+            return f.max ? h('div', null, field(f.label + (f.required ? ' *' : ''), input, f.hint), h('div', null, withCounter(input, f.max)[1])) : field(f.label, input, f.hint);
           });
           const pub = h('input', { type: 'checkbox', checked: it.id ? it.is_published : true });
           pub.addEventListener('change', () => (dirty = true));
@@ -3351,6 +3374,7 @@
   }
 
   async function viewSettings(main) {
+    // (wersja panelu widoczna w Stanie konfiguracji — po wdrożeniu łatwo sprawdzić, czy przeglądarka wczytała nowy panel)
     const settings = (await api('settings')).settings || { recruitment_open: 1, contact_email: 'stronyaiwroclaw@gmail.com' };
 
     // Nabór
@@ -3398,7 +3422,7 @@
         return { input, el: h('label', { class: 'offer-choice' }, input, h('span', null, h('strong', { text: title }), h('span', { class: 'small muted', text: desc }))) };
       };
       const a = opt('free', 'Portfolio — wykonanie bezpłatne', '„0 zł”, warunek portfolio i podpisu w stopce, pytania FAQ o bezpłatnej ofercie.');
-      const b = opt('paid', 'Cennik — strony płatne', 'Pakiety z cenami (Treści strony → „Tryb Cennik – pakiety i ceny”), teksty z grupy „Tryb Cennik – teksty”, pytania FAQ o cenie.');
+      const b = opt('paid', 'Cennik — strony płatne', 'Pakiety z cenami i promocjami (zakładka „Cennik”), teksty z grup „Tryb Cennik” w Treściach strony, pytania FAQ o cenie.');
       const radios = [a.input, b.input];
       const previewLink = h('a', { class: 'btn btn--sm', target: '_blank', rel: 'noopener' });
       function draw() {
@@ -3468,7 +3492,9 @@
             row('Wysyłka z Gmaila (e-maile do klientów)', st.gmail, st.gmail ? `z ${st.gmailUser}` : 'brak GMAIL_USER / GMAIL_APP_PASSWORD — instrukcja w docs/EMAIL.md'),
             row('Powiadomienia do Ciebie', st.email, st.email ? `na ${st.notifyTo} (${st.gmail ? 'przez Gmail' : 'przez Resend'})` : 'brak konfiguracji Gmaila i RESEND_API_KEY'),
             row('Sól do skracania adresów IP', st.ipSalt, st.ipSalt ? 'ustawiona' : 'brak IP_HASH_SALT'),
-            row('Adres docelowy strony (SITE_URL)', !!st.siteUrl, st.siteUrl || 'nieustawiony — używany jest bieżący adres')
+            row('Adres docelowy strony (SITE_URL)', !!st.siteUrl, st.siteUrl || 'nieustawiony — używany jest bieżący adres'),
+            row('Wersja bazy danych', Number(st.schemaVersion) >= 24, st.schemaVersion ? `${st.schemaVersion}${Number(st.schemaVersion) >= 24 ? '' : ' — odśwież stronę, aby zaktualizować'}` : 'nieznana'),
+            row('Wersja panelu', true, PANEL_VERSION)
           ),
           h('p', { class: 'small muted', text: `Nadawca powiadomień: ${st.notifyFrom}` }),
           testBtn

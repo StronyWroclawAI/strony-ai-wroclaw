@@ -367,16 +367,12 @@
     var orgTplEl = document.querySelector('[data-tpl-org]');
     var tplOrg = orgTplEl ? orgTplEl.value.replace(/^\n+|\s+$/g, '') : '';
     var norm = function (t) { return String(t || '').replace(/\s+/g, ' ').trim(); };
-    // /kontakt/?pakiet=… (przycisk „Zapytaj o ten pakiet” w cenniku) — nazwa pakietu dopisana na początku szkicu wiadomości
+    // /kontakt/?pakiet=<nazwa> (przycisk „Zapytaj o ten pakiet” w cenniku) — nazwa pakietu dopisana na początku szkicu wiadomości
     (function () {
-      var key = new URLSearchParams(location.search).get('pakiet');
-      var names = { wizytowka: 1, firmowa: 2, panel: 3 };
+      var name = (new URLSearchParams(location.search).get('pakiet') || '').replace(/[\u0000-\u001f<>]/g, '').trim().slice(0, 80);
       var msg = form.querySelector('textarea[name="message"]');
-      if (!key || !names[key] || !msg) return;
-      var card = document.querySelectorAll('.price-card__name');
-      var name = card.length >= names[key] ? card[names[key] - 1].textContent.trim() : '';
-      if (!name) name = { wizytowka: 'Wizytówka', firmowa: 'Strona firmowa', panel: 'Strona z panelem edycji' }[key];
-      if (msg.value.indexOf('Interesuje mnie pakiet') === -1) msg.value = 'Interesuje mnie pakiet: ' + name + '.\n\n' + msg.value;
+      if (!name || !msg || msg.value.indexOf('Interesuje mnie pakiet') !== -1) return;
+      msg.value = 'Interesuje mnie pakiet: ' + name + '.\n\n' + msg.value;
     })();
     function applyPurpose() {
       var org = Boolean(form.querySelector('input[name="site_purpose"]:checked'));

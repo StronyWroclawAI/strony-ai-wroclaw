@@ -333,3 +333,55 @@ export function renderPosts(posts) {
     })
     .join('');
 }
+
+// ---------- Cennik (tryb oferty „Cennik”) ----------
+// Dzień w strefie Europe/Warsaw (RRRR-MM-DD) — promocja z datą „do” kończy się po tym dniu.
+export const warsawDay = (d = new Date()) => d.toLocaleDateString('sv-SE', { timeZone: 'Europe/Warsaw' });
+const plShortDate = (iso) => {
+  const [y, m, d] = String(iso).split('-').map(Number);
+  return `${String(d).padStart(2, '0')}.${String(m).padStart(2, '0')}.${y}`;
+};
+/** Czy pakiet ma aktywną promocję (cena promocyjna i data „do” nie minęła). */
+export function promoActive(p, today = warsawDay()) {
+  return Boolean(String(p.promo_price || '').trim()) && (!p.promo_until || p.promo_until >= today);
+}
+/** Cena pakietu widoczna dla klienta (promocyjna, jeśli aktywna). */
+export const currentPrice = (p, today) => (promoActive(p, today) ? String(p.promo_price).trim() : String(p.price || '').trim());
+
+/** Karty pakietów. Link „Zapytaj o ten pakiet” przekazuje nazwę pakietu do formularza (/kontakt/?pakiet=…). */
+export function renderPricing(items, today = warsawDay(), cta = 'Zapytaj o ten pakiet') {
+  return items
+    .map((p) => {
+      const promo = promoActive(p, today);
+      const featured = p.featured === 'yes';
+      const badge = String(p.badge || '').trim() || (promo ? 'Promocja' : '');
+      const lines = String(p.items || '')
+        .split('\n')
+        .map((l) => l.trim())
+        .filter(Boolean);
+      const price = String(p.price || '').trim();
+      const until = promo && p.promo_until ? ` do ${plShortDate(p.promo_until)}` : '';
+      return `
+      <li class="price-card${featured ? ' price-card--featured' : ''}${promo ? ' price-card--promo' : ''} reveal">
+        ${badge ? `<p class="price-card__badge">${esc(badge)}</p>` : ''}
+        <h3 class="price-card__name">${esc(p.name)}</h3>
+        ${
+          promo
+            ? `<p class="price-card__price"><span class="visually-hidden">Cena promocyjna: </span>${esc(String(p.promo_price).trim())}</p>
+        <p class="price-card__old"><span class="visually-hidden">Cena regularna: </span><s>${esc(price)}</s></p>
+        <p class="price-card__promo">${esc(String(p.promo_label || '').trim() || 'Promocja')}${esc(until)}</p>`
+            : `<p class="price-card__price">${esc(price || 'Wycena indywidualna')}</p>`
+        }
+        ${p.description ? `<p class="price-card__desc">${esc(p.description)}</p>` : ''}
+        ${lines.length ? `<ul class="checklist price-card__list">${lines.map((l) => `<li>${esc(l)}</li>`).join('')}</ul>` : ''}
+        <a class="btn ${featured ? 'btn--primary' : 'btn--ghost'} price-card__cta" href="/kontakt/?pakiet=${encodeURIComponent(p.name)}">${esc(cta)}<span class="visually-hidden"> — ${esc(p.name)}</span></a>
+      </li>`;
+    })
+    .join('');
+}
+
+/** „od … zł” w pierwszym ekranie: cena pierwszego opublikowanego pakietu (z promocją, jeśli aktywna). */
+export function pricingFrom(items, today = warsawDay()) {
+  const first = items[0];
+  return first ? currentPrice(first, today) || 'Wycena indywidualna' : null;
+}

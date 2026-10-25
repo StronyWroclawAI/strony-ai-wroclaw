@@ -82,12 +82,17 @@ Puste pole = link ukryty. Adresy profili trafiają też do danych dla Google (`s
 - **Cennik — strony płatne:** karta „od … zł”, sekcja **Cennik** (3 pakiety) na stronie głównej i na `/oferta/#cennik`, kolumny „W cenie pakietu” i „Portfolio i podpis w stopce” (dobrowolne), pytania FAQ o cenie, akapity w „O mnie” i w artykule o kosztach, grafika „…z przejrzystym cennikiem”.
 
 Co edytujesz:
-- **Treści strony → „Tryb Cennik – pakiety i ceny”:** nazwy pakietów, ceny (np. „od 990 zł” albo „wycena indywidualna”), opisy, punkty „co zawiera”, etykieta „Polecany” („-” ukrywa), przycisk i informacja pod cennikiem („Ceny brutto…”).
+- **Zakładka „Cennik”** (menu panelu): pakiety — dodawanie („Dodaj pakiet”), edycja, usuwanie, kolejność (strzałki) i ukrywanie („Widoczne na stronie”). Każdy pakiet: nazwa, cena regularna (np. „od 990 zł”; puste = „Wycena indywidualna”), opis, punkty „co zawiera” (jedna linia = jeden punkt), wyróżnienie nad nazwą (np. „Polecany”) i wyróżniony wygląd.
+  - **Promocja w pakiecie:** cena promocyjna (regularna jest wtedy przekreślona), opis promocji (np. „Promocja na start”) i opcjonalna data „ważna do” — po tej dacie strona sama wraca do ceny regularnej (liczone na dzień w Polsce). Przy aktywnej promocji bez własnego wyróżnienia nad pakietem pojawia się „Promocja”.
+  - Cena „od …” w pierwszym ekranie strony głównej to cena **pierwszego** opublikowanego pakietu (z promocją, jeśli aktywna) — ustawiasz ją kolejnością pakietów.
+  - Gdy żaden pakiet nie jest opublikowany, cennik pokazuje „Wycena indywidualna” z przyciskiem do formularza.
+- **Treści strony → „Tryb Cennik – cennik”:** pasek promocji nad cennikiem (np. „Do końca listopada −20% na wszystkie pakiety”; „-” ukrywa), tekst przycisku pod pakietami i informacja pod cennikiem („Ceny brutto…”).
 - **Treści strony → „Tryb Cennik – teksty”:** opis w pierwszym ekranie, karta ceny (zmień ją razem z ceną pakietu 1), nagłówek cennika, krok 6, akapit „O mnie”, teksty sekcji Zasady na `/oferta/`.
 - **FAQ:** pole „Widoczne w trybie” — Zawsze / tylko Portfolio / tylko Cennik. Nowe pytanie o cenach ustaw na „tylko Cennik”.
 
 Podgląd: przycisk „Podgląd trybu …” w Ustawieniach otwiera stronę w drugim trybie — widzisz go tylko Ty (zalogowany), z paskiem informacyjnym i bez indeksowania.
 Przycisk „Zapytaj o ten pakiet” otwiera `/kontakt/` i dopisuje nazwę pakietu na początku wiadomości.
+**Po wdrożeniu nowej wersji:** w Ustawieniach → Stan konfiguracji sprawdź „Wersja panelu” i „Wersja bazy danych” (min. 24). Jeśli widzisz starszą wersję panelu, odśwież stronę panelu (Ctrl+F5).
 Po przełączeniu sitemap.xml podaje datę przełączenia jako lastmod stron z treścią zależną od trybu (`/oferta/`, `/o-mnie/`, artykuł o kosztach).
 Pamiętaj też o tekstach poza stroną: wiadomości e-mail do firm i posty, które mówią o bezpłatnym wykonaniu.
 

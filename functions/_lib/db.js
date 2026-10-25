@@ -4,7 +4,7 @@
 
 import { SEED } from './seed.js';
 
-export const SCHEMA_VERSION = '23';
+export const SCHEMA_VERSION = '24';
 
 // Każda instrukcja w osobnym elemencie (D1 wykonuje je w jednej transakcji przez batch()).
 export const SCHEMA = [
@@ -22,6 +22,19 @@ export const SCHEMA = [
   `CREATE TABLE IF NOT EXISTS industries (
     id TEXT PRIMARY KEY, name TEXT NOT NULL CHECK (length(name) BETWEEN 1 AND 80),
     description TEXT NOT NULL DEFAULT '' CHECK (length(description) <= 600),
+    sort_order INTEGER NOT NULL DEFAULT 0, is_published INTEGER NOT NULL DEFAULT 1,
+    created_at TEXT NOT NULL, updated_at TEXT NOT NULL)`,
+  // v24: pakiety cennika (tryb oferty „Cennik”) — dodawane, edytowane i usuwane w panelu, z opcjonalną promocją
+  `CREATE TABLE IF NOT EXISTS pricing_packages (
+    id TEXT PRIMARY KEY, name TEXT NOT NULL CHECK (length(name) BETWEEN 1 AND 80),
+    price TEXT NOT NULL DEFAULT '' CHECK (length(price) <= 40),
+    promo_price TEXT NOT NULL DEFAULT '' CHECK (length(promo_price) <= 40),
+    promo_label TEXT NOT NULL DEFAULT '' CHECK (length(promo_label) <= 80),
+    promo_until TEXT NOT NULL DEFAULT '' CHECK (promo_until = '' OR promo_until GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]'),
+    description TEXT NOT NULL DEFAULT '' CHECK (length(description) <= 400),
+    items TEXT NOT NULL DEFAULT '' CHECK (length(items) <= 1500),
+    badge TEXT NOT NULL DEFAULT '' CHECK (length(badge) <= 40),
+    featured TEXT NOT NULL DEFAULT 'no' CHECK (featured IN ('no','yes')),
     sort_order INTEGER NOT NULL DEFAULT 0, is_published INTEGER NOT NULL DEFAULT 1,
     created_at TEXT NOT NULL, updated_at TEXT NOT NULL)`,
   `CREATE TABLE IF NOT EXISTS capabilities (
@@ -173,6 +186,14 @@ const CONTENT_UPDATES = [
   ['contact.message_hint', 'Uzupełnij szkic albo napisz po swojemu — wystarczy kilka zdań.'],
   // v12: krótszy formularz zgłoszeniowy
   ['contact.message_hint', 'Poniżej jest gotowy szkic — uzupełnij go lub napisz po swojemu. Wystarczy kilka zdań: resztę ustalimy w krótkim briefie, który wyślę po pierwszym kontakcie.'],
+  // v24: liczba pakietów zależy teraz od panelu — teksty bez „trzech pakietów” i bez nazwy jednego pakietu
+  ['paid.pricing_intro', 'Trzy pakiety dla małych firm. Zakres i cenę potwierdzam mailowo, zanim zacznę pracę — bez ukrytych kosztów.'],
+  ['paid.offer_note', 'Cena brutto pakietu Wizytówka. Domena i ewentualny płatny hosting są osobno — każdy koszt zewnętrzny uzgadniamy przed zakupem.'],
+];
+// v24: pakiety z dawnych pól „Tryb Cennik – pakiety i ceny” (Treści strony) — przenoszone do tabeli pricing_packages
+const OLD_PRICING_KEYS = [1, 2, 3].flatMap((n) => ['name', 'price', 'desc', 'items', 'badge'].map((f) => `pricing.${n}_${f}`));
+const FAQ_ANSWER_UPDATES_V24 = [
+  ['Ile kosztuje strona?', 'Przygotowuję strony w trzech pakietach: Wizytówka, Strona firmowa i Strona z panelem edycji. Aktualne ceny i zakres pakietów znajdziesz w cenniku na stronie oferty.\n\nCena jest stała — zakres i kwotę potwierdzam mailowo, zanim zacznę pracę. Dodatkowe podstrony i funkcje wyceniam indywidualnie.'],
 ];
 // v18: adres e-mail marki zmieniony ze stronywroclawai@ na stronyaiwroclaw@ (gmail.com)
 const EMAIL_CHANGES = [['stronywroclawai' + '@gmail.com', 'stronyaiwroclaw@gmail.com']];
@@ -206,7 +227,7 @@ const PORTFOLIO_FIXES_V21 = [
   ['kancelaria-notarialne-x-y', 'seo_for', '', 'kancelarii notarialnej'],
 ];
 // Pola usunięte ze strony (nadtytuł nad hasłem zastąpił nagłówek H1).
-const CONTENT_REMOVED = ['hero.eyebrow'];
+const CONTENT_REMOVED = ['hero.eyebrow', 'paid.offer_value', ...OLD_PRICING_KEYS];
 
 export const uuid = () => crypto.randomUUID();
 export const nowIso = () => new Date().toISOString();
@@ -249,6 +270,22 @@ async function init(env) {
   }
 
   const t = nowIso();
+  // v24: pakiety cennika — przy pierwszym utworzeniu tabeli bierzemy wartości z dawnych pól panelu (jeśli istnieją)
+  let pricingRows = SEED.pricing || [];
+  try {
+    const cnt = await db.prepare(`SELECT COUNT(*) AS n FROM pricing_packages`).first();
+    if (!cnt || !cnt.n) {
+      const old = {};
+      for (const r of (await db.prepare(`SELECT key, value FROM site_content WHERE key IN (${OLD_PRICING_KEYS.map(() => '?').join(',')})`).bind(...OLD_PRICING_KEYS).all()).results || []) old[r.key] = r.value;
+      pricingRows = pricingRows.map((p, i) => {
+        const n = i + 1;
+        const v = (f) => (old[`pricing.${n}_${f}`] !== undefined && String(old[`pricing.${n}_${f}`]).trim() !== '' ? String(old[`pricing.${n}_${f}`]) : null);
+        return { ...p, name: v('name') ?? p.name, price: v('price') ?? p.price, description: v('desc') ?? p.description, items: v('items') ?? p.items, badge: v('badge') === '-' ? '' : v('badge') ?? p.badge };
+      });
+    }
+  } catch (e) {
+    /* tabela powstaje w tym samym uruchomieniu — wtedy wartości domyślne */
+  }
   const stmts = [db.prepare(`INSERT OR IGNORE INTO settings (id, recruitment_open, contact_email, updated_at) VALUES (1, 1, 'stronyaiwroclaw@gmail.com', ?)`).bind(t)];
   for (const c of SEED.content) {
     stmts.push(
@@ -265,6 +302,7 @@ async function init(env) {
     ['industries', ['name', 'description'], SEED.industries],
     ['capabilities', ['title', 'description', 'size'], SEED.capabilities],
     ['faq_items', ['question', 'answer', 'mode'], SEED.faq],
+    ['pricing_packages', ['name', 'price', 'promo_price', 'promo_label', 'promo_until', 'description', 'items', 'badge', 'featured'], pricingRows],
   ];
   for (const [table, cols, rows] of lists) {
     const all = ['id', ...cols, 'sort_order', 'is_published', 'created_at', 'updated_at'];
@@ -314,6 +352,10 @@ async function init(env) {
     );
   });
   stmts.push(db.prepare(`INSERT OR IGNORE INTO meta (key, value) VALUES ('faq_v23', ?)`).bind(t));
+  for (const [question, oldAnswer] of FAQ_ANSWER_UPDATES_V24) {
+    const seed = SEED.faq.find((f) => f.question === question && f.mode === 'paid');
+    if (seed && seed.answer !== oldAnswer) stmts.push(db.prepare(`UPDATE faq_items SET answer = ?, updated_at = ? WHERE question = ? AND answer = ?`).bind(seed.answer, t, question, oldAnswer));
+  }
   for (const [slug, col, oldValue, newValue] of PORTFOLIO_FIXES_V21) {
     if (!['industry', 'title', 'seo_for'].includes(col)) continue;
     stmts.push(db.prepare(`UPDATE portfolio_projects SET ${col} = ?, updated_at = ? WHERE slug = ? AND is_demo = 1 AND ${col} = ?`).bind(newValue, t, slug, oldValue));

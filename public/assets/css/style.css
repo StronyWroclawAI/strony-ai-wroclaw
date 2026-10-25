@@ -1264,3 +1264,10 @@ html { background: var(--white); }
 }
 /* Podgląd trybu oferty (tylko zalogowany administrator) */
 .preview-bar { position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 100; max-width: calc(100% - 32px); padding: 10px 16px; border-radius: 12px; background: #fff4d6; color: #4a3500; border: 1px solid #e8c56a; font-size: .875rem; line-height: 1.4; box-shadow: 0 12px 30px -12px rgba(0, 0, 0, .35); }
+/* Cennik: promocje (cena promocyjna, przekreślona cena regularna, opis i data), pasek promocji, brak pakietów */
+.price-card--promo .price-card__badge { background: linear-gradient(135deg, #ff8a5c, #ff5a6e); }
+.price-card__old { margin: -8px 0 0; font-size: 1rem; color: var(--muted); }
+.price-card__old s { text-decoration-thickness: 2px; text-decoration-color: rgba(200, 60, 60, .75); }
+.price-card__promo { margin: 0; align-self: flex-start; padding: 5px 10px; border-radius: 8px; background: #fff1ec; color: #9a2f12; font-size: .875rem; font-weight: 700; line-height: 1.35; }
+.pricing__promo { margin: 0 0 22px; padding: 14px 18px; border-radius: var(--radius); background: #fff1ec; border: 1px solid #ffc9b6; color: #7a2a10; font-weight: 700; line-height: 1.45; }
+.price-card--empty { grid-column: 1 / -1; max-width: 560px; }

@@ -14,6 +14,9 @@ import {
   renderCaseImages,
   renderPosts,
   renderSocial,
+  renderPricing,
+  pricingFrom,
+  warsawDay,
 } from './render.js';
 import { embedInfo, socialKind } from './social.js';
 import { parseVariants } from './media.js';
@@ -92,7 +95,7 @@ export async function loadContent(context) {
   try {
     await ensureSchema(env);
     const db = env.DB;
-    const [content, settings, industries, capabilities, faq, projects, images, posts] = await db.batch([
+    const [content, settings, industries, capabilities, faq, projects, images, posts, pricing] = await db.batch([
       db.prepare(`SELECT key, value FROM site_content`),
       db.prepare(`SELECT recruitment_open, contact_email, posts_enabled, facebook_url, instagram_url, offer_mode, offer_mode_at FROM settings WHERE id = 1`),
       db.prepare(`SELECT name, description FROM industries WHERE is_published = 1 ORDER BY sort_order, created_at`),
@@ -106,6 +109,7 @@ export async function loadContent(context) {
       db.prepare(`SELECT p.title, p.body, p.published_on, p.link_url, p.embed, m.id AS media_id, m.kv_key, m.alt, m.width, m.height, m.variants FROM posts p
                   LEFT JOIN media m ON m.id = p.media_id
                   WHERE p.status = 'published' ORDER BY p.published_on DESC, p.created_at DESC LIMIT ${POSTS_LIMIT}`),
+      db.prepare(`SELECT name, price, promo_price, promo_label, promo_until, description, items, badge, featured FROM pricing_packages WHERE is_published = 1 ORDER BY sort_order, created_at`),
     ]);
     const map = {};
     for (const row of content.results) map[row.key] = row.value;
@@ -130,6 +134,7 @@ export async function loadContent(context) {
       industries: industries.results,
       capabilities: capabilities.results,
       faq: faq.results,
+      pricing: pricing.results,
       projects: projects.results.map((p) => ({
         ...p,
         case_path: !p.is_demo && !(p.card_ver && p.slug) ? CASES.get(siteKey(p.site_url)) || null : null,
@@ -237,6 +242,12 @@ export async function renderPage(context) {
       realizacje: () => renderPortfolioHub(data.projects),
       'case-images': (el) => renderCaseImages(data.projects, el.getAttribute('data-case-site')),
       posts: () => (showPosts ? renderPosts(data.posts) : null),
+      // Cennik z zakładki „Cennik” w panelu (promocje z datą „do” wygasają same — liczone na dzień w Polsce)
+      pricing: () =>
+        data.pricing.length
+          ? renderPricing(data.pricing, warsawDay(), (c['pricing.cta'] || '').trim() || undefined)
+          : '<li class="price-card price-card--empty"><h3 class="price-card__name">Wycena indywidualna</h3><p class="price-card__desc">Napisz kilka zdań o swojej firmie — przygotuję wycenę dopasowaną do zakresu strony.</p><a class="btn btn--primary price-card__cta" href="/kontakt/">Zapytaj o wycenę</a></li>',
+      'pricing-from': () => (data.pricing.length ? pricingFrom(data.pricing) : 'Wycena indywidualna'),
     };
     const socialHtml = renderSocial(data.social);
 
@@ -252,7 +263,10 @@ export async function renderPage(context) {
             if (el.tagName === 'textarea') el.setInnerContent('');
             else el.remove();
           }
-          else if (t) el.setInnerContent(el.tagName === 'textarea' ? String(v).replace(/^\n+|\s+$/g, '') : t);
+          else if (t) {
+            el.setInnerContent(el.tagName === 'textarea' ? String(v).replace(/^\n+|\s+$/g, '') : t);
+            if (el.hasAttribute('data-cms-show')) el.removeAttribute('hidden');
+          }
         },
       })
       .on('[data-cms-lines]', {

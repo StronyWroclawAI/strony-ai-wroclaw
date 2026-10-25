@@ -23,6 +23,16 @@ const LISTS = {
   faq: { table: 'faq_items', fields: { question: [1, 300], answer: [1, 5000], mode: [1, 10, ['all', 'free', 'paid']] } },
   industries: { table: 'industries', fields: { name: [1, 80], description: [0, 600] } },
   capabilities: { table: 'capabilities', fields: { title: [1, 120], description: [0, 800], size: [1, 10, ['normal', 'wide']] } },
+  // Cennik (tryb oferty „Cennik”): pakiety z opcjonalną promocją (cena promocyjna, etykieta, data „do” — włącznie)
+  pricing: {
+    table: 'pricing_packages',
+    fields: { name: [1, 80], price: [0, 40], promo_price: [0, 40], promo_label: [0, 80], promo_until: [0, 10], description: [0, 400], items: [0, 1500], badge: [0, 40], featured: [1, 3, ['no', 'yes']] },
+    check: (v) => {
+      if (v.promo_until && !/^\d{4}-\d{2}-\d{2}$/.test(v.promo_until)) throw bad('Data końca promocji musi mieć format RRRR-MM-DD.');
+      if (v.promo_until && Number.isNaN(Date.parse(`${v.promo_until}T00:00:00Z`))) throw bad('Nieprawidłowa data końca promocji.');
+      if (v.promo_price && !v.price) throw bad('Przy cenie promocyjnej podaj też cenę regularną (będzie przekreślona).');
+    },
+  },
 };
 
 class HttpError extends Error {
@@ -34,7 +44,7 @@ class HttpError extends Error {
 const bad = (msg) => new HttpError(400, msg);
 const notFound = (msg = 'Nie znaleziono.') => new HttpError(404, msg);
 
-const LABELS = { mode: 'Widoczne w trybie', question: 'Pytanie', answer: 'Odpowiedź', name: 'Nazwa branży', description: 'Opis', title: 'Tytuł', size: 'Szerokość kafelka' };
+const LABELS = { price: 'Cena', promo_price: 'Cena promocyjna', promo_label: 'Opis promocji', promo_until: 'Promocja do', items: 'Co zawiera', badge: 'Wyróżnienie', featured: 'Wyróżniony pakiet', mode: 'Widoczne w trybie', question: 'Pytanie', answer: 'Odpowiedź', name: 'Nazwa branży', description: 'Opis', title: 'Tytuł', size: 'Szerokość kafelka' };
 
 function str(v, [min, max, allowed], label) {
   const s = typeof v === 'string' ? v.trim() : '';
@@ -139,6 +149,7 @@ export async function onRequest(context) {
           notifyFrom: (env.NOTIFY_FROM || 'Strony AI Wrocław <onboarding@resend.dev>').trim(),
           siteUrl: (env.SITE_URL || '').trim() || null,
           ipSalt: Boolean(env.IP_HASH_SALT),
+          schemaVersion: hasDb(env) ? ((await first(env, `SELECT value FROM meta WHERE key = 'schema_version'`)) || {}).value || null : null,
         });
       case 'GET /stats':
         return json({ ok: true, stats: await readStats(env, new URL(request.url).searchParams.get('days')) });
@@ -886,7 +897,11 @@ export async function onRequest(context) {
         return json({ ok: true, items: await all(env, `SELECT * FROM ${cfg.table} ORDER BY sort_order, created_at`) });
       }
       if (method === 'PUT' && sub[0] === 'order') return await saveOrder(env, cfg.table, await body(request));
-      const readFields = (b) => cols.map((c) => str(b[c] ?? (cfg.fields[c][2] ? cfg.fields[c][2][0] : ''), cfg.fields[c], LABELS[c] || c));
+      const readFields = (b) => {
+        const vals = cols.map((c) => str(b[c] ?? (cfg.fields[c][2] ? cfg.fields[c][2][0] : ''), cfg.fields[c], LABELS[c] || c));
+        if (cfg.check) cfg.check(Object.fromEntries(cols.map((c, i) => [c, vals[i]])));
+        return vals;
+      };
       if (method === 'POST' && sub.length === 0) {
         const b = await body(request);
         const vals = readFields(b);

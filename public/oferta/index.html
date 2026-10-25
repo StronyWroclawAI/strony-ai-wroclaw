@@ -25,8 +25,8 @@
 <link rel="icon" href="/assets/img/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
-<link rel="stylesheet" href="/assets/css/style.css?v=24">
-<script src="/assets/js/main.js?v=13" defer></script>
+<link rel="stylesheet" href="/assets/css/style.css?v=25">
+<script src="/assets/js/main.js?v=14" defer></script>
 </head>
 <body class="subpage subpage--offer">
 <a class="skip-link" href="#tresc">Przejdź do treści</a>
@@ -109,51 +109,36 @@
     <div class="section-head">
       <p class="eyebrow" data-cms="paid.pricing_eyebrow">Cennik</p>
       <h2 class="h2" id="pricing-title" data-cms="paid.pricing_title">Przejrzyste ceny, kwota znana przed startem</h2>
-      <p class="lead" data-cms="paid.pricing_intro">Trzy pakiety dla małych firm. Zakres i cenę potwierdzam mailowo, zanim zacznę pracę — bez ukrytych kosztów.</p>
+      <p class="lead" data-cms="paid.pricing_intro">Pakiety dla małych firm. Zakres i cenę potwierdzam mailowo, zanim zacznę pracę — bez ukrytych kosztów.</p>
     </div>
-    <ul class="pricing" role="list">
+    <p class="pricing__promo" data-cms-show hidden data-cms="pricing.promo">-</p>
+    <ul class="pricing" role="list" data-cms-list="pricing">
       <li class="price-card reveal">
-        <h3 class="price-card__name" data-cms="pricing.1_name">Wizytówka</h3>
-        <p class="price-card__price" data-cms="pricing.1_price">od 990 zł</p>
-        <p class="price-card__desc" data-cms="pricing.1_desc">Jedna strona z najważniejszymi informacjami — dla firm, które chcą szybko i niedrogo pokazać się w internecie.</p>
-        <ul class="checklist price-card__list" data-cms-lines="pricing.1_items">
-          <li>Jedna strona z sekcjami: o firmie, oferta, zdjęcia, kontakt</li>
-          <li>Formularz kontaktowy i mapa dojazdu</li>
-          <li>Wersja na telefon i podstawy SEO</li>
-          <li>Pomoc przy uruchomieniu pod domeną firmy</li>
-          <li>3 miesiące aktualizacji treści</li>
-        </ul>
-        <a class="btn btn--ghost price-card__cta" href="/kontakt/?pakiet=wizytowka"><span data-cms="pricing.cta">Zapytaj o ten pakiet</span><span class="visually-hidden"> — <span data-cms="pricing.1_name">Wizytówka</span></span></a>
+        
+        <h3 class="price-card__name">Wizytówka</h3>
+        <p class="price-card__price">od 990 zł</p>
+        <p class="price-card__desc">Jedna strona z najważniejszymi informacjami — dla firm, które chcą szybko i niedrogo pokazać się w internecie.</p>
+        <ul class="checklist price-card__list"><li>Jedna strona z sekcjami: o firmie, oferta, zdjęcia, kontakt</li><li>Formularz kontaktowy i mapa dojazdu</li><li>Wersja na telefon i podstawy SEO</li><li>Pomoc przy uruchomieniu pod domeną firmy</li><li>3 miesiące aktualizacji treści</li></ul>
+        <a class="btn btn--ghost price-card__cta" href="/kontakt/?pakiet=Wizyt%C3%B3wka">Zapytaj o ten pakiet<span class="visually-hidden"> — Wizytówka</span></a>
       </li>
       <li class="price-card price-card--featured reveal">
-        <p class="price-card__badge" data-cms="pricing.2_badge">Polecany</p>
-        <h3 class="price-card__name" data-cms="pricing.2_name">Strona firmowa</h3>
-        <p class="price-card__price" data-cms="pricing.2_price">od 1 690 zł</p>
-        <p class="price-card__desc" data-cms="pricing.2_desc">Kilka podstron, galeria i czytelna oferta — dla firm, które chcą pokazać więcej niż dane kontaktowe.</p>
-        <ul class="checklist price-card__list" data-cms-lines="pricing.2_items">
-          <li>Do 5 podstron, np. oferta, cennik, galeria, o firmie, kontakt</li>
-          <li>Galeria zdjęć lub portfolio</li>
-          <li>Link do rezerwacji online (np. Booksy)</li>
-          <li>Wersja na telefon i podstawy SEO</li>
-          <li>3 miesiące aktualizacji treści</li>
-        </ul>
-        <a class="btn btn--primary price-card__cta" href="/kontakt/?pakiet=firmowa"><span data-cms="pricing.cta">Zapytaj o ten pakiet</span><span class="visually-hidden"> — <span data-cms="pricing.2_name">Strona firmowa</span></span></a>
+        <p class="price-card__badge">Polecany</p>
+        <h3 class="price-card__name">Strona firmowa</h3>
+        <p class="price-card__price">od 1 690 zł</p>
+        <p class="price-card__desc">Kilka podstron, galeria i czytelna oferta — dla firm, które chcą pokazać więcej niż dane kontaktowe.</p>
+        <ul class="checklist price-card__list"><li>Do 5 podstron, np. oferta, cennik, galeria, o firmie, kontakt</li><li>Galeria zdjęć lub portfolio</li><li>Link do rezerwacji online (np. Booksy)</li><li>Wersja na telefon i podstawy SEO</li><li>3 miesiące aktualizacji treści</li></ul>
+        <a class="btn btn--primary price-card__cta" href="/kontakt/?pakiet=Strona%20firmowa">Zapytaj o ten pakiet<span class="visually-hidden"> — Strona firmowa</span></a>
       </li>
       <li class="price-card reveal">
-        <h3 class="price-card__name" data-cms="pricing.3_name">Strona z panelem edycji</h3>
-        <p class="price-card__price" data-cms="pricing.3_price">od 2 490 zł</p>
-        <p class="price-card__desc" data-cms="pricing.3_desc">Strona, której treści zmieniasz sam — bez znajomości programowania i bez czekania na wykonawcę.</p>
-        <ul class="checklist price-card__list" data-cms-lines="pricing.3_items">
-          <li>Wszystko z pakietu Strona firmowa</li>
-          <li>Panel do samodzielnej edycji tekstów, zdjęć i cennika</li>
-          <li>Aktualności, np. promocje i wolne terminy</li>
-          <li>Przekazanie dostępów i krótkie wprowadzenie do panelu</li>
-          <li>3 miesiące aktualizacji treści</li>
-        </ul>
-        <a class="btn btn--ghost price-card__cta" href="/kontakt/?pakiet=panel"><span data-cms="pricing.cta">Zapytaj o ten pakiet</span><span class="visually-hidden"> — <span data-cms="pricing.3_name">Strona z panelem edycji</span></span></a>
-      </li>
-    </ul>
+        
+        <h3 class="price-card__name">Strona z panelem edycji</h3>
+        <p class="price-card__price">od 2 490 zł</p>
+        <p class="price-card__desc">Strona, której treści zmieniasz sam — bez znajomości programowania i bez czekania na wykonawcę.</p>
+        <ul class="checklist price-card__list"><li>Wszystko z pakietu Strona firmowa</li><li>Panel do samodzielnej edycji tekstów, zdjęć i cennika</li><li>Aktualności, np. promocje i wolne terminy</li><li>Przekazanie dostępów i krótkie wprowadzenie do panelu</li><li>3 miesiące aktualizacji treści</li></ul>
+        <a class="btn btn--ghost price-card__cta" href="/kontakt/?pakiet=Strona%20z%20panelem%20edycji">Zapytaj o ten pakiet<span class="visually-hidden"> — Strona z panelem edycji</span></a>
+      </li></ul>
     <p class="pricing__note" data-cms="pricing.note">Ceny brutto. Domena i ewentualny płatny hosting — osobno, według cennika dostawcy; podaję je przed zakupem. Dodatkowe podstrony i funkcje wyceniam indywidualnie.</p>
+    <span hidden data-pricing-cta data-cms="pricing.cta">Zapytaj o ten pakiet</span>
   </div>
 </section>
 
