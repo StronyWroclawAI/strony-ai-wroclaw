@@ -56,6 +56,10 @@ Podstrony mają og:title, og:description i og:url. Nie mają og:image — do prz
 - Działa w przeglądarkach z obsługą (Chrome/Edge 126+, Safari 18.2+). Pozostałe (np. Firefox) przechodzą zwyczajnie.
 - Przy włączonym „ograniczeniu ruchu” w systemie przejścia są wyłączone, a przewijanie do sekcji jest natychmiastowe.
 - Karty projektów (`/portfolio/…`) i panel nie mają tej reguły — przejścia do nich są zwykłe.
+- **Od laboratorium A/B/C: wariant C „Split Reveal” (620 ms, na telefonie 560 ms)** — dwa granatowe skrzydła zsuwają się do środka i rozsuwają,
+  odsłaniając nową stronę. Warstwę skrzydeł i typ przejścia `split` dokłada `/assets/js/przejscia.js` (w `<head>`, bez defer —
+  zdarzenie `pagereveal`); animacja w `style.css` (blok „Przejście Split Reveal”). Nawigacja nadal zwykła (bez routera).
+  Przeglądarki bez typów przejść mają dawne krótkie przenikanie; link do tej samej strony nie jest animowany.
 
 ## Etap 3
 - **Opisy prawdziwych realizacji** powstają jak pozostałe podstrony (wpis `kind: 'case'` w `pages.mjs`, pole `site` = adres strony klienta).
