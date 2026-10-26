@@ -1271,3 +1271,13 @@ html { background: var(--white); }
 .price-card__promo { margin: 0; align-self: flex-start; padding: 5px 10px; border-radius: 8px; background: #fff1ec; color: #9a2f12; font-size: .875rem; font-weight: 700; line-height: 1.35; }
 .pricing__promo { margin: 0 0 22px; padding: 14px 18px; border-radius: var(--radius); background: #fff1ec; border: 1px solid #ffc9b6; color: #7a2a10; font-weight: 700; line-height: 1.45; }
 .price-card--empty { grid-column: 1 / -1; max-width: 560px; }
+/* ===== SEO 1.1: /tworzenie-stron-internetowych/ ===== */
+.work-teaser { display: grid; grid-template-columns: minmax(0, 360px) minmax(0, 1fr); gap: 24px; align-items: center; margin: 12px 0 18px; padding: 18px; border: 1px solid var(--gray-200); border-radius: var(--radius-lg); background: var(--white); }
+.work-teaser__img { display: block; border-radius: 10px; overflow: hidden; border: 1px solid var(--gray-200); }
+.work-teaser__img img { display: block; width: 100%; height: auto; }
+.work-teaser__body h3 { margin: 6px 0 6px; font-size: 1.15rem; }
+.work-teaser__body p { margin: 0 0 6px; }
+.work-teaser .real-note { margin: 0; }
+@media (max-width: 819px) { .work-teaser { grid-template-columns: 1fr; gap: 14px; padding: 14px; } }
+.faq__list--page { margin: 14px 0 32px; }
+.prose .faq__a p { margin: 0 0 .6em; }

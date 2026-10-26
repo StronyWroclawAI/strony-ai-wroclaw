@@ -28,7 +28,7 @@ export const SITE_PAGES = [
  },
  {
   "path": "/poradnik/co-powinna-zawierac-strona-firmowa/",
-  "lastmod": "2026-10-24"
+  "lastmod": "2026-10-26"
  },
  {
   "path": "/poradnik/czy-mala-firma-potrzebuje-strony-internetowej/",
@@ -36,7 +36,7 @@ export const SITE_PAGES = [
  },
  {
   "path": "/dla-branz/",
-  "lastmod": "2026-10-24"
+  "lastmod": "2026-10-26"
  },
  {
   "path": "/dla-branz/salon-kosmetyczny/",
@@ -62,7 +62,12 @@ export const SITE_PAGES = [
  },
  {
   "path": "/oferta/",
-  "lastmod": "2026-10-25",
+  "lastmod": "2026-10-26",
+  "offer": true
+ },
+ {
+  "path": "/tworzenie-stron-internetowych/",
+  "lastmod": "2026-10-26",
   "offer": true
  },
  {

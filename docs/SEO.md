@@ -20,6 +20,7 @@
 | `/dla-branz/fotograf/` | strona internetowa dla fotografa | portfolio, szybkość galerii; bez celowania w miasto |
 | `/portfolio/anna-niedobitek-fotografia/` | realizacja: strona fotografki (prawdziwy klient, za zgodą) | opis realizacji, nie poradnik |
 | `/oferta/` | co oferuje Strony AI Wrocław: zakres, przebieg współpracy, zasady i koszty, własność strony | intencja „oferta / zasady”, NIE fraza „tworzenie stron Wrocław” (ta zostaje na `/`) |
+| `/tworzenie-stron-internetowych/` | tworzenie stron internetowych / WWW dla firm — bez lokalizatora (cała Polska) | SEO 1.1; H1 „… dla firm z całej Polski”; jedyny ogólnopolski landing (bez wariantów fraz) |
 | `/o-mnie/` | kim jest autor (Grzegorz Rejszel), podejście, rola AI | marka i zaufanie; Person w danych strukturalnych |
 | `/kontakt/` | formularz zgłoszenia i e-mail | strona użytkowa, bez pozycjonowania |
 
@@ -107,6 +108,7 @@ Podstrony mają og:title, og:description i og:url. Nie mają og:image — do prz
 | Adres | Główna intencja | Tematy wspierające | Linkują tu m.in. |
 |---|---|---|---|
 | `/` | tworzenie stron internetowych Wrocław | korzyści, branże, możliwości, przebieg współpracy, FAQ | wszystkie strony (logo, „Start”, okruszki) |
+| `/tworzenie-stron-internetowych/` | tworzenie stron internetowych / WWW dla firm (cała Polska) | strony WWW, projektowanie stron, responsywne strony, panel edycji, współpraca zdalna | stopka (wszystkie strony), strona główna (Możliwości), /oferta/, /dla-branz/, artykuł „co powinna zawierać” |
 | `/oferta/` | oferta i zasady współpracy Strony AI Wrocław | zakres, koszty, materiały, własność domeny | menu, strona główna (skrót oferty), /o-mnie/, /kontakt/, artykuł o czasie |
 | `/realizacje/` | przykłady wykonanych stron | realne vs demonstracyjne | menu, strona główna, /oferta/, /o-mnie/, /dla-branz/fotograf/ |
 | `/portfolio/anna-niedobitek-fotografia/` | realizacja strony fotografki | zrzuty, funkcje | /realizacje/, /dla-branz/fotograf/, /oferta/, /o-mnie/, artykuł „czy Facebook” |
@@ -135,3 +137,11 @@ Wersja 1.0 jest kompletna technicznie i treściowo. Dalszy rozwój wynika z dany
 - Daty: hash treści w buildzie (v3) liczony z tekstu widocznego w trybie „Portfolio” (bez bloków `data-offer="paid"`); po przełączeniu trybu sitemap.xml podaje datę przełączenia jako lastmod stron z blokami trybu (`offer: true` w `functions/_lib/pages.js`).
 - Strona główna: w trybie Cennik og:image `og-image-cennik.png` i inny og:description. Ceny nie trafiają do danych strukturalnych (są edytowane w panelu i mogłyby się rozjechać).
 - Po przełączeniu warto w Search Console poprosić o ponowne zindeksowanie `/` i `/oferta/`.
+
+## SEO 1.1 — ogólnopolska strona usługi `/tworzenie-stron-internetowych/`
+- **Podział intencji:** `/` = usługa lokalna („tworzenie stron internetowych Wrocław”, H1 „… we Wrocławiu”); `/tworzenie-stron-internetowych/` = ta sama usługa bez lokalizatora (H1 „… dla firm z całej Polski”, współpraca zdalna); `/oferta/` = szczegóły oferty, zasady, ceny (TITLE „Oferta i zasady współpracy”, bez frazy usługowej).
+- **Bez kolejnych landingów:** nie tworzymy `/strony-internetowe/`, `/tworzenie-stron-www/`, `/projektowanie-stron-internetowych/`, `/strony-www/`, `/strony-internetowe-dla-firm/` — jedna strona zbiera warianty fraz semantycznie.
+- **Tryb oferty:** sekcja oferty na stronie korzysta z tego samego przełącznika (`settings.offer_mode`) i tych samych pól co strona główna: w trybie Portfolio skrót `offer.*`, w trybie Cennik pakiety z zakładki Cennik (`pricing_packages`) i nagłówki `paid.pricing_*`. Reszta treści jest neutralna (bez „bezpłatnie”, „0 zł” i cen).
+- **Dane strukturalne:** BreadcrumbList + WebPage z `about` → usługa `/#usluga` ze strony głównej (bez drugiej encji Service, bez FAQPage — pytania na stronie są zwykłą treścią).
+- **Menu główne bez zmian** — strona osiągalna ze stopki (link na każdej stronie), z sekcji „Możliwości” na stronie głównej, z `/oferta/`, `/dla-branz/` i artykułu „co powinna zawierać strona firmowa”.
+- **Search Console:** obserwować zapytania bez „Wrocław” (tworzenie stron internetowych, strony www, projektowanie stron…) — czy trafiają na nową stronę, a frazy z „Wrocław” nadal na `/`. Jeśli Google zacznie mieszać adresy dla tych samych zapytań, wzmocnić rozróżnienie treścią (nie kolejną stroną).
