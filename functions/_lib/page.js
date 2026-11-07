@@ -1,7 +1,7 @@
 // Wstawia do statycznego HTML treści z bazy D1 (po stronie serwera, przez HTMLRewriter).
 // Gdy baza jest niedostępna lub nieskonfigurowana, strona pokazuje treści domyślne z pliku HTML.
 
-import { ensureSchema, hasDb, mediaUrl } from './db.js';
+import { ensureSchema, hasDb, mediaUrl, withTimeout } from './db.js';
 import { withSecurityHeaders, siteOrigin, contactEmail } from './http.js';
 import {
   renderIndustries,
@@ -89,10 +89,23 @@ export function structuredData(origin, email, sameAs = []) {
 
 const PRIVACY_REQUIRED = ['privacy.controller_name', 'privacy.db_region', 'privacy.retention', 'privacy.updated', 'privacy.transfer_check'];
 
+// Strona publiczna nigdy nie czeka na bazę dłużej niż kilka sekund: przy problemie z D1 pokazuje treści domyślne z HTML
+// (zamiast wisieć do błędu 524 Cloudflare).
+const CONTENT_TIMEOUT_MS = 6000;
+
 export async function loadContent(context) {
   const { env } = context;
   if (!hasDb(env)) return null;
   try {
+    return await withTimeout(readContent(env), CONTENT_TIMEOUT_MS, 'treści strony');
+  } catch (e) {
+    console.error('Nie udało się pobrać treści z bazy — używam treści domyślnych.', e);
+    return null;
+  }
+}
+
+async function readContent(env) {
+  {
     await ensureSchema(env);
     const db = env.DB;
     const [content, settings, industries, capabilities, faq, projects, images, posts, pricing] = await db.batch([
@@ -141,16 +154,13 @@ export async function loadContent(context) {
         images: imgs.filter((i) => i.project_id === p.id).map((i) => ({ id: i.media_id, url: mediaUrl(i.kv_key), alt: i.alt, width: i.width, height: i.height, variants: parseVariants(i.variants) })),
       })),
     };
-  } catch (e) {
-    console.error('Nie udało się pobrać treści z bazy — używam treści domyślnych.', e);
-    return null;
   }
 }
 
 export async function renderPage(context) {
   const { request, env } = context;
   // Licznik odwiedzin (bez cookies) — w tle, nie spowalnia strony.
-  context.waitUntil(recordVisit(env, request, new URL(request.url).pathname.replace(/\/+$/, '') || '/'));
+  context.waitUntil(withTimeout(recordVisit(env, request, new URL(request.url).pathname.replace(/\/+$/, '') || '/'), 10000, 'statystyki').catch(() => {}));
   // Pobieramy plik HTML BEZ nagłówków warunkowych (If-None-Match / If-Modified-Since).
   // Inaczej serwer plików odpowiadałby „304 — bez zmian” (plik się nie zmienił),
   // a przeglądarka pokazywałaby starą wersję mimo zmian zapisanych w panelu.
@@ -167,7 +177,7 @@ export async function renderPage(context) {
   // Podgląd drugiego trybu tylko dla zalogowanego administratora: ?podglad=cennik / ?podglad=portfolio (z noindex).
   const reqUrl = new URL(request.url);
   const previewParam = reqUrl.searchParams.get('podglad');
-  const preview = (previewParam === 'cennik' || previewParam === 'portfolio') && (await hasValidSession(env, request)) ? (previewParam === 'cennik' ? 'paid' : 'free') : null;
+  const preview = (previewParam === 'cennik' || previewParam === 'portfolio') && (await withTimeout(hasValidSession(env, request), 4000, 'sesja').catch(() => false)) ? (previewParam === 'cennik' ? 'paid' : 'free') : null;
   const offerMode = preview || (data ? data.offerMode : 'free');
   if (data) data.faq = data.faq.filter((f) => !f.mode || f.mode === 'all' || f.mode === offerMode);
   const turnstileKey = (env.TURNSTILE_SITE_KEY || '').trim();

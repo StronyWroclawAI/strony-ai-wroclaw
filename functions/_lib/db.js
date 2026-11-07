@@ -232,7 +232,12 @@ const CONTENT_REMOVED = ['hero.eyebrow', 'paid.offer_value', ...OLD_PRICING_KEYS
 export const uuid = () => crypto.randomUUID();
 export const nowIso = () => new Date().toISOString();
 
-let ready = null;
+// Czy schemat tej instancji jest już sprawdzony (wartość logiczna — NIE wspólna obietnica).
+// Wcześniej żądania czekały na jedną wspólną obietnicę „ready”. Gdy żądanie, które ją zaczęło, zostało przerwane
+// (np. użytkownik odświeżył stronę w trakcie), Cloudflare anulował jego zapytania do bazy, obietnica nigdy się
+// nie kończyła, a WSZYSTKIE kolejne żądania tej instancji czekały do błędu 524 (timeout).
+// Teraz każde żądanie czeka wyłącznie na własne zapytania; init() jest bezpieczny przy równoległym uruchomieniu.
+let schemaOk = false;
 
 export function hasDb(env) {
   return Boolean(env && env.DB && typeof env.DB.prepare === 'function');
@@ -241,13 +246,19 @@ export function hasDb(env) {
 /** Tworzy tabele i treści początkowe, jeśli jeszcze nie istnieją (raz na instancję). */
 export function ensureSchema(env) {
   if (!hasDb(env)) return Promise.reject(new Error('Brak powiązania bazy D1 o nazwie DB.'));
-  if (!ready) {
-    ready = init(env).catch((e) => {
-      ready = null;
-      throw e;
-    });
-  }
-  return ready;
+  if (schemaOk) return Promise.resolve();
+  return init(env).then(() => {
+    schemaOk = true;
+  });
+}
+
+/** Ogranicza czas oczekiwania na bazę — po przekroczeniu odrzuca obietnicę (wołający używa treści domyślnych). */
+export function withTimeout(promise, ms, label = 'baza') {
+  let timer;
+  const limit = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new Error(`Przekroczono czas oczekiwania (${label}, ${ms} ms)`)), ms);
+  });
+  return Promise.race([promise, limit]).finally(() => clearTimeout(timer));
 }
 
 async function init(env) {
