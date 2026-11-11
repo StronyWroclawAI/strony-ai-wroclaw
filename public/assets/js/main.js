@@ -32,7 +32,6 @@
     initSteps();
     initParallax();
     initBuildAnim();
-    initHeroSlides();
     initTilt();
     initPortfolioTabs();
     initContactJump();
@@ -221,32 +220,6 @@
     }
     window.addEventListener('scroll', function () { requestAnimationFrame(update); }, { passive: true });
     update();
-  }
-
-  /* ---------- Tło pierwszego ekranu: grafiki zmieniające się co 7 s ----------
-     Obrazy ładowane dopiero po wczytaniu strony (nie spowalniają pierwszego wyświetlenia).
-     Pauza, gdy pierwszy ekran jest poza widokiem. Przy „ogranicz ruch” — jedna nieruchoma grafika. */
-  function initHeroSlides() {
-    var box = document.querySelector('[data-hero-slides]');
-    if (!box) return;
-    var hero = box.closest('.hero');
-    var slides = box.querySelectorAll('.hero__slide');
-    function load() {
-      var list = reduceMotion ? [slides[0]] : slides;
-      Array.prototype.forEach.call(list, function (s) { s.style.backgroundImage = 'url("' + s.getAttribute('data-src') + '")'; });
-      var img = new Image();
-      img.onload = img.onerror = function () { box.classList.add(reduceMotion ? 'is-static' : 'is-on'); };
-      img.src = slides[0].getAttribute('data-src');
-    }
-    function later() { ('requestIdleCallback' in window) ? requestIdleCallback(load, { timeout: 1500 }) : setTimeout(load, 300); }
-    if (document.readyState === 'complete') later(); else window.addEventListener('load', later);
-    if (!reduceMotion && hero && 'IntersectionObserver' in window) {
-      new IntersectionObserver(function (e) {
-        var off = !e[0].isIntersecting;
-        box.classList.toggle('is-paused', off);
-        hero.classList.toggle('is-off', off);
-      }).observe(hero);
-    }
   }
 
   /* ---------- Animacja „strona powstaje na żywo” w pierwszym ekranie ----------

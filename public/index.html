@@ -31,10 +31,10 @@
 <link rel="icon" href="/assets/img/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
-<link rel="stylesheet" href="/assets/css/style.css?v=34">
+<link rel="stylesheet" href="/assets/css/style.css?v=36">
 <script src="/assets/js/przejscia.js?v=1"></script>
 <script src="/assets/js/industry-combo.js?v=1" defer></script>
-<script src="/assets/js/main.js?v=16" defer></script>
+<script src="/assets/js/main.js?v=17" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#tresc">Przejdź do treści</a>
@@ -71,7 +71,7 @@
 
 <!-- ============ PIERWSZY EKRAN ============ -->
 <section class="hero" aria-labelledby="hero-h1">
-  <div class="hero__bg" aria-hidden="true"><div class="hero__slides" data-hero-slides><span class="hero__slide" style="--i:0" data-src="/assets/img/hero/tlo-1.webp"></span><span class="hero__slide" style="--i:1" data-src="/assets/img/hero/tlo-2.webp"></span><span class="hero__slide" style="--i:2" data-src="/assets/img/hero/tlo-3.webp"></span><span class="hero__slide" style="--i:3" data-src="/assets/img/hero/tlo-4.webp"></span><span class="hero__slide" style="--i:4" data-src="/assets/img/hero/tlo-5.webp"></span><span class="hero__slide" style="--i:5" data-src="/assets/img/hero/tlo-6.webp"></span><span class="hero__slide" style="--i:6" data-src="/assets/img/hero/tlo-7.webp"></span></div><span class="aurora a1"></span><span class="aurora a2"></span><span class="aurora a3"></span></div>
+  <div class="hero__bg" aria-hidden="true"><span class="aurora a1"></span><span class="aurora a2"></span><span class="aurora a3"></span></div>
   <div class="container hero__grid">
     <div class="hero__copy">
       <div class="spots spots--pill" data-spots="pill" hidden></div>
@@ -111,10 +111,10 @@
 
     <div class="hero__visual">
       <div class="spots spots--top" data-spots="hero" hidden></div>
-      <!-- Ilustracja dostarczona przez właściciela strony (grafika własna). Tło pierwszego ekranu: 7 grafik zmieniających się co 7 s (initHeroSlides w main.js). -->
+      <!-- Ilustracja dostarczona przez właściciela strony (grafika własna). -->
       <div class="hero__art hero__art--img" aria-hidden="true">
         <span class="hero__ill-glow"></span>
-        <img class="hero__ill" src="/assets/img/hero/ilustracja-532.webp" srcset="/assets/img/hero/ilustracja-532.webp 532w, /assets/img/hero/ilustracja-1064.webp 1064w" sizes="(max-width: 640px) 270px, 400px" width="532" height="572" alt="" decoding="async">
+        <img class="hero__ill" src="/assets/img/hero/ilustracja-532.webp" srcset="/assets/img/hero/ilustracja-532.webp 532w, /assets/img/hero/ilustracja-1064.webp 1064w" sizes="(max-width: 640px) 270px, (max-width: 980px) 360px, 560px" width="532" height="572" alt="" decoding="async">
       </div>
     </div>
   </div>
@@ -654,6 +654,17 @@ Proszę o kontakt w sprawie dalszych kroków.</textarea>
 
           <div class="spots spots--form" data-spots="form" hidden></div>
           <p class="form-privacy">Dane wykorzystam tylko do odpowiedzi<span class="form-privacy__long"> na zgłoszenie</span> — szczegóły w <a href="/polityka-prywatnosci">polityce prywatności</a>. Pola z <span aria-hidden="true">*</span><span class="visually-hidden">gwiazdką</span> są wymagane.</p>
+          <details class="form-rodo">
+            <summary>Informacja o przetwarzaniu danych osobowych (RODO)</summary>
+            <ul>
+              <li><strong>Administrator:</strong> osoba prowadząca stronę Strony AI Wrocław (dane w <a href="/polityka-prywatnosci">polityce prywatności</a>), kontakt: <a href="mailto:stronyaiwroclaw@gmail.com">stronyaiwroclaw@gmail.com</a>.</li>
+              <li><strong>Cel i podstawa:</strong> odpowiedź na zgłoszenie i rozmowa o ewentualnej współpracy (art. 6 ust. 1 lit. b i f RODO) oraz ochrona formularza przed spamem (art. 6 ust. 1 lit. f RODO). Nie wysyłam treści marketingowych.</li>
+              <li><strong>Odbiorcy:</strong> dostawcy usług technicznych działający w moim imieniu, m.in. Cloudflare (hosting, baza zgłoszeń, ochrona przed spamem) i Google (poczta Gmail). Część z nich przetwarza dane poza EOG na podstawie mechanizmów przewidzianych w RODO.</li>
+              <li><strong>Okres przechowywania:</strong> zgodnie z polityką prywatności; skróty adresów IP używane do ochrony przed nadużyciami są usuwane po 7 dniach.</li>
+              <li><strong>Twoje prawa:</strong> dostęp do danych, ich sprostowanie, usunięcie, ograniczenie przetwarzania, przenoszenie, sprzeciw oraz skarga do Prezesa UODO.</li>
+              <li><strong>Dobrowolność:</strong> podanie danych jest dobrowolne, ale bez pól wymaganych nie odpowiem na zgłoszenie. Dane nie służą do profilowania ani zautomatyzowanych decyzji.</li>
+            </ul>
+          </details>
 
           <button class="btn btn--primary btn--lg btn--block" type="submit" data-submit>
             <span class="btn__label">Wyślij zgłoszenie</span>
