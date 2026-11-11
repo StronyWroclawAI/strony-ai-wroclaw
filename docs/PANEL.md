@@ -135,8 +135,8 @@ W bazie zapisuje się tylko skrót hasła.
 
 Nowa wartość w Cloudflare zastępuje hasło ustawione w panelu. `SESSION_SECRET` i `IP_HASH_SALT` zostaw bez zmian.
 
-## Wolne miejsca na bezpłatną stronę (schemat bazy v26)
+## Bezpłatne projekty stron — licznik (schemat bazy v26)
 - Ustawienia → „Wolne miejsca na bezpłatną stronę”: przełącznik, liczba wolnych i wszystkich miejsc, opcjonalny termin naboru, przycisk „− 1 (ktoś zajął miejsce)”.
-- Widoczne tylko w trybie „Portfolio”: pierwszy ekran strony głównej, przy formularzach (strona główna, /kontakt/), /oferta/ i /tworzenie-stron-internetowych/. Renderowane po stronie serwera (bez przesunięć układu).
+- Widoczne tylko w trybie „Portfolio”: pierwszy ekran strony głównej (komputer: karta na górze prawej kolumny; telefon/tablet: pigułka nad nagłówkiem), przy formularzach (strona główna, /kontakt/), /oferta/ i /tworzenie-stron-internetowych/. Renderowane po stronie serwera (bez przesunięć układu).
 - Treść: prawdziwa liczba + powód ograniczenia („tylko kilka stron naraz, żeby każdej poświęcić pełną uwagę”) + „Stan na …” (data ostatniej zmiany). Zajęte miejsca jako odhaczone kratki, następne wolne z etykietą „Twoje?”. Przy 1 — „ostatnie wolne miejsce”, przy 0 — „komplet” i lista oczekujących. Termin z przeszłości nie jest pokazywany.
 - Liczbę trzeba aktualizować — nieprawdziwa informacja o ograniczonej dostępności jest nieuczciwą praktyką rynkową.

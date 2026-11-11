@@ -31,6 +31,8 @@
     initRotator();
     initSteps();
     initParallax();
+    initBuildAnim();
+    initHeroSlides();
     initTilt();
     initPortfolioTabs();
     initContactJump();
@@ -219,6 +221,67 @@
     }
     window.addEventListener('scroll', function () { requestAnimationFrame(update); }, { passive: true });
     update();
+  }
+
+  /* ---------- Tło pierwszego ekranu: grafiki zmieniające się co 7 s ----------
+     Obrazy ładowane dopiero po wczytaniu strony (nie spowalniają pierwszego wyświetlenia).
+     Pauza, gdy pierwszy ekran jest poza widokiem. Przy „ogranicz ruch” — jedna nieruchoma grafika. */
+  function initHeroSlides() {
+    var box = document.querySelector('[data-hero-slides]');
+    if (!box) return;
+    var hero = box.closest('.hero');
+    var slides = box.querySelectorAll('.hero__slide');
+    function load() {
+      var list = reduceMotion ? [slides[0]] : slides;
+      Array.prototype.forEach.call(list, function (s) { s.style.backgroundImage = 'url("' + s.getAttribute('data-src') + '")'; });
+      var img = new Image();
+      img.onload = img.onerror = function () { box.classList.add(reduceMotion ? 'is-static' : 'is-on'); };
+      img.src = slides[0].getAttribute('data-src');
+    }
+    function later() { ('requestIdleCallback' in window) ? requestIdleCallback(load, { timeout: 1500 }) : setTimeout(load, 300); }
+    if (document.readyState === 'complete') later(); else window.addEventListener('load', later);
+    if (!reduceMotion && hero && 'IntersectionObserver' in window) {
+      new IntersectionObserver(function (e) {
+        var off = !e[0].isIntersecting;
+        box.classList.toggle('is-paused', off);
+        hero.classList.toggle('is-off', off);
+      }).observe(hero);
+    }
+  }
+
+  /* ---------- Animacja „strona powstaje na żywo” w pierwszym ekranie ----------
+     Kolejne etapy dodają klasy s1–s7 (CSS robi resztę). Pętla działa tylko, gdy animacja
+     jest widoczna na ekranie i karta przeglądarki jest aktywna. Przy „ogranicz ruch” zostaje gotowy stan. */
+  function initBuildAnim() {
+    var el = document.querySelector('[data-build]');
+    if (!el || reduceMotion) return;
+    var STEPS = [['s1', 150], ['s2', 1300], ['s3', 4700], ['s4', 6700], ['s5', 7900], ['s6', 8700], ['s7', 10100], ['ba--out', 13800], ['end', 14500]];
+    var ALL = ['s1', 's2', 's3', 's4', 's5', 's6', 's7', 'ba--out'];
+    var timers = [], running = false, inView = false;
+    function clear() { timers.forEach(clearTimeout); timers = []; }
+    function cycle() {
+      clear();
+      el.classList.add('ba--reset');
+      ALL.forEach(function (c) { el.classList.remove(c); });
+      void el.offsetWidth;
+      el.classList.remove('ba--reset');
+      STEPS.forEach(function (st) {
+        timers.push(setTimeout(function () {
+          if (st[0] === 'end') cycle(); else el.classList.add(st[0]);
+        }, st[1]));
+      });
+    }
+    function sync() {
+      var go = inView && !document.hidden;
+      if (go && !running) { running = true; cycle(); }
+      else if (!go && running) { running = false; clear(); }
+    }
+    el.classList.add('ba--run');
+    if (!('IntersectionObserver' in window)) { inView = true; sync(); return; }
+    new IntersectionObserver(function (entries) {
+      inView = entries[0].isIntersecting; sync();
+    }, { threshold: 0.15 }).observe(el);
+    document.addEventListener('visibilitychange', sync);
   }
 
   /* ---------- Delikatna paralaksa ilustracji w pierwszym ekranie ---------- */

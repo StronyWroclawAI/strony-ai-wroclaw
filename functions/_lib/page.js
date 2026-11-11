@@ -173,38 +173,48 @@ const plDate = (iso) => {
 };
 const plForm = (n, one, few, many) => (n === 1 ? one : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? few : many);
 export function spotsCountText(free) {
-  if (free === 0) return 'Wszystkie miejsca są zajęte';
+  if (free === 0) return 'Wszystkie projekty są w realizacji';
   if (free === 1) return 'Zostało <strong>ostatnie</strong> wolne miejsce';
   return `${plForm(free, 'Zostało', 'Zostały', 'Zostało')} <strong>${free}</strong> ${plForm(free, 'wolne miejsce', 'wolne miejsca', 'wolnych miejsc')}`;
 }
-export function renderSpots(kind, s) {
+export function renderSpots(kind, s, opts = {}) {
   const free = Math.max(0, Math.min(s.free, s.total));
   const taken = s.total - free;
   const today = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Warsaw' }).format(new Date());
   const until = s.until && s.until >= today ? plDate(s.until) : '';
   const at = s.at ? plDate(s.at) : '';
+  const cta = opts.cta || '/kontakt/';
   const seats = s.total <= 12
-    ? `<ol class="spots__seats" aria-hidden="true">${Array.from({ length: s.total }, (_, i) => `<li class="spots__seat ${i < taken ? 'is-taken' : i === taken ? 'is-next' : 'is-free'}">${i === taken && kind !== 'form' ? '<span>Twoje?</span>' : ''}</li>`).join('')}</ol>`
+    ? `<ol class="spots__seats" aria-hidden="true">${Array.from({ length: s.total }, (_, i) => `<li class="spots__seat ${i < taken ? 'is-taken' : i === taken ? 'is-next' : 'is-free'}">${i === taken && kind === 'hero' ? '<span>Twój?</span>' : ''}</li>`).join('')}</ol>`
     : '';
+  // Duża liczba + opis: „3 bezpłatne projekty stron — zostały z 5, jeden może być Twój”
+  const label = free === 0 ? 'bezpłatnych projektów' : free === 1 ? 'ostatni bezpłatny projekt strony' : plForm(free, 'bezpłatny projekt strony', 'bezpłatne projekty stron', 'bezpłatnych projektów stron');
+  const sub = free === 0 ? `wszystkie ${s.total} są już w realizacji` : free === 1 ? `z ${s.total} — może być Twój` : free === s.total ? 'do wzięcia — jeden może być Twój' : `${plForm(free, 'został', 'zostały', 'zostało')} z ${s.total} — jeden może być Twój`;
+  const ctaText = free === 0 ? 'Zostaw zgłoszenie na kolejny termin' : free === 1 ? 'Zarezerwuj ostatni projekt' : 'Zarezerwuj swój projekt';
+  const head = free === 0 ? 'Wszystkie projekty w realizacji' : 'Bezpłatne strony w ramach portfolio';
+  const main = `<p class="spots__main"><span class="spots__num">${free}</span><span class="spots__label"><strong>${label}</strong><span class="spots__sub">${sub}</span></span></p>`;
+  if (kind === 'pill') {
+    // telefon/tablet: wyraźny baner nad nagłówkiem pierwszego ekranu
+    return `<p class="spots__head"><span class="spots__live" aria-hidden="true"></span>${head}</p>
+${main}
+<a class="spots__cta" href="${cta}">${ctaText}<span aria-hidden="true"> →</span></a>`;
+  }
   if (kind === 'form') {
     const txt = free === 0
-      ? 'Miejsca są zajęte — Twoje zgłoszenie trafi na <strong>listę oczekujących</strong>.'
+      ? 'Wszystkie bezpłatne projekty są w realizacji — Twoje zgłoszenie trafi do kolejki na <strong>kolejny termin</strong>.'
       : free === 1
-        ? 'Zajmij <strong>ostatnie</strong> wolne miejsce — zgłoszenie zajmuje ok. 2 minuty.'
-        : `Zajmij jedno z <strong>${free}</strong> ${plForm(free, 'wolnego miejsca', 'wolnych miejsc', 'wolnych miejsc')} — zgłoszenie zajmuje ok. 2 minuty.`;
+        ? 'Zarezerwuj <strong>ostatni</strong> bezpłatny projekt strony — zgłoszenie zajmuje ok. 2 minuty.'
+        : `Zarezerwuj jeden z <strong>${free}</strong> ${plForm(free, 'bezpłatnego projektu', 'bezpłatnych projektów', 'bezpłatnych projektów')} strony — zgłoszenie zajmuje ok. 2 minuty.`;
     return `${seats}<span class="spots__text">${txt}</span>`;
   }
-  const head = free === 0 ? 'Komplet w tej edycji' : 'Bezpłatne strony — nabór otwarty';
-  const count = free === 0
-    ? `Wszystkie <strong>${s.total}</strong> ${plForm(s.total, 'miejsce jest zajęte', 'miejsca są zajęte', 'miejsc jest zajętych')}`
-    : `${spotsCountText(free)} <span class="spots__of">z ${s.total}</span>`;
   const note = free === 0
-    ? 'Zostaw zgłoszenie — trafi na listę oczekujących, a odezwę się, gdy zwolni się miejsce.'
-    : `Wykonuję tylko kilka bezpłatnych stron naraz, żeby każdej poświęcić pełną uwagę. Póki są wolne miejsca, Twoja strona powstanie bez opłat za wykonanie.${until ? ` Nabór trwa do ${until}.` : ''}`;
+    ? 'Zostaw zgłoszenie — odezwę się, gdy zwolni się miejsce na kolejny projekt.'
+    : `Realizuję tylko kilka bezpłatnych projektów naraz, żeby każdemu poświęcić pełną uwagę. Póki są dostępne, Twoja strona powstanie bez opłat za wykonanie.${until ? ` Zgłoszenia przyjmuję do ${until}.` : ''}`;
   return `<p class="spots__head"><span class="spots__live" aria-hidden="true"></span>${head}</p>
-<p class="spots__count">${count}</p>
+${main}
 ${seats}
-<p class="spots__note">${note}${at ? ` <span class="spots__at">Stan na ${at}.</span>` : ''}</p>`;
+<p class="spots__note">${note}${at ? ` <span class="spots__at">Stan na ${at}.</span>` : ''}</p>
+<a class="spots__cta" href="${cta}">${ctaText}<span aria-hidden="true"> →</span></a>`;
 }
 
 export async function renderPage(context) {
@@ -356,7 +366,7 @@ export async function renderPage(context) {
       .on('[data-spots]', {
         element(el) {
           if (el.removed) return;
-          const html = offerMode === 'free' && data.spots ? renderSpots(el.getAttribute('data-spots'), data.spots) : '';
+          const html = offerMode === 'free' && data.spots ? renderSpots(el.getAttribute('data-spots'), data.spots, { cta: pathname === '/' ? '#kontakt' : '/kontakt/' }) : '';
           if (!html) return el.remove();
           el.setInnerContent(html, { html: true });
           el.removeAttribute('hidden');

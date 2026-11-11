@@ -31,10 +31,10 @@
 <link rel="icon" href="/assets/img/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
-<link rel="stylesheet" href="/assets/css/style.css?v=30">
+<link rel="stylesheet" href="/assets/css/style.css?v=34">
 <script src="/assets/js/przejscia.js?v=1"></script>
 <script src="/assets/js/industry-combo.js?v=1" defer></script>
-<script src="/assets/js/main.js?v=14" defer></script>
+<script src="/assets/js/main.js?v=16" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#tresc">Przejdź do treści</a>
@@ -71,9 +71,10 @@
 
 <!-- ============ PIERWSZY EKRAN ============ -->
 <section class="hero" aria-labelledby="hero-h1">
-  <div class="hero__bg" aria-hidden="true"><span class="aurora a1"></span><span class="aurora a2"></span><span class="aurora a3"></span></div>
+  <div class="hero__bg" aria-hidden="true"><div class="hero__slides" data-hero-slides><span class="hero__slide" style="--i:0" data-src="/assets/img/hero/tlo-1.webp"></span><span class="hero__slide" style="--i:1" data-src="/assets/img/hero/tlo-2.webp"></span><span class="hero__slide" style="--i:2" data-src="/assets/img/hero/tlo-3.webp"></span><span class="hero__slide" style="--i:3" data-src="/assets/img/hero/tlo-4.webp"></span><span class="hero__slide" style="--i:4" data-src="/assets/img/hero/tlo-5.webp"></span><span class="hero__slide" style="--i:5" data-src="/assets/img/hero/tlo-6.webp"></span><span class="hero__slide" style="--i:6" data-src="/assets/img/hero/tlo-7.webp"></span></div><span class="aurora a1"></span><span class="aurora a2"></span><span class="aurora a3"></span></div>
   <div class="container hero__grid">
     <div class="hero__copy">
+      <div class="spots spots--pill" data-spots="pill" hidden></div>
       <h1 class="eyebrow eyebrow--light hero__h1" id="hero-h1" data-cms="hero.h1">Tworzenie stron internetowych dla firm we Wrocławiu</h1>
       <div class="hero__title" id="hero-title"><span data-cms="hero.title">Strony, które budują wizerunek</span> <span class="hero__title-accent"><span class="hero__accent-static" data-cms="hero.title_accent">Twojej firmy</span><span class="rotator" aria-hidden="true"><ul class="rotator__list" data-cms-lines="hero.rotator">
             <li>Twojego salonu</li>
@@ -93,7 +94,6 @@
         </div>
         <p class="offer-card__note" data-cms="hero.offer_note">Po Twojej stronie są tylko koszty zewnętrzne: domena oraz — jeśli okaże się potrzebny — płatny hosting lub inne płatne usługi. Każdy koszt uzgadniamy przed zakupem.</p>
       </div>
-      <div class="spots" data-spots="hero" hidden></div>
       <div class="offer-card" data-offer="paid">
         <div class="offer-card__price">
           <span class="offer-card__label" data-cms="paid.offer_label">Strona dla firmy</span>
@@ -109,35 +109,13 @@
       <p class="hero__remote" data-cms="hero.remote">Pracuję zdalnie — współpracuję z firmami z całej Polski.</p>
     </div>
 
-    <div class="hero__visual" aria-hidden="true">
-      <div class="hero__ring"></div>
-      <div class="mock-browser" data-parallax="12">
-        <div class="mock-browser__bar"><i></i><i></i><i></i><span class="mock-browser__url">twojafirma.pl</span></div>
-        <div class="mock-browser__body">
-          <div class="mk-nav"><b></b><span></span><span></span><span></span><em></em></div>
-          <div class="mk-hero">
-            <div class="mk-hero__text"><span class="mk-tag"></span><span class="mk-line mk-line--xl"></span><span class="mk-line mk-line--lg"></span><span class="mk-line"></span><span class="mk-btn"></span></div>
-            <div class="mk-hero__img">
-              <svg viewBox="0 0 200 150" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="mkSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd1a8"/><stop offset="1" stop-color="#ff8f7a"/></linearGradient></defs><rect width="200" height="150" fill="url(#mkSky)"/><circle class="mk-sun" cx="140" cy="58" r="24" fill="#ffe08a"/><path d="M0 110 Q50 70 100 100 T200 92 V150 H0Z" fill="#2fc7b5"/><path d="M0 128 Q60 100 120 122 T200 118 V150 H0Z" fill="#14907f"/></svg>
-            </div>
-          </div>
-          <div class="mk-cards"><span class="mk-card tone-1"><i></i></span><span class="mk-card tone-2"><i></i></span><span class="mk-card tone-3"><i></i></span></div>
-        </div>
+    <div class="hero__visual">
+      <div class="spots spots--top" data-spots="hero" hidden></div>
+      <!-- Ilustracja dostarczona przez właściciela strony (grafika własna). Tło pierwszego ekranu: 7 grafik zmieniających się co 7 s (initHeroSlides w main.js). -->
+      <div class="hero__art hero__art--img" aria-hidden="true">
+        <span class="hero__ill-glow"></span>
+        <img class="hero__ill" src="/assets/img/hero/ilustracja-532.webp" srcset="/assets/img/hero/ilustracja-532.webp 532w, /assets/img/hero/ilustracja-1064.webp 1064w" sizes="(max-width: 640px) 270px, 400px" width="532" height="572" alt="" decoding="async">
       </div>
-      <div class="mock-phone" data-parallax="-18">
-        <div class="mock-phone__notch"></div>
-        <div class="mk-phone-img"></div>
-        <span class="mk-line mk-line--lg"></span><span class="mk-line"></span><span class="mk-line mk-line--sm"></span>
-        <span class="mk-btn mk-btn--full"></span>
-        <div class="mk-price"><span></span><span></span><span></span></div>
-      </div>
-      <div class="float-chip chip-a"><span class="chip-ico tone-2"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="2" y="4" width="14" height="10" rx="1.5"/><path d="M6 18h6"/><path d="M9 14v4"/><rect x="17" y="8" width="5" height="12" rx="1.2"/></svg></span>Wygodna na telefonie</div>
-      <div class="float-chip chip-b"><span class="chip-ico tone-1"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18"/><path d="M8 3v4"/><path d="M16 3v4"/><path d="M8 15l2.5 2.5L16 13"/></svg></span>Link do rezerwacji online</div>
-      <div class="float-chip chip-c"><span class="chip-ico tone-3"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 6h10"/><path d="M18 6h2"/><circle cx="16" cy="6" r="2"/><path d="M4 12h4"/><path d="M12 12h8"/><circle cx="10" cy="12" r="2"/><path d="M4 18h12"/><path d="M20 18h0"/><circle cx="18" cy="18" r="2"/></svg></span>Samodzielna edycja treści</div>
-      <span class="spark sp1"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3l1.8 4.6L18.5 9.4l-4.7 1.8L12 16l-1.8-4.8L5.5 9.4l4.7-1.8z"/><path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/><path d="M5 16l.6 1.4 1.4.6-1.4.6L5 20l-.6-1.4L3 18l1.4-.6z"/></svg></span>
-      <span class="spark sp2"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3l1.8 4.6L18.5 9.4l-4.7 1.8L12 16l-1.8-4.8L5.5 9.4l4.7-1.8z"/><path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/><path d="M5 16l.6 1.4 1.4.6-1.4.6L5 20l-.6-1.4L3 18l1.4-.6z"/></svg></span>
-      <span class="hero__square"></span>
-      <span class="hero__square hero__square--2"></span>
     </div>
   </div>
 </section>
