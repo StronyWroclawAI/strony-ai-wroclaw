@@ -4,7 +4,7 @@
 
 import { SEED } from './seed.js';
 
-export const SCHEMA_VERSION = '25';
+export const SCHEMA_VERSION = '26';
 
 // Każda instrukcja w osobnym elemencie (D1 wykonuje je w jednej transakcji przez batch()).
 export const SCHEMA = [
@@ -119,6 +119,12 @@ export const SCHEMA = [
 
 // Kolumny dodane w kolejnych wersjach (ALTER TABLE nie ma „IF NOT EXISTS” w SQLite).
 export const MIGRATIONS = [
+  // v26: wolne miejsca na bezpłatną stronę (tryb Portfolio) — licznik ustawiany w panelu
+  `ALTER TABLE settings ADD COLUMN spots_enabled INTEGER NOT NULL DEFAULT 0`,
+  `ALTER TABLE settings ADD COLUMN spots_free INTEGER NOT NULL DEFAULT 3`,
+  `ALTER TABLE settings ADD COLUMN spots_total INTEGER NOT NULL DEFAULT 5`,
+  `ALTER TABLE settings ADD COLUMN spots_until TEXT NOT NULL DEFAULT ''`,
+  `ALTER TABLE settings ADD COLUMN spots_at TEXT`,
   // v25: projekt klienta — dodatkowe wymagania (tekst), wybrane efekty/animacje (JSON) oraz pliki inspiracji i wymagań
   `ALTER TABLE leads ADD COLUMN requirements TEXT NOT NULL DEFAULT ''`,
   `ALTER TABLE leads ADD COLUMN effects TEXT NOT NULL DEFAULT '{}'`,

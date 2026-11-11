@@ -588,7 +588,7 @@ export async function onRequest(context) {
 
       // ===== Ustawienia =====
       case 'GET /settings':
-        return json({ ok: true, settings: await first(env, `SELECT recruitment_open, contact_email, posts_enabled, facebook_url, instagram_url, offer_mode, offer_mode_at FROM settings WHERE id = 1`) });
+        return json({ ok: true, settings: await first(env, `SELECT recruitment_open, contact_email, posts_enabled, facebook_url, instagram_url, offer_mode, offer_mode_at, spots_enabled, spots_free, spots_total, spots_until, spots_at FROM settings WHERE id = 1`) });
       case 'PUT /settings': {
         const b = await body(request);
         const sets = [];
@@ -608,6 +608,30 @@ export async function onRequest(context) {
           if (!['free', 'paid'].includes(b.offer_mode)) throw bad('Nieznany tryb oferty.');
           sets.push('offer_mode = ?', 'offer_mode_at = CASE WHEN offer_mode = ? THEN offer_mode_at ELSE ? END');
           vals.push(b.offer_mode, b.offer_mode, nowIso());
+        }
+        if ('spots_enabled' in b || 'spots_free' in b || 'spots_total' in b || 'spots_until' in b) {
+          // Wolne miejsca (tryb Portfolio): liczby całkowite, wolne ≤ wszystkie, data „do” opcjonalna (RRRR-MM-DD)
+          const cur = (await first(env, `SELECT spots_free, spots_total FROM settings WHERE id = 1`)) || { spots_free: 3, spots_total: 5 };
+          const num = (v, min, max, label) => {
+            const n = Number(v);
+            if (!Number.isInteger(n) || n < min || n > max) throw bad(`${label}: podaj liczbę od ${min} do ${max}.`);
+            return n;
+          };
+          const total = 'spots_total' in b ? num(b.spots_total, 1, 50, 'Liczba wszystkich miejsc') : cur.spots_total;
+          const free = 'spots_free' in b ? num(b.spots_free, 0, 50, 'Liczba wolnych miejsc') : cur.spots_free;
+          if (free > total) throw bad('Wolnych miejsc nie może być więcej niż wszystkich.');
+          sets.push('spots_total = ?', 'spots_free = ?', 'spots_at = ?');
+          vals.push(total, free, nowIso());
+          if ('spots_enabled' in b) {
+            sets.push('spots_enabled = ?');
+            vals.push(bool(b.spots_enabled));
+          }
+          if ('spots_until' in b) {
+            const u = typeof b.spots_until === 'string' ? b.spots_until.trim() : '';
+            if (u && !(DATE_RE.test(u) && !Number.isNaN(Date.parse(u)))) throw bad('Termin naboru: podaj datę lub zostaw puste.');
+            sets.push('spots_until = ?');
+            vals.push(u);
+          }
         }
         if ('posts_enabled' in b) {
           sets.push('posts_enabled = ?');

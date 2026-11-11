@@ -4,7 +4,7 @@
    Sesja jest w ciasteczku HttpOnly — ten skrypt nie zna hasła ani kluczy.
    ========================================================= */
 (function () {
-  const PANEL_VERSION = '2026-11-11 · inspiracje, wymagania, efekty';
+  const PANEL_VERSION = '2026-11-11 · wolne miejsca, efekty one page';
   'use strict';
 
   // ---------- Pomocnicze ----------
@@ -4005,6 +4005,69 @@
       );
     })();
 
+    // Wolne miejsca na bezpłatną stronę (widoczne tylko w trybie Portfolio)
+    const spotsPanel = (() => {
+      const st = { enabled: Boolean(settings.spots_enabled), free: settings.spots_free ?? 3, total: settings.spots_total ?? 5, until: settings.spots_until || '' };
+      const on = h('input', { type: 'checkbox', role: 'switch', checked: st.enabled, 'data-spots-on': '' });
+      const free = h('input', { type: 'number', min: '0', max: '50', step: '1', inputmode: 'numeric', value: String(st.free), id: 'spots-free', 'data-spots-free': '' });
+      const total = h('input', { type: 'number', min: '1', max: '50', step: '1', inputmode: 'numeric', value: String(st.total), id: 'spots-total', 'data-spots-total': '' });
+      const until = h('input', { type: 'date', value: st.until, id: 'spots-until', 'data-spots-until': '' });
+      const pv = h('div', { class: 'spots-pv', 'aria-live': 'polite' });
+      const pl = (n, a, b, c) => (n === 1 ? a : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? b : c);
+      const drawPv = () => {
+        const f = Math.max(0, parseInt(free.value, 10) || 0);
+        const tt = Math.max(1, parseInt(total.value, 10) || 1);
+        const txt = f === 0 ? `Komplet — wszystkie ${tt} ${pl(tt, 'miejsce zajęte', 'miejsca zajęte', 'miejsc zajętych')} (formularz zbiera zgłoszenia na listę oczekujących)` : f === 1 ? `Zostało ostatnie wolne miejsce z ${tt}` : `${pl(f, 'Zostało', 'Zostały', 'Zostało')} ${f} ${pl(f, 'wolne miejsce', 'wolne miejsca', 'wolnych miejsc')} z ${tt}`;
+        const seats = tt <= 12 ? h('span', { class: 'spots-pv__seats', 'aria-hidden': 'true' }, Array.from({ length: tt }, (_, i) => h('i', { class: i < tt - f ? 'is-taken' : i === tt - f ? 'is-next' : '' }))) : null;
+        pv.replaceChildren(h('strong', { text: on.checked ? 'Na stronie: ' : 'Wyłączone — po włączeniu: ' }), txt, seats);
+        if (f > tt) pv.append(h('span', { class: 'small', style: 'color:var(--danger)', text: ' Wolnych nie może być więcej niż wszystkich.' }));
+      };
+      [free, total, until].forEach((x) => x.addEventListener('input', drawPv));
+      const save = async (body, msg) => {
+        const { error: e } = await q(api('settings', { method: 'PUT', body }));
+        if (e) { toast(`Nie zapisano: ${errMsg(e)}`, 'error'); return false; }
+        toast(msg);
+        return true;
+      };
+      const saveBtn = h('button', { class: 'btn btn--primary btn--sm', type: 'button', text: 'Zapisz', 'data-spots-save': '' });
+      saveBtn.addEventListener('click', async () => {
+        busy(saveBtn, true);
+        await save({ spots_enabled: on.checked, spots_free: parseInt(free.value, 10), spots_total: parseInt(total.value, 10), spots_until: until.value }, on.checked ? 'Zapisano — licznik wolnych miejsc jest już na stronie.' : 'Zapisano (licznik wyłączony).');
+        busy(saveBtn, false);
+        drawPv();
+      });
+      on.addEventListener('change', async () => {
+        on.disabled = true;
+        const ok = await save({ spots_enabled: on.checked, spots_free: parseInt(free.value, 10), spots_total: parseInt(total.value, 10) }, on.checked ? 'Licznik wolnych miejsc włączony.' : 'Licznik wolnych miejsc wyłączony.');
+        if (!ok) on.checked = !on.checked;
+        on.disabled = false;
+        drawPv();
+      });
+      const minus = h('button', { class: 'btn btn--sm', type: 'button', text: '− 1 (ktoś zajął miejsce)', 'data-spots-minus': '' });
+      minus.addEventListener('click', async () => {
+        const f = parseInt(free.value, 10) || 0;
+        if (f <= 0) return toast('Nie ma już wolnych miejsc.', 'error');
+        busy(minus, true);
+        if (await save({ spots_free: f - 1 }, f - 1 === 0 ? 'Zajęto ostatnie miejsce — strona pokazuje komplet i listę oczekujących.' : `Zostało ${f - 1} — zapisano.`)) free.value = String(f - 1);
+        busy(minus, false);
+        drawPv();
+      });
+      drawPv();
+      return h('section', { class: 'panel', id: 'wolne-miejsca' },
+        h('h2', { text: 'Wolne miejsca na bezpłatną stronę' }),
+        h('p', { class: 'small muted', text: 'Widoczne tylko w trybie „Portfolio”: w pierwszym ekranie strony głównej, przy formularzu zgłoszenia (strona główna i /kontakt/), na /oferta/ i /tworzenie-stron-internetowych/. Przy 0 wolnych miejsc strona pokazuje „komplet”, a formularz zbiera zgłoszenia na listę oczekujących.' }),
+        h('label', { class: 'switch' }, on, h('span', { class: 'switch__track', 'aria-hidden': 'true' }), h('span', { text: 'Pokazuj licznik wolnych miejsc' })),
+        h('div', { class: 'spots-fields' },
+          h('div', { class: 'field' }, h('label', { for: 'spots-free', text: 'Wolne miejsca' }), free),
+          h('div', { class: 'field' }, h('label', { for: 'spots-total', text: 'Wszystkie miejsca w tej edycji' }), total),
+          h('div', { class: 'field' }, h('label', { for: 'spots-until', text: 'Nabór do (opcjonalnie)' }), until)
+        ),
+        pv,
+        h('div', { class: 'actions' }, saveBtn, minus),
+        h('p', { class: 'small muted', text: 'Pokazuj prawdziwą liczbę i aktualizuj ją po każdym przyjętym zgłoszeniu (przycisk „− 1”). Na stronie widać datę ostatniej zmiany („Stan na …”) — to buduje wiarygodność. Nieprawdziwa informacja o ograniczonej dostępności byłaby nieuczciwą praktyką rynkową.' })
+      );
+    })();
+
     // E-mail kontaktowy
     const email = h('input', { type: 'email', maxlength: '254', value: settings.contact_email });
     const emailBtn = h('button', {
@@ -4053,7 +4116,7 @@
             row('Powiadomienia do Ciebie', st.email, st.email ? `na ${st.notifyTo} (${st.gmail ? 'przez Gmail' : 'przez Resend'})` : 'brak konfiguracji Gmaila i RESEND_API_KEY'),
             row('Sól do skracania adresów IP', st.ipSalt, st.ipSalt ? 'ustawiona' : 'brak IP_HASH_SALT'),
             row('Adres docelowy strony (SITE_URL)', !!st.siteUrl, st.siteUrl || 'nieustawiony — używany jest bieżący adres'),
-            row('Wersja bazy danych', Number(st.schemaVersion) >= 24, st.schemaVersion ? `${st.schemaVersion}${Number(st.schemaVersion) >= 24 ? '' : ' — odśwież stronę, aby zaktualizować'}` : 'nieznana'),
+            row('Wersja bazy danych', Number(st.schemaVersion) >= 26, st.schemaVersion ? `${st.schemaVersion}${Number(st.schemaVersion) >= 26 ? '' : ' — odśwież stronę, aby zaktualizować'}` : 'nieznana'),
             row('Wersja panelu', true, PANEL_VERSION)
           ),
           h('p', { class: 'small muted', text: `Nadawca powiadomień: ${st.notifyFrom}` }),
@@ -4065,6 +4128,7 @@
     main.replaceChildren(
       head('Ustawienia'),
       offerPanel,
+      spotsPanel,
       h(
         'section',
         { class: 'panel' },

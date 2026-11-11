@@ -53,7 +53,7 @@ code { background: var(--gray-100); padding: 1px 6px; border-radius: 4px; font-s
 /* Formularze */
 .field { margin-bottom: 14px; }
 .field label, .field .label { display: block; font-weight: 700; font-size: 13px; margin-bottom: 5px; color: var(--navy-900); }
-.field input[type=text], .field input[type=email], .field input[type=url], .field input[type=password], .field input[type=search], .field input[type=tel], .field input[type=number], .field select, .field textarea, .input {
+.field input[type=text], .field input[type=email], .field input[type=url], .field input[type=password], .field input[type=search], .field input[type=tel], .field input[type=number], .field input[type=date], .field select, .field textarea, .input {
   width: 100%; font: inherit; color: var(--text); background: var(--white); border: 1.5px solid var(--gray-300); border-radius: 9px; padding: 9px 11px; min-height: 42px;
 }
 .field textarea { min-height: 90px; resize: vertical; line-height: 1.5; }
@@ -525,3 +525,12 @@ details.fx-block:not([open]) { border-style: dashed; border-color: var(--gray-30
 .fx-sv__dots.is-on { display: flex; }
 .fx-sv__dots i { width: 6px; height: 6px; border-radius: 50%; background: rgba(255, 255, 255, .6); box-shadow: 0 0 0 1px rgba(11, 29, 54, .35); }
 .fx-sv__dots i.is-on { background: #ffb547; transform: scale(1.3); }
+/* Wolne miejsca */
+.spots-fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 12px 0; }
+.spots-fields input { width: 100%; }
+.spots-pv { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding: 10px 12px; border-radius: 10px; background: #fff7ea; border: 1px solid #ffd9a1; margin-bottom: 10px; }
+.spots-pv__seats { display: inline-flex; gap: 4px; }
+.spots-pv__seats i { width: 14px; height: 14px; border-radius: 4px; border: 1.5px dashed #e8a23e; }
+.spots-pv__seats i.is-taken { background: var(--gray-300); border: 0; }
+.spots-pv__seats i.is-next { background: #ffb547; border: 0; }
+@media (max-width: 640px) { .spots-fields { grid-template-columns: 1fr; } }

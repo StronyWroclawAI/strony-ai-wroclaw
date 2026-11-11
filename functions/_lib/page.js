@@ -110,7 +110,7 @@ async function readContent(env) {
     const db = env.DB;
     const [content, settings, industries, capabilities, faq, projects, images, posts, pricing] = await db.batch([
       db.prepare(`SELECT key, value FROM site_content`),
-      db.prepare(`SELECT recruitment_open, contact_email, posts_enabled, facebook_url, instagram_url, offer_mode, offer_mode_at FROM settings WHERE id = 1`),
+      db.prepare(`SELECT recruitment_open, contact_email, posts_enabled, facebook_url, instagram_url, offer_mode, offer_mode_at, spots_enabled, spots_free, spots_total, spots_until, spots_at FROM settings WHERE id = 1`),
       db.prepare(`SELECT name, description FROM industries WHERE is_published = 1 ORDER BY sort_order, created_at`),
       db.prepare(`SELECT title, description, size FROM capabilities WHERE is_published = 1 ORDER BY sort_order, created_at`),
       db.prepare(`SELECT question, answer, mode FROM faq_items WHERE is_published = 1 ORDER BY sort_order, created_at`),
@@ -132,6 +132,7 @@ async function readContent(env) {
       content: map,
       recruitmentOpen: s.recruitment_open !== 0,
       offerMode: s.offer_mode === 'paid' ? 'paid' : 'free',
+      spots: s.spots_enabled ? { free: s.spots_free, total: s.spots_total, until: s.spots_until || '', at: s.spots_at || '' } : null,
       contactEmail: s.contact_email || null,
       postsEnabled: s.posts_enabled === 1,
       social: { facebook: s.facebook_url || null, instagram: s.instagram_url || null },
@@ -155,6 +156,55 @@ async function readContent(env) {
       })),
     };
   }
+}
+
+/* ---------- Wolne miejsca (tryb Portfolio) ----------
+   Uczciwy niedobór: prawdziwa liczba z panelu + powód ograniczenia + data aktualizacji.
+   Subtelne wzmocnienia: zajęte miejsca jako „zajęte krzesła” (inni już się zgłosili), następne wolne miejsce
+   oznaczone „Twoje?” (poczucie, że to miejsce czeka na odwiedzającego), ciepły akcent na tle granatu,
+   przekaz „póki są wolne miejsca” (strata) zamiast nachalnego „kup teraz”. Bez fałszywych liczników czasu. */
+const MONTHS = ['stycznia', 'lutego', 'marca', 'kwietnia', 'maja', 'czerwca', 'lipca', 'sierpnia', 'września', 'października', 'listopada', 'grudnia'];
+const plDate = (iso) => {
+  const d = new Date(iso.length === 10 ? `${iso}T12:00:00Z` : iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const p = new Intl.DateTimeFormat('pl-PL', { timeZone: 'Europe/Warsaw', day: 'numeric', month: 'numeric', year: 'numeric' }).formatToParts(d);
+  const g = (t) => Number((p.find((x) => x.type === t) || {}).value);
+  return `${g('day')} ${MONTHS[g('month') - 1]}`;
+};
+const plForm = (n, one, few, many) => (n === 1 ? one : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? few : many);
+export function spotsCountText(free) {
+  if (free === 0) return 'Wszystkie miejsca są zajęte';
+  if (free === 1) return 'Zostało <strong>ostatnie</strong> wolne miejsce';
+  return `${plForm(free, 'Zostało', 'Zostały', 'Zostało')} <strong>${free}</strong> ${plForm(free, 'wolne miejsce', 'wolne miejsca', 'wolnych miejsc')}`;
+}
+export function renderSpots(kind, s) {
+  const free = Math.max(0, Math.min(s.free, s.total));
+  const taken = s.total - free;
+  const today = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Warsaw' }).format(new Date());
+  const until = s.until && s.until >= today ? plDate(s.until) : '';
+  const at = s.at ? plDate(s.at) : '';
+  const seats = s.total <= 12
+    ? `<ol class="spots__seats" aria-hidden="true">${Array.from({ length: s.total }, (_, i) => `<li class="spots__seat ${i < taken ? 'is-taken' : i === taken ? 'is-next' : 'is-free'}">${i === taken && kind !== 'form' ? '<span>Twoje?</span>' : ''}</li>`).join('')}</ol>`
+    : '';
+  if (kind === 'form') {
+    const txt = free === 0
+      ? 'Miejsca są zajęte — Twoje zgłoszenie trafi na <strong>listę oczekujących</strong>.'
+      : free === 1
+        ? 'Zajmij <strong>ostatnie</strong> wolne miejsce — zgłoszenie zajmuje ok. 2 minuty.'
+        : `Zajmij jedno z <strong>${free}</strong> ${plForm(free, 'wolnego miejsca', 'wolnych miejsc', 'wolnych miejsc')} — zgłoszenie zajmuje ok. 2 minuty.`;
+    return `${seats}<span class="spots__text">${txt}</span>`;
+  }
+  const head = free === 0 ? 'Komplet w tej edycji' : 'Bezpłatne strony — nabór otwarty';
+  const count = free === 0
+    ? `Wszystkie <strong>${s.total}</strong> ${plForm(s.total, 'miejsce jest zajęte', 'miejsca są zajęte', 'miejsc jest zajętych')}`
+    : `${spotsCountText(free)} <span class="spots__of">z ${s.total}</span>`;
+  const note = free === 0
+    ? 'Zostaw zgłoszenie — trafi na listę oczekujących, a odezwę się, gdy zwolni się miejsce.'
+    : `Wykonuję tylko kilka bezpłatnych stron naraz, żeby każdej poświęcić pełną uwagę. Póki są wolne miejsca, Twoja strona powstanie bez opłat za wykonanie.${until ? ` Nabór trwa do ${until}.` : ''}`;
+  return `<p class="spots__head"><span class="spots__live" aria-hidden="true"></span>${head}</p>
+<p class="spots__count">${count}</p>
+${seats}
+<p class="spots__note">${note}${at ? ` <span class="spots__at">Stan na ${at}.</span>` : ''}</p>`;
 }
 
 export async function renderPage(context) {
@@ -300,6 +350,17 @@ export async function renderPage(context) {
           const fn = lists[el.getAttribute('data-cms-list')];
           const html = fn ? fn(el) : null;
           if (html !== null && html !== undefined) el.setInnerContent(html, { html: true });
+        },
+      })
+      // Wolne miejsca na bezpłatną stronę — tylko w trybie Portfolio i gdy licznik jest włączony w panelu
+      .on('[data-spots]', {
+        element(el) {
+          if (el.removed) return;
+          const html = offerMode === 'free' && data.spots ? renderSpots(el.getAttribute('data-spots'), data.spots) : '';
+          if (!html) return el.remove();
+          el.setInnerContent(html, { html: true });
+          el.removeAttribute('hidden');
+          el.setAttribute('class', `${el.getAttribute('class') || ''} spots--${data.spots.free === 0 ? 'full' : data.spots.free === 1 ? 'last' : 'open'}`.trim());
         },
       })
       .on('[data-cms-block]', {

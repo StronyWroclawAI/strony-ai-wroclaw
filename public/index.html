@@ -31,7 +31,7 @@
 <link rel="icon" href="/assets/img/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
-<link rel="stylesheet" href="/assets/css/style.css?v=29">
+<link rel="stylesheet" href="/assets/css/style.css?v=30">
 <script src="/assets/js/przejscia.js?v=1"></script>
 <script src="/assets/js/industry-combo.js?v=1" defer></script>
 <script src="/assets/js/main.js?v=14" defer></script>
@@ -93,6 +93,7 @@
         </div>
         <p class="offer-card__note" data-cms="hero.offer_note">Po Twojej stronie są tylko koszty zewnętrzne: domena oraz — jeśli okaże się potrzebny — płatny hosting lub inne płatne usługi. Każdy koszt uzgadniamy przed zakupem.</p>
       </div>
+      <div class="spots" data-spots="hero" hidden></div>
       <div class="offer-card" data-offer="paid">
         <div class="offer-card__price">
           <span class="offer-card__label" data-cms="paid.offer_label">Strona dla firmy</span>
@@ -673,6 +674,7 @@ Proszę o kontakt w sprawie dalszych kroków.</textarea>
           <div class="turnstile-box" data-turnstile></div>
           <p class="field__error" data-error-for="turnstile"></p>
 
+          <div class="spots spots--form" data-spots="form" hidden></div>
           <p class="form-privacy">Dane wykorzystam tylko do odpowiedzi<span class="form-privacy__long"> na zgłoszenie</span> — szczegóły w <a href="/polityka-prywatnosci">polityce prywatności</a>. Pola z <span aria-hidden="true">*</span><span class="visually-hidden">gwiazdką</span> są wymagane.</p>
 
           <button class="btn btn--primary btn--lg btn--block" type="submit" data-submit>
