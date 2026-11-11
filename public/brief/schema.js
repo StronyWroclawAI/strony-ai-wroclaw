@@ -978,6 +978,10 @@
             hint: 'Lista jest dopasowana do Twojej branży. Oznaczenie „Polecane” wskazuje sekcje, które zwykle sprawdzają się najlepiej — to tylko podpowiedź. Czego nie ma na liście, dopisz w polu „Inne”.',
             groups: SECTION_GROUPS,
           },
+          {
+            id: 'custom_sections', type: 'sections_list', label: 'Własne sekcje — dopisz, czego brakuje na liście', max: 3000,
+            hint: 'Dodaj sekcje, które chcesz mieć na stronie, a których nie było do zaznaczenia — np. „Metamorfozy — zdjęcia przed i po”, „Oferta dla firm — pakiety dla biznesu”. Wpisz nazwę i krótko, co ma się w niej znaleźć.',
+          },
           { id: 'sections_notes', type: 'textarea', label: 'Uwagi do sekcji', hint: 'np. „galeria podzielona na fryzury damskie i męskie”, „zespół z krótkim opisem każdej osoby”.', max: 2000 },
         ],
       },
@@ -1681,6 +1685,9 @@
     if (field.type === 'radio' || field.type === 'select') {
       if (v === '__other') return other ? 'Inne: ' + String(other).trim() : '';
       return v ? label(v) : '';
+    }
+    if (field.type === 'sections_list') {
+      return String(v || '').split('\n').map(function (l) { return l.trim(); }).filter(Boolean).map(function (l, i) { return (i + 1) + '. ' + l; }).join('\n');
     }
     return v ? String(v).trim() : '';
   }

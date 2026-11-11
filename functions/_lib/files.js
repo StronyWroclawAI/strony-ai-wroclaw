@@ -118,3 +118,84 @@ export async function fileCounts(env, { leadId, briefId }) {
   rows.forEach((r) => (out[r.kind] = r.n));
   return out;
 }
+
+// ---------- Dokumenty projektu: inspiracje (zdjęcia, PDF) i wymagania klienta (PDF, DOCX, TXT, zdjęcia) ----------
+// Dodaje wyłącznie administrator w zgłoszeniu. KV: d/<id> (+ d/<id>/t — miniatura zdjęcia).
+const DOCX = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+export const DOC_LIMITS = {
+  inspiration: { maxBytes: 20 * 1024 * 1024, maxCount: 40, types: ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'application/pdf'], label: 'Inspiracje dodaj jako JPG, PNG, WebP, SVG lub PDF.' },
+  requirement: { maxBytes: 20 * 1024 * 1024, maxCount: 15, types: ['application/pdf', DOCX, 'text/plain', 'image/jpeg', 'image/png', 'image/webp'], label: 'Wymagania dodaj jako PDF, DOCX, TXT albo zdjęcie (JPG, PNG, WebP).' },
+};
+export const DOCS_TOTAL = 200 * 1024 * 1024;
+const DOC_EXT = { ...EXT, [DOCX]: 'docx', 'text/plain': 'txt' };
+
+/** Typ dokumentu po zawartości; DOCX (archiwum ZIP z word/document.xml) i TXT (poprawny UTF-8) dodatkowo po nazwie. */
+export function sniffDoc(bytes, name) {
+  const t = sniffFile(bytes);
+  if (t) return t;
+  const n = String(name || '').toLowerCase();
+  if (n.endsWith('.docx') && bytes[0] === 0x50 && bytes[1] === 0x4b && bytes[2] === 0x03 && bytes[3] === 0x04) {
+    const head = new TextDecoder('latin1').decode(bytes.slice(0, Math.min(bytes.length, 65536)));
+    if (head.includes('word/') || head.includes('[Content_Types].xml')) return DOCX;
+  }
+  if (n.endsWith('.txt') && bytes.length <= 2 * 1024 * 1024) {
+    try {
+      const s = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+      if (!/[\u0000-\u0008\u000E-\u001F]/.test(s)) return 'text/plain';
+    } catch {
+      /* nie UTF-8 */
+    }
+  }
+  return null;
+}
+
+export async function saveDoc(env, { leadId, form }) {
+  if (!env.MEDIA) return { ok: false, status: 503, message: 'Magazyn plików (KV, powiązanie MEDIA) nie jest skonfigurowany.' };
+  const kind = form.get('kind');
+  const L = DOC_LIMITS[kind];
+  if (!L) return { ok: false, status: 400, message: 'Nieznany rodzaj pliku.' };
+  const file = form.get('file');
+  if (!file || typeof file === 'string') return { ok: false, status: 400, message: 'Nie wybrano pliku.' };
+  if (file.size > L.maxBytes) return { ok: false, status: 413, message: `Plik jest za duży (maks. ${Math.round(L.maxBytes / 1048576)} MB).` };
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const rawName = form.get('name') || file.name;
+  const type = sniffDoc(bytes, rawName);
+  if (!type || !L.types.includes(type)) return { ok: false, status: 415, message: L.label };
+  const stats = await env.DB.prepare(`SELECT COALESCE(SUM(size_bytes), 0) AS total, SUM(kind = ?) AS nk FROM lead_docs WHERE lead_id = ?`).bind(kind, leadId).first();
+  if ((stats.nk || 0) >= L.maxCount) return { ok: false, status: 409, message: `Można dodać najwyżej ${L.maxCount} plików w tej grupie.` };
+  if ((stats.total || 0) + bytes.length > DOCS_TOTAL) return { ok: false, status: 409, message: 'Przekroczono łączny rozmiar plików projektu (200 MB).' };
+  let thumb = null;
+  const tf = form.get('thumb');
+  if (/^image\/(jpeg|png|webp)$/.test(type) && tf && typeof tf !== 'string' && tf.size <= THUMB_MAX) {
+    const tb = new Uint8Array(await tf.arrayBuffer());
+    const tt = sniffFile(tb);
+    if (tt === 'image/jpeg' || tt === 'image/webp' || tt === 'image/png') thumb = { bytes: tb, type: tt };
+  }
+  const id = uuid();
+  const key = `d/${id}`;
+  const width = Math.min(20000, Math.max(0, parseInt(form.get('width'), 10) || 0)) || null;
+  const height = Math.min(20000, Math.max(0, parseInt(form.get('height'), 10) || 0)) || null;
+  const base = safeName(rawName, 'x').replace(/\.bin$/, '');
+  const name = `${base}.${DOC_EXT[type] || 'bin'}`;
+  await env.MEDIA.put(key, bytes, { metadata: { contentType: type === 'text/plain' ? 'text/plain; charset=utf-8' : type } });
+  if (thumb) await env.MEDIA.put(`${key}/t`, thumb.bytes, { metadata: { contentType: thumb.type } });
+  const row = { id, lead_id: leadId, kind, name, content_type: type, size_bytes: bytes.length, width, height, kv_key: key, has_thumb: thumb ? 1 : 0, created_at: nowIso() };
+  await env.DB.prepare(`INSERT INTO lead_docs (id, lead_id, kind, name, content_type, size_bytes, width, height, kv_key, has_thumb, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+    .bind(row.id, row.lead_id, row.kind, row.name, row.content_type, row.size_bytes, row.width, row.height, row.kv_key, row.has_thumb, row.created_at)
+    .run();
+  return { ok: true, doc: publicDoc(row) };
+}
+
+export const publicDoc = (r) => ({ id: r.id, kind: r.kind, name: r.name, content_type: r.content_type, size_bytes: r.size_bytes, width: r.width, height: r.height, has_thumb: Boolean(r.has_thumb), created_at: r.created_at });
+
+export async function deleteDocRow(env, row) {
+  if (env.MEDIA) {
+    try {
+      await env.MEDIA.delete(row.kv_key);
+      if (row.has_thumb) await env.MEDIA.delete(`${row.kv_key}/t`);
+    } catch (e) {
+      console.error('Nie usunięto dokumentu z KV', row.kv_key, e);
+    }
+  }
+  await env.DB.prepare(`DELETE FROM lead_docs WHERE id = ?`).bind(row.id).run();
+}

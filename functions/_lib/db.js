@@ -4,7 +4,7 @@
 
 import { SEED } from './seed.js';
 
-export const SCHEMA_VERSION = '24';
+export const SCHEMA_VERSION = '25';
 
 // Każda instrukcja w osobnym elemencie (D1 wykonuje je w jednej transakcji przez batch()).
 export const SCHEMA = [
@@ -119,6 +119,14 @@ export const SCHEMA = [
 
 // Kolumny dodane w kolejnych wersjach (ALTER TABLE nie ma „IF NOT EXISTS” w SQLite).
 export const MIGRATIONS = [
+  // v25: projekt klienta — dodatkowe wymagania (tekst), wybrane efekty/animacje (JSON) oraz pliki inspiracji i wymagań
+  `ALTER TABLE leads ADD COLUMN requirements TEXT NOT NULL DEFAULT ''`,
+  `ALTER TABLE leads ADD COLUMN effects TEXT NOT NULL DEFAULT '{}'`,
+  `CREATE TABLE IF NOT EXISTS lead_docs (
+    id TEXT PRIMARY KEY, lead_id TEXT NOT NULL, kind TEXT NOT NULL CHECK (kind IN ('inspiration','requirement')),
+    name TEXT NOT NULL, content_type TEXT NOT NULL, size_bytes INTEGER NOT NULL DEFAULT 0,
+    width INTEGER, height INTEGER, kv_key TEXT NOT NULL, has_thumb INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL)`,
+  `CREATE INDEX IF NOT EXISTS lead_docs_lead_idx ON lead_docs (lead_id, kind, created_at)`,
   // v23: tryb oferty (free = portfolio, bezpłatne wykonanie; paid = cennik) i widoczność pytań FAQ w trybach
   `ALTER TABLE settings ADD COLUMN offer_mode TEXT NOT NULL DEFAULT 'free'`,
   `ALTER TABLE settings ADD COLUMN offer_mode_at TEXT`,

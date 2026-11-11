@@ -4,7 +4,7 @@
    Sesja jest w ciasteczku HttpOnly — ten skrypt nie zna hasła ani kluczy.
    ========================================================= */
 (function () {
-  const PANEL_VERSION = '2026-10-25 · cennik i promocje';
+  const PANEL_VERSION = '2026-11-11 · inspiracje, wymagania, efekty';
   'use strict';
 
   // ---------- Pomocnicze ----------
@@ -607,6 +607,7 @@
     const leadLogo = res.data ? res.data.logo : null;
     const leadEmails = res.data ? res.data.emails || [] : [];
     const leadFiles = res.data ? res.data.files || [] : [];
+    const leadDocs = res.data ? res.data.docs || [] : [];
     const mail = (res.data && res.data.mail) || { gmail: false, from: null };
     const mailer = leadMailer(lead, leadEmails, mail);
     if (!lead) {
@@ -813,8 +814,9 @@
         `${lead.source === 'reczne' ? 'Dodane ręcznie' : 'Zgłoszenie'} z ${fmtDate(lead.created_at)}`,
         h('button', { class: 'btn btn--primary', type: 'button', text: 'Napisz e-mail', onclick: () => mailer.compose('wlasna', `Strona internetowa dla ${lead.company_name}`, `Dzień dobry,\n\n\n\n${SIGN}`) })
       ),
-      leadBriefHub(lead, leadBriefs, leadLogo, mailer),
+      leadBriefHub(lead, leadBriefs, leadLogo, mailer, leadDocs),
       leadFilesSection(lead, leadFiles, leadBriefs),
+      leadProjectSection(lead, leadDocs),
       h(
         'div',
         { class: 'detail-grid' },
@@ -1332,8 +1334,559 @@
     }
   }
 
+  /** Dane projektu dopisywane do polecenia na stronę: efekty, inspiracje, wymagania klienta. */
+  function projectExtras(lead, docs) {
+    const names = (k) => docs.filter((d) => d.kind === k).map((d) => d.name);
+    return { effects: lead.effects || {}, inspirations: names('inspiration'), requirements: { text: (lead.requirements || '').trim(), files: names('requirement') } };
+  }
+  function projectExtrasNote(lead, docs) {
+    const x = projectExtras(lead, docs);
+    const P = window.BRIEF_PROMPTS;
+    const parts = [];
+    if (x.requirements.text || x.requirements.files.length) parts.push('wymagania klienta');
+    if (x.inspirations.length) parts.push(`inspiracje (${x.inspirations.length})`);
+    if (P && P.hasEffects && P.hasEffects(x.effects)) parts.push('wybrane efekty');
+    return parts.length ? ` — dołączone: ${parts.join(', ')}` : '';
+  }
+
+  /** Okno „Efekty i animacje”: wybór przejść, animacji, tła, kursora i dodatków — zapis przy zgłoszeniu, dopisywany do polecenia. */
+  function effectsDialog(lead, answers) {
+    const P = window.BRIEF_PROMPTS;
+    const fx = { ...(lead.effects || {}) };
+    const briefType = P.briefSiteType(answers || {});
+    let type = fx.sitetype || briefType || '';
+    const dlg = h('dialog', { class: 'dialog fx-dialog', 'aria-labelledby': 'fx-dlg-title', 'data-fx-dialog': '' });
+    const form = h('form', { class: 'fx-form', method: 'dialog' });
+    const pvPage = fxPreview();
+    const pvScroll = fxScrollPreview();
+    const byId = {};
+    P.EFFECTS.forEach((g) => {
+      const name = `fx-${g.id}`;
+      const list = g.multi ? g.options : [{ v: '', l: 'Nie wybieram', d: g.preview ? 'bez wymagań — AI zdecyduje albo pominie' : 'AI dobierze albo pominie' }, ...g.options];
+      const opts = [];
+      list.forEach((o) => {
+        if (o.c) opts.push(h('p', { class: 'fx-cat', text: o.c }));
+        const input = h('input', { type: g.multi ? 'checkbox' : 'radio', name, value: o.v, checked: g.multi ? (fx[g.id] || []).includes(o.v) : (fx[g.id] || '') === o.v });
+        // „click” (a nie „change”) — ponowne kliknięcie już zaznaczonej opcji też odtwarza podgląd
+        if (g.preview === 'page') input.addEventListener('click', () => pvPage.play(readPage()));
+        if (g.preview === 'scroll') input.addEventListener('click', () => { if (!g.multi || input.checked) pvScroll.play(g.id, o.v, o); });
+        opts.push(h('label', { class: 'fx-opt', 'data-fx-opt': `${g.id}:${o.v}` }, input, h('span', { class: 'fx-opt__t' }, h('strong', { text: o.l }), o.d ? h('span', { class: 'small muted', text: o.d }) : null)));
+      });
+      byId[g.id] = h('fieldset', { class: `fx-group${g.preview ? ' fx-group--pv' : ''}`, 'data-fx-group': g.id },
+        h('legend', { text: g.t }),
+        g.note ? h('p', { class: 'small muted fx-note', text: g.note }) : null,
+        h('div', { class: `fx-opts${g.multi ? ' fx-opts--multi' : ''}${g.preview ? ' fx-opts--list' : ''}` }, opts)
+      );
+    });
+    const readPage = () => {
+      const c = $('[name="fx-page"]:checked', form);
+      return { page: c ? c.value : '', pagex: $$('[name="fx-pagex"]:checked', form).map((x) => x.value) };
+    };
+
+    // 1) Rodzaj strony — decyduje, które efekty mają sens (one page: przewijanie; podstrony: przejścia między stronami)
+    const typeNote = h('p', { class: 'small fx-type__note', 'aria-live': 'polite' });
+    const typeOpt = (v, l, d) =>
+      h('label', { class: 'fx-opt fx-type__opt', 'data-fx-type': v },
+        h('input', { type: 'radio', name: 'fx-sitetype', value: v, checked: type === v }),
+        h('span', { class: 'fx-opt__t' }, h('strong', { text: l }), h('span', { class: 'small muted', text: d }), briefType === v ? h('span', { class: 'fx-badge', text: 'z briefu' }) : null)
+      );
+    const typeBox = h('fieldset', { class: 'fx-group fx-type', 'data-fx-group': 'sitetype' },
+      h('legend', { text: 'Rodzaj strony' }),
+      h('div', { class: 'fx-opts fx-type__opts' },
+        typeOpt('onepage', 'One page — jedna przewijana strona', 'Wszystkie sekcje jedna pod drugą, menu przewija do sekcji. Liczy się styl przewijania.'),
+        typeOpt('multi', 'Podstrony — osobne strony', 'Każda pozycja menu otwiera osobną stronę. Liczą się przejścia między stronami.')
+      ),
+      typeNote
+    );
+
+    // 2) Przejścia między podstronami (tylko „Podstrony”)
+    const pageBlock = h('section', { class: 'fx-block', 'data-fx-block': 'page' },
+      h('h3', { class: 'fx-block__title', text: 'Przejścia między podstronami' }),
+      h('div', { class: 'fx-pagewrap' }, h('div', { class: 'fx-pagewrap__list' }, byId.page, byId.pagex), pvPage.el)
+    );
+    // 3) Przewijanie (one page: główny wybór; podstrony: opcjonalnie, w obrębie podstron)
+    const scrollSummary = h('summary', { class: 'fx-block__title' });
+    const scrollBlock = h('details', { class: 'fx-block', 'data-fx-block': 'scroll', open: true },
+      scrollSummary,
+      h('div', { class: 'fx-pagewrap' }, h('div', { class: 'fx-pagewrap__list' }, byId.scroll, byId.scrollx, byId.anchor), pvScroll.el)
+    );
+    const pickFirst = h('p', { class: 'fx-pick alert', text: 'Najpierw wybierz rodzaj strony — od niego zależą dostępne przejścia i efekty przewijania.' });
+    const rest = P.EFFECTS.filter((g) => !g.scope).map((g) => byId[g.id]);
+    const hasScrollChoice = () => ['scroll', 'scrollx', 'anchor'].some((k) => (Array.isArray(fx[k]) ? fx[k].length : fx[k]));
+    const applyType = (first) => {
+      pageBlock.hidden = type !== 'multi';
+      scrollBlock.hidden = !type;
+      pickFirst.hidden = Boolean(type);
+      if (type === 'onepage') {
+        scrollSummary.textContent = 'Przewijanie strony (one page)';
+        scrollBlock.open = true;
+      } else if (type === 'multi') {
+        scrollSummary.textContent = 'Opcjonalnie: przewijanie w obrębie podstron';
+        if (first) scrollBlock.open = hasScrollChoice();
+      }
+      const fromBrief = { onepage: 'one page', multi: 'podstrony' }[briefType];
+      typeNote.textContent = !briefType
+        ? 'W briefie klient nie zdecydował (lub brief jest niepełny) — wybór tutaj ustali rodzaj strony także w poleceniu dla AI.'
+        : type && type !== briefType
+          ? `Uwaga: w briefie klient wybrał „${fromBrief}”. Zmiana tutaj nadpisze to w poleceniu — zrób ją tylko po ustaleniu z klientem.`
+          : `Zgodnie z briefem: ${fromBrief}.`;
+      typeNote.classList.toggle('is-warn', Boolean(briefType && type && type !== briefType));
+      if (type === 'multi') pvPage.show(readPage());
+      if (type) pvScroll.idle();
+    };
+    $$('[name="fx-sitetype"]', typeBox).forEach((r) => r.addEventListener('change', () => { type = r.value; applyType(false); }));
+
+    const notes = h('textarea', { rows: '3', maxlength: '2000', id: 'fx-notes', placeholder: 'np. „animacje bardzo spokojne, klientka nie lubi migania”, „kursor tylko na stronie głównej”' });
+    notes.value = fx.notes || '';
+    const read = () => {
+      const out = {};
+      if (type) out.sitetype = type;
+      P.EFFECTS.forEach((g) => {
+        if (!P.groupFits(g, type)) return; // np. przejścia między podstronami przy one page — nie zapisujemy
+        const els = $$(`[name="fx-${g.id}"]`, form);
+        if (g.multi) {
+          const v = els.filter((x) => x.checked).map((x) => x.value);
+          if (v.length) out[g.id] = v;
+        } else {
+          const c = els.find((x) => x.checked);
+          if (c && c.value) out[g.id] = c.value;
+        }
+      });
+      if (notes.value.trim()) out.notes = notes.value.trim();
+      return out;
+    };
+    const saveBtn = h('button', { class: 'btn btn--primary', type: 'button', 'data-fx-save': '', text: 'Zapisz i dopisz do polecenia' });
+    saveBtn.addEventListener('click', async () => {
+      const effects = read();
+      busy(saveBtn, true);
+      const { error } = await q(api(`leads/${lead.id}/project`, { method: 'PATCH', body: { effects } }));
+      busy(saveBtn, false);
+      if (error) return toast(errMsg(error), 'error');
+      lead.effects = effects;
+      toast(P.hasEffects(effects) ? 'Efekty zapisane — dopiszą się do polecenia na stronę.' : 'Wyczyszczono wybór efektów.');
+      dlg.close();
+      route();
+    });
+    const clearBtn = h('button', { class: 'btn btn--sm', type: 'button', text: 'Wyczyść wybór', onclick: () => { $$('input:not([name="fx-sitetype"])', form).forEach((i) => (i.checked = i.type === 'radio' && i.value === '')); notes.value = ''; } });
+    form.append(typeBox, pickFirst, pageBlock, scrollBlock, h('h3', { class: 'fx-block__title fx-block__title--plain', text: 'Wygląd i animacje treści' }), ...rest, h('div', { class: 'fx-group' }, h('label', { class: 'fx-notes-label', for: 'fx-notes', text: 'Twoje uwagi do efektów (opcjonalnie)' }), notes));
+    dlg.append(
+      h('div', { class: 'prompt-dialog__head' },
+        h('div', null, h('h2', { class: 'dialog__title', id: 'fx-dlg-title', text: `Efekty i animacje — ${lead.company_name}` }), h('p', { class: 'small muted fx-dialog__lead', text: 'Zaznacz, co ma mieć strona. Wybór zapisze się przy tym zgłoszeniu i automatycznie dopisze do polecenia „B. Strona internetowa” (z zasadami: szybkość, dostępność, ograniczony ruch).' })),
+        h('button', { class: 'prompt-dialog__x', type: 'button', 'aria-label': 'Zamknij', text: '×', onclick: () => dlg.close() })
+      ),
+      form,
+      h('div', { class: 'dialog__actions prompt-dialog__actions' }, clearBtn, h('button', { class: 'btn', type: 'button', text: 'Anuluj', onclick: () => dlg.close() }), saveBtn)
+    );
+    dlg.addEventListener('close', () => { pvPage.stop(); pvScroll.stop(); dlg.remove(); });
+    document.body.append(dlg);
+    applyType(true);
+    dlg.showModal();
+    const first = $('input:checked', form) || $('input', form);
+    if (first) first.focus();
+  }
+
+  /** Wspólna „ramka przeglądarki” do podglądów efektów. */
+  function fxFrame(stageChildren, pinned) {
+    const stage = h('div', { class: 'fx-pv__stage' }, ...stageChildren);
+    const frame = h('div', { class: 'fx-pv__frame' }, h('div', { class: 'fx-pv__bar' }, h('i'), h('i'), h('i'), h('span', { class: 'fx-pv__url', text: 'twojafirma.pl' })), pinned || null, stage);
+    return { stage, frame };
+  }
+
+  /**
+   * Podgląd efektów przewijania strony one page: miniatura strony z czterema sekcjami (Start, O nas, Realizacje, Kontakt),
+   * „przewijana” animacją. Każda opcja pokazuje swój scenariusz; „Zwolnij ×3” wydłuża animację.
+   */
+  function fxScrollPreview() {
+    const NAV = ['Start', 'O nas', 'Realizacje', 'Kontakt'];
+    const caption = h('p', { class: 'fx-pv__cap', 'aria-live': 'polite' });
+    const slow = h('input', { type: 'checkbox', id: 'fx-sv-slow' });
+    const again = h('button', { class: 'btn btn--sm', type: 'button', text: '▶ Odtwórz ponownie', 'data-fx-replay-scroll': '' });
+    const holder = h('div', { 'aria-hidden': 'true' });
+    const el = h('div', { class: 'fx-pv' },
+      h('p', { class: 'fx-pv__title', text: 'Podgląd przewijania' }),
+      holder,
+      h('div', { class: 'fx-pv__ctrl' }, again, h('label', { class: 'small', for: 'fx-sv-slow' }, slow, ' Zwolnij ×3')),
+      caption,
+      h('p', { class: 'small muted', text: 'Miniatura strony one page: Start → O nas → Realizacje → Kontakt. Kolory przykładowe.' })
+    );
+    let last = null;
+    let timers = [];
+    let parts = null;
+    const build = () => {
+      const navItems = NAV.map((n, i) => h('i', { class: i === 0 ? 'is-on' : '', title: n }));
+      const ind = h('b', { class: 'fx-sv__ind' });
+      const progress = h('b', { class: 'fx-sv__progress' });
+      const hdr = h('div', { class: 'fx-pv__hdr fx-sv__hdr' }, h('span', { class: 'fx-pv__logo', text: 'Logo' }), h('span', { class: 'fx-pv__nav fx-sv__nav' }, navItems, ind), progress);
+      const sec = (cls, ...c) => h('section', { class: `fx-sv__sec ${cls}` }, ...c);
+      const s1 = sec('fx-sv__s1', h('b', { class: 'fx-sv__bg' }), h('b', { class: 'fx-pv__h1' }), h('b', { class: 'fx-pv__p' }), h('b', { class: 'fx-pv__btn' }));
+      const s2img = h('b', { class: 'fx-sv__img' });
+      const s2txt = h('div', { class: 'fx-sv__txt' }, h('b', { class: 'fx-sv__title' }), ...Array.from({ length: 9 }, () => h('b', { class: 'fx-sv__l' })));
+      const s2 = sec('fx-sv__s2', s2img, s2txt);
+      const row = h('div', { class: 'fx-sv__row' }, ...Array.from({ length: 6 }, (_, i) => h('b', { class: `fx-sv__card fx-sv__card--${i % 3}` })));
+      const s3 = sec('fx-sv__s3', h('b', { class: 'fx-sv__title' }), row);
+      const words = Array.from({ length: 6 }, () => h('b', { class: 'fx-sv__w' }));
+      const s4 = sec('fx-sv__s4', h('b', { class: 'fx-sv__bg fx-sv__bg--2' }), h('div', { class: 'fx-sv__quote' }, words), h('b', { class: 'fx-pv__btn' }));
+      const track = h('div', { class: 'fx-sv__track' }, s1, s2, s3, s4);
+      const dots = h('div', { class: 'fx-sv__dots' }, NAV.map((n, i) => h('i', { class: i === 0 ? 'is-on' : '' })));
+      const ov = h('div', { class: 'fx-pv__ov' });
+      const f = fxFrame([track, dots, ov], hdr);
+      f.frame.classList.add('fx-sv');
+      holder.replaceChildren(f.frame);
+      parts = { ...f, hdr, navItems, ind, progress, track, secs: [s1, s2, s3, s4], s2img, s2txt, row, words, dots, ov };
+    };
+    const stop = () => { timers.forEach(clearTimeout); timers = []; if (parts) parts.frame.getAnimations({ subtree: true }).forEach((a) => a.cancel()); };
+    const idle = () => { if (!parts) build(); };
+    const play = (gid, v, o) => {
+      stop();
+      build();
+      last = [gid, v, o];
+      caption.textContent = o && v ? `${o.l}${o.d ? ` — ${o.d}` : ''}` : 'Nie wybrano — kliknij opcję, aby zobaczyć podgląd.';
+      const { stage, track, secs, navItems, ind, progress, ov, row, words, s2img, s2txt, dots } = parts;
+      const H = stage.clientHeight;
+      const K = slow.checked ? 3 : 1;
+      const A = (n, kf, d, opt = {}) => n.animate(kf, { duration: d * K, delay: (opt.delay || 0) * K, easing: opt.e || 'cubic-bezier(.45,0,.25,1)', fill: 'both' });
+      const at = (ms, fn) => timers.push(setTimeout(fn, ms * K));
+      const setNav = (i) => { navItems.forEach((n, j) => n.classList.toggle('is-on', j === i)); $$('i', dots).forEach((n, j) => n.classList.toggle('is-on', j === i)); };
+      const navX = (i) => navItems[i].offsetLeft;
+      // zwykłe przewijanie przez trzy sekcje (tempo „kółka myszy”)
+      const scrollThrough = (d = 2600, to = 3) => A(track, [{ transform: 'translateY(0)' }, { transform: `translateY(${-H * to}px)` }], d, { e: 'cubic-bezier(.45,.05,.55,.95)' });
+      const navFollow = (d, to = 3) => {
+        for (let i = 1; i <= to; i++) at((d / to) * i - (d / to) / 2, () => setNav(i));
+        A(ind, NAV.slice(0, to + 1).map((_, i) => ({ transform: `translateX(${navX(i)}px)` })), d, { e: 'linear' });
+        A(progress, [{ transform: 'scaleX(0)' }, { transform: `scaleX(${to / 3})` }], d, { e: 'linear' });
+      };
+      switch (`${gid}:${v}`) {
+        case 'scroll:stack': {
+          secs.forEach((s, i) => { s.style.cssText = `position:absolute;top:0;left:0;right:0;z-index:${i + 1}`; });
+          [1, 2, 3].forEach((i) => {
+            A(secs[i], [{ transform: `translateY(${H}px)` }, { transform: 'translateY(0)' }], 800, { delay: (i - 1) * 900 });
+            A(secs[i - 1], [{ transform: 'scale(1)', filter: 'brightness(1)' }, { transform: 'scale(.94)', filter: 'brightness(.6)' }], 800, { delay: (i - 1) * 900 });
+          });
+          break;
+        }
+        case 'scroll:snap': {
+          const kf = [{ transform: 'translateY(0)' }];
+          [1, 2, 3].forEach((i) => { kf.push({ transform: `translateY(${-H * (i - 1) - H * 0.35}px)`, offset: (i - 1) / 3 + 0.12, easing: 'cubic-bezier(.3,1.4,.5,1)' }, { transform: `translateY(${-H * i}px)`, offset: (i - 1) / 3 + 0.22 }, { transform: `translateY(${-H * i}px)`, offset: i / 3 }); });
+          A(track, kf, 2800, { e: 'linear' });
+          break;
+        }
+        case 'scroll:curtain': {
+          secs[0].style.cssText = 'position:absolute;top:0;left:0;right:0;z-index:3';
+          secs[1].style.cssText = 'position:absolute;top:0;left:0;right:0;z-index:2';
+          secs[0].classList.add('fx-sv__shadow');
+          A(secs[0], [{ transform: 'translateY(0)' }, { transform: 'translateY(0)', offset: 0.15 }, { transform: `translateY(${-H * 1.08}px)` }], 1800, { e: 'cubic-bezier(.45,0,.3,1)' });
+          A(secs[1], [{ transform: 'scale(.96)' }, { transform: 'scale(.96)', offset: 0.15 }, { transform: 'scale(1)' }], 1800);
+          break;
+        }
+        case 'scroll:zoomsec': {
+          scrollThrough(2800);
+          [1, 3].forEach((i) => A(secs[i], [{ transform: 'scale(.86)', borderRadius: '16px' }, { transform: 'scale(.86)', borderRadius: '16px', offset: (i - 1) / 3 }, { transform: 'scale(1)', borderRadius: '0px', offset: Math.min(1, i / 3 - 0.05) }, { transform: 'scale(1)', borderRadius: '0px' }], 2800, { e: 'linear' }));
+          break;
+        }
+        case 'scroll:splitsticky': {
+          A(track, [{ transform: 'translateY(0)' }, { transform: `translateY(${-H}px)` }], 700);
+          A(s2txt, [{ transform: 'translateY(0)' }, { transform: 'translateY(-55%)' }], 1800, { delay: 800, e: 'linear' });
+          A(s2img, [{ filter: 'hue-rotate(0deg)' }, { filter: 'hue-rotate(0deg)', offset: 0.45 }, { filter: 'hue-rotate(140deg)', offset: 0.55 }, { filter: 'hue-rotate(140deg)' }], 1800, { delay: 800, e: 'linear' });
+          break;
+        }
+        case 'scrollx:scrollspy': scrollThrough(2800); navFollow(2800); break;
+        case 'scrollx:dots': dots.classList.add('is-on'); scrollThrough(2800); for (let i = 1; i <= 3; i++) at((2800 / 3) * i - 450, () => setNav(i)); break;
+        case 'scrollx:parallax': {
+          scrollThrough(2800);
+          $$('.fx-sv__bg', track).forEach((b) => A(b, [{ transform: 'translateY(0)' }, { transform: `translateY(${H * 0.9}px)` }], 2800, { e: 'cubic-bezier(.45,.05,.55,.95)' }));
+          A(s2img, [{ transform: 'translateY(-14%)' }, { transform: 'translateY(14%)' }], 2800, { e: 'linear' });
+          break;
+        }
+        case 'scrollx:horizontal': {
+          A(track, [{ transform: 'translateY(0)' }, { transform: `translateY(${-H * 2}px)`, offset: 0.3 }, { transform: `translateY(${-H * 2}px)`, offset: 0.8 }, { transform: `translateY(${-H * 2.6}px)` }], 3200, { e: 'linear' });
+          A(row, [{ transform: 'translateX(0)' }, { transform: 'translateX(0)', offset: 0.3 }, { transform: 'translateX(-52%)', offset: 0.8 }, { transform: 'translateX(-52%)' }], 3200, { e: 'linear' });
+          break;
+        }
+        case 'scrollx:textreveal': {
+          A(track, [{ transform: 'translateY(0)' }, { transform: `translateY(${-H * 3}px)`, offset: 0.35 }, { transform: `translateY(${-H * 3}px)` }], 2800);
+          words.forEach((w, i) => A(w, [{ opacity: 0.25 }, { opacity: 0.25, offset: 0.35 + i * 0.09 }, { opacity: 1, offset: Math.min(1, 0.44 + i * 0.09) }, { opacity: 1 }], 2800, { e: 'linear' }));
+          break;
+        }
+        case 'anchor:smooth':
+        case 'anchor:highlight': {
+          at(400, () => setNav(2));
+          A(track, [{ transform: 'translateY(0)' }, { transform: `translateY(${-H * 2}px)` }], 900, { delay: 400, e: 'cubic-bezier(.65,0,.35,1)' });
+          A(ind, [{ transform: `translateX(${navX(0)}px)` }, { transform: `translateX(${navX(2)}px)` }], 400, { delay: 400 });
+          if (v === 'highlight') { const t = $('.fx-sv__title', secs[2]); A(t, [{ boxShadow: 'inset 0 -3px 0 0 transparent' }, { boxShadow: 'inset 0 -3px 0 0 #ffb547', offset: 0.3 }, { boxShadow: 'inset 0 -3px 0 0 #ffb547', offset: 0.75 }, { boxShadow: 'inset 0 -3px 0 0 transparent' }], 1200, { delay: 1300 }); A(t, [{ transform: 'scale(1)' }, { transform: 'scale(1.08)', offset: 0.3 }, { transform: 'scale(1)' }], 900, { delay: 1300 }); }
+          break;
+        }
+        case 'anchor:instant': at(500, () => { setNav(2); track.style.transform = `translateY(${-H * 2}px)`; }); break;
+        case 'anchor:fadejump': {
+          at(400, () => setNav(2));
+          A(track, [{ opacity: 1, transform: 'translateY(0)' }, { opacity: 0, transform: 'translateY(0)', offset: 0.45 }, { opacity: 0, transform: `translateY(${-H * 2}px)`, offset: 0.5 }, { opacity: 1, transform: `translateY(${-H * 2}px)` }], 600, { delay: 400, e: 'linear' });
+          break;
+        }
+        case 'anchor:curtainjump': {
+          at(400, () => setNav(2));
+          const pnl = h('div', { class: 'fx-pv__panel fx-pv__panel--brand' }, h('span', { text: 'Realizacje' }));
+          ov.append(pnl);
+          A(pnl, [{ transform: 'translateY(101%)' }, { transform: 'none', offset: 0.4 }, { transform: 'none', offset: 0.6 }, { transform: 'translateY(-101%)' }], 800, { delay: 400, e: 'cubic-bezier(.65,0,.35,1)' });
+          A(track, [{ transform: 'translateY(0)' }, { transform: 'translateY(0)', offset: 0.45 }, { transform: `translateY(${-H * 2}px)`, offset: 0.46 }, { transform: `translateY(${-H * 2}px)` }], 800, { delay: 400, e: 'linear' });
+          break;
+        }
+        default: scrollThrough(2800); // zwykłe przewijanie / „dobierz sam” / brak wyboru
+      }
+    };
+    again.addEventListener('click', () => (last ? play(...last) : play('scroll', '', null)));
+    return { el, play, idle, stop };
+  }
+
+  /**
+   * Podgląd przejścia między podstronami na miniaturze strony (dwie przykładowe podstrony: „Start” i „Oferta”).
+   * Tylko Web Animations API (bez bibliotek). Kolejne odtworzenia przełączają kierunek: Start → Oferta, potem „Wstecz”.
+   */
+  function fxPreview() {
+    const P = window.BRIEF_PROMPTS;
+    const pageOpt = (v) => (P.EFFECTS.find((g) => g.id === 'page').options || []).find((o) => o.v === v);
+    const mkPage = (kind) => {
+      const isA = kind === 'a';
+      return h('div', { class: `fx-pv__page fx-pv__page--${kind}` },
+        h('div', { class: 'fx-pv__hdr' }, h('span', { class: 'fx-pv__logo', text: 'Logo' }), h('span', { class: 'fx-pv__nav' }, h('i', { class: isA ? 'is-on' : '' }), h('i', { class: isA ? '' : 'is-on' }), h('i'))),
+        isA
+          ? h('div', { class: 'fx-pv__body' },
+              h('div', { class: 'fx-pv__hero' }, h('b', { class: 'fx-pv__h1', 'data-st': '1' }), h('b', { class: 'fx-pv__p', 'data-st': '2' }), h('b', { class: 'fx-pv__btn', 'data-st': '4' })),
+              h('div', { class: 'fx-pv__cards', 'data-st': '3' }, h('div', { class: 'fx-pv__card fx-pv__card--src' }, h('b', { class: 'fx-pv__thumb' }), h('b', { class: 'fx-pv__line' })), h('div', { class: 'fx-pv__card' }, h('b', { class: 'fx-pv__thumb fx-pv__thumb--2' }), h('b', { class: 'fx-pv__line' })), h('div', { class: 'fx-pv__card' }, h('b', { class: 'fx-pv__thumb fx-pv__thumb--3' }), h('b', { class: 'fx-pv__line' }))))
+          : h('div', { class: 'fx-pv__body' },
+              h('div', { class: 'fx-pv__head' }, h('b', { class: 'fx-pv__h1 fx-pv__h1--dark', 'data-st': '1' }), h('b', { class: 'fx-pv__p fx-pv__p--dark', 'data-st': '2' })),
+              h('div', { class: 'fx-pv__split' }, h('b', { class: 'fx-pv__big', 'data-st': '3' }), h('div', { class: 'fx-pv__list', 'data-st': '4' }, h('b'), h('b'), h('b'), h('b')))));
+    };
+    const pageA = mkPage('a');
+    const pageB = mkPage('b');
+    const ov = h('div', { class: 'fx-pv__ov' });
+    const pinned = h('div', { class: 'fx-pv__hdr fx-pv__hdr--pinned' }, h('span', { class: 'fx-pv__logo', text: 'Logo' }), h('span', { class: 'fx-pv__nav' }, h('i', { class: 'is-on' }), h('i'), h('i')));
+    const stage = h('div', { class: 'fx-pv__stage' }, pageA, pageB, ov);
+    const frame = h('div', { class: 'fx-pv__frame' }, h('div', { class: 'fx-pv__bar' }, h('i'), h('i'), h('i'), h('span', { class: 'fx-pv__url', text: 'twojafirma.pl' })), pinned, stage);
+    const caption = h('p', { class: 'fx-pv__cap', 'aria-live': 'polite' });
+    const route = h('span', { class: 'small muted fx-pv__route' });
+    const slow = h('input', { type: 'checkbox', id: 'fx-pv-slow' });
+    const again = h('button', { class: 'btn btn--sm', type: 'button', text: '▶ Odtwórz ponownie', 'data-fx-replay': '' });
+    const el = h('div', { class: 'fx-pv' },
+      h('p', { class: 'fx-pv__title', text: 'Podgląd przejścia' }),
+      h('div', { 'aria-hidden': 'true' }, frame),
+      h('div', { class: 'fx-pv__ctrl' }, again, h('label', { class: 'small', for: 'fx-pv-slow' }, slow, ' Zwolnij ×3'), route),
+      caption,
+      h('p', { class: 'small muted', text: 'Kolory i układ w podglądzie są przykładowe — na stronie klienta przejście dostanie kolory jego marki.' })
+    );
+    let cur = pageA;
+    let state = { page: '', pagex: [] };
+    let timers = [];
+    const clearTimers = () => { timers.forEach(clearTimeout); timers = []; };
+    const reset = () => {
+      clearTimers();
+      [pageA, pageB, ov].forEach((n) => n.getAnimations({ subtree: true }).forEach((a) => a.cancel()));
+      $$('.fx-pv__fly, .fx-pv__clone', stage).forEach((n) => n.remove());
+      ov.replaceChildren();
+      [pageA, pageB].forEach((pg) => { pg.style.zIndex = ''; pg.hidden = pg !== cur; pg.style.visibility = ''; });
+    };
+    const show = (s) => {
+      state = s;
+      frame.classList.toggle('is-pinned', s.pagex.includes('pinheader'));
+      const o = pageOpt(s.page);
+      caption.textContent = o ? `${o.l}${o.d ? ` — ${o.d}` : ''}` : 'Nie wybrano przejścia — kliknij opcję z listy, aby zobaczyć podgląd.';
+    };
+    const play = (s) => {
+      show(s);
+      reset();
+      const from = cur;
+      const to = cur === pageA ? pageB : pageA;
+      const dir = to === pageB ? 1 : -1;
+      route.textContent = dir > 0 ? 'Start → Oferta' : 'Oferta → Start (Wstecz)';
+      const K = slow.checked ? 3 : 1;
+      const A = (n, kf, d, o = {}) => n.animate(kf, { duration: d * K, delay: (o.delay || 0) * K, easing: o.e || 'cubic-bezier(.2,.7,.2,1)', fill: 'both' });
+      to.hidden = false;
+      from.style.zIndex = '1';
+      to.style.zIndex = '2';
+      const swapAt = (frac, d) => { A(from, [{ opacity: 1 }, { opacity: 1, offset: frac }, { opacity: 0, offset: Math.min(1, frac + 0.001) }, { opacity: 0 }], d, { e: 'linear' }); A(to, [{ opacity: 0 }, { opacity: 0, offset: frac }, { opacity: 1, offset: Math.min(1, frac + 0.001) }, { opacity: 1 }], d, { e: 'linear' }); };
+      const panel = (cls, txt) => { const n = h('div', { class: `fx-pv__panel ${cls}` }, txt ? h('span', { text: txt }) : null); ov.append(n); return n; };
+      const fly = (srcSel, dstSel, d) => {
+        const r0 = stage.getBoundingClientRect();
+        const s0 = $(srcSel, from).getBoundingClientRect();
+        const s1 = $(dstSel, to).getBoundingClientRect();
+        const src = $(srcSel, from);
+        const n = h('div', { class: `fx-pv__fly ${src.className}` });
+        n.style.cssText = `position:absolute;z-index:5;left:0;top:0;margin:0;width:${s1.width}px;height:${s1.height}px`;
+        stage.append(n);
+        const t0 = `translate(${s0.left - r0.left}px, ${s0.top - r0.top}px) scale(${s0.width / s1.width}, ${s0.height / s1.height})`;
+        const t1 = `translate(${s1.left - r0.left}px, ${s1.top - r0.top}px)`;
+        n.style.transformOrigin = '0 0';
+        A(n, [{ transform: t0, borderRadius: '6px' }, { transform: t1, borderRadius: '4px' }], d, { e: 'cubic-bezier(.4,0,.2,1)' });
+        A(from, [{ opacity: 1 }, { opacity: 0 }], d * 0.5);
+        A(to, [{ opacity: 0 }, { opacity: 0, offset: 0.35 }, { opacity: 1 }], d);
+        return n;
+      };
+      const ids = { a: '.fx-pv__card--src', b: '.fx-pv__head' };
+      let total = 0;
+      switch (s.page) {
+        case 'fade': A(from, [{ opacity: 1 }, { opacity: 0 }], 330, { e: 'ease-out' }); A(to, [{ opacity: 0 }, { opacity: 1 }], 330, { e: 'ease-out' }); total = 330; break;
+        case 'fadeshift': A(from, [{ opacity: 1, transform: 'none' }, { opacity: 0, transform: `translateX(${-26 * dir}px)` }], 260); A(to, [{ opacity: 0, transform: `translateX(${26 * dir}px)` }, { opacity: 1, transform: 'none' }], 420, { delay: 80 }); total = 500; break;
+        case 'rise': A(from, [{ opacity: 1 }, { opacity: 0 }], 200); A(to, [{ opacity: 0, transform: 'translateY(16px)' }, { opacity: 1, transform: 'none' }], 440, { delay: 60, e: 'cubic-bezier(.16,1,.3,1)' }); total = 500; break;
+        case 'blur': A(from, [{ opacity: 1, filter: 'blur(0)' }, { opacity: 0, filter: 'blur(6px)' }], 420); A(to, [{ opacity: 0, filter: 'blur(6px)' }, { opacity: 1, filter: 'blur(0)' }], 420); total = 420; break;
+        case 'slide': A(to, [{ transform: `translateX(${100 * dir}%)` }, { transform: 'none' }], 460, { e: 'cubic-bezier(.2,.8,.2,1)' }); A(from, [{ transform: 'none', filter: 'brightness(1)' }, { transform: `translateX(${-30 * dir}%)`, filter: 'brightness(.6)' }], 460, { e: 'cubic-bezier(.2,.8,.2,1)' }); total = 460; break;
+        case 'push': A(from, [{ transform: 'none' }, { transform: `translateX(${-100 * dir}%)` }], 480, { e: 'cubic-bezier(.65,0,.35,1)' }); A(to, [{ transform: `translateX(${100 * dir}%)` }, { transform: 'none' }], 480, { e: 'cubic-bezier(.65,0,.35,1)' }); total = 480; break;
+        case 'split': {
+          to.style.zIndex = '1'; from.style.zIndex = '2';
+          const l = from.cloneNode(true); const r = from.cloneNode(true);
+          [l, r].forEach((c) => { c.classList.add('fx-pv__clone'); c.style.zIndex = '3'; stage.append(c); });
+          l.style.clipPath = 'inset(0 50% 0 0)'; r.style.clipPath = 'inset(0 0 0 50%)';
+          from.style.visibility = 'hidden';
+          A(l, [{ transform: 'none' }, { transform: 'translateX(-52%)' }], 600, { delay: 80, e: 'cubic-bezier(.65,0,.2,1)' });
+          A(r, [{ transform: 'none' }, { transform: 'translateX(52%)' }], 600, { delay: 80, e: 'cubic-bezier(.65,0,.2,1)' });
+          A(to, [{ transform: 'scale(.97)' }, { transform: 'none' }], 600, { delay: 80 });
+          total = 680; break;
+        }
+        case 'gallery':
+          A(from, [{ transform: 'none', borderRadius: '0' }, { transform: 'scale(.88)', borderRadius: '10px', offset: 0.3 }, { transform: 'scale(.88)', offset: 0.35 }, { transform: `translateX(${-112 * dir}%) scale(.88)`, borderRadius: '10px' }], 760, { e: 'ease-in-out' });
+          A(to, [{ transform: `translateX(${112 * dir}%) scale(.88)`, borderRadius: '10px' }, { transform: 'scale(.88)', offset: 0.65 }, { transform: 'scale(.88)', borderRadius: '10px', offset: 0.7 }, { transform: 'none', borderRadius: '0' }], 760, { e: 'ease-in-out' });
+          total = 760; break;
+        case 'wipe': { const n = panel('fx-pv__panel--brand', 'Logo'); A(n, [{ transform: 'translateX(-101%)' }, { transform: 'none', offset: 0.42 }, { transform: 'none', offset: 0.55 }, { transform: 'translateX(101%)' }], 620, { e: 'cubic-bezier(.65,0,.35,1)' }); swapAt(0.45, 620); total = 620; break; }
+        case 'curtain': {
+          const l = panel('fx-pv__panel--door fx-pv__panel--l'); const r = panel('fx-pv__panel--door fx-pv__panel--r');
+          const kf = (x) => [{ transform: `translateX(${x}%)`, easing: 'cubic-bezier(.37,0,.63,1)' }, { transform: 'none', offset: 0.36 }, { transform: 'none', offset: 0.44, easing: 'cubic-bezier(.45,.05,.2,1)' }, { transform: `translateX(${x}%)` }];
+          A(l, kf(-101), 620, { e: 'linear' }); A(r, kf(101), 620, { e: 'linear' });
+          swapAt(0.4, 620); A(to, [{ transform: 'scale(1.03)' }, { transform: 'scale(1.03)', offset: 0.44 }, { transform: 'none' }], 620, { e: 'linear' });
+          total = 620; break;
+        }
+        case 'reveal': A(to, [{ clipPath: 'inset(100% 0 0 0)' }, { clipPath: 'inset(0 0 0 0)' }], 520, { e: 'cubic-bezier(.65,0,.35,1)' }); A(from, [{ filter: 'brightness(1)' }, { filter: 'brightness(.65)' }], 520); total = 520; break;
+        case 'circle': A(to, [{ clipPath: 'circle(0% at 74% 9%)' }, { clipPath: 'circle(150% at 74% 9%)' }], 580, { e: 'cubic-bezier(.4,0,.2,1)' }); total = 580; break;
+        case 'shape': A(to, [{ clipPath: 'polygon(0 0, 0% 0, -45% 100%, 0 100%)' }, { clipPath: 'polygon(0 0, 145% 0, 100% 100%, 0 100%)' }], 580, { e: 'cubic-bezier(.65,0,.35,1)' }); total = 580; break;
+        case 'zoomin': A(from, [{ opacity: 1 }, { opacity: 0 }], 250); A(to, [{ opacity: 0, transform: 'scale(.92)' }, { opacity: 1, transform: 'none' }], 460, { e: 'cubic-bezier(.16,1,.3,1)' }); total = 460; break;
+        case 'zoomout': A(from, [{ opacity: 1, transform: 'none', borderRadius: '0' }, { opacity: 0, transform: 'scale(.9)', borderRadius: '12px' }], 460); A(to, [{ opacity: 0 }, { opacity: 1 }], 340, { delay: 120 }); total = 460; break;
+        case 'morph': fly(dir > 0 ? ids.a : ids.b, dir > 0 ? ids.b : ids.a, 520); total = 520; break;
+        case 'imagezoom': fly(dir > 0 ? '.fx-pv__card--src .fx-pv__thumb' : '.fx-pv__big', dir > 0 ? '.fx-pv__big' : '.fx-pv__card--src .fx-pv__thumb', 560); total = 560; break;
+        case 'flip3d':
+          stage.classList.add('is-3d');
+          A(from, [{ transform: 'perspective(900px) rotateY(0)' }, { transform: `perspective(900px) rotateY(${-90 * dir}deg)` }], 330, { e: 'ease-in' });
+          A(to, [{ transform: `perspective(900px) rotateY(${90 * dir}deg)` }, { transform: 'perspective(900px) rotateY(0)' }], 330, { delay: 330, e: 'ease-out' });
+          total = 660; break;
+        case 'wash': { const n = panel('fx-pv__panel--wash'); A(n, [{ transform: 'translateX(-135%) skewX(-16deg)' }, { transform: 'translateX(135%) skewX(-16deg)' }], 680, { e: 'cubic-bezier(.5,0,.3,1)' }); swapAt(0.5, 680); total = 680; break; }
+        case 'logo': { const n = panel('fx-pv__panel--brand fx-pv__panel--full', 'Twoja marka'); A(n, [{ opacity: 0 }, { opacity: 1, offset: 0.33 }, { opacity: 1, offset: 0.58 }, { opacity: 0 }], 620, { e: 'ease-in-out' }); A(n.firstChild, [{ transform: 'scale(.9)', opacity: 0 }, { transform: 'none', opacity: 1, offset: 0.4 }, { transform: 'none', opacity: 1 }], 620); swapAt(0.45, 620); total = 620; break; }
+        case 'ai': case '':
+        case 'none': default: from.hidden = true; total = 0;
+      }
+      if (s.pagex.includes('stagger')) {
+        $$('[data-st]', to).sort((x, y) => x.dataset.st - y.dataset.st).forEach((n, i) => A(n, [{ opacity: 0, transform: 'translateY(10px)' }, { opacity: 1, transform: 'none' }], 380, { delay: total + 40 + i * 90 }));
+        total += 40 + 4 * 90 + 380;
+      }
+      timers.push(setTimeout(() => {
+        cur = to;
+        stage.classList.remove('is-3d');
+        reset();
+      }, total * K + 60));
+    };
+    again.addEventListener('click', () => play(state));
+    return { el, play: (s) => play(s), show: (s) => show(s), stop: () => reset() };
+  }
+
+  /** Projekt: dodatkowe wymagania klienta (tekst + pliki) i inspiracje (zdjęcia, PDF). Wszystko dopisuje się do polecenia na stronę. */
+  const docUrl = (d, opts = '') => `/api/admin/docs/${d.id}${opts}`;
+  async function uploadDocs(leadId, kind, list, onProgress) {
+    let done = 0;
+    const errors = [];
+    const arr = [...list];
+    for (let i = 0; i < arr.length; i++) {
+      const file = arr[i];
+      if (onProgress) onProgress(i + 1, arr.length);
+      try {
+        const raster = /^image\/(jpeg|png|webp)$/.test(file.type);
+        const p = raster ? await prepUpload('photo', file) : { main: file };
+        const fd = new FormData();
+        fd.append('kind', kind);
+        fd.append('name', file.name);
+        fd.append('file', p.main, file.name);
+        if (p.thumb) fd.append('thumb', p.thumb, 'thumb.jpg');
+        if (p.w) { fd.append('width', String(p.w)); fd.append('height', String(p.h)); }
+        const r = await fetch(`/api/admin/leads/${leadId}/docs`, { method: 'POST', body: fd, credentials: 'same-origin', headers: { 'X-Panel': '1', Accept: 'application/json' } });
+        const d = await r.json().catch(() => ({}));
+        if (!r.ok || !d.ok) throw new Error(d.message || `błąd ${r.status}`);
+        done++;
+      } catch (e) {
+        errors.push(`${file.name}: ${/decode|source|bitmap/i.test(String(e.message)) ? 'nie mogę odczytać tego formatu (zapisz jako JPG)' : e.message}`);
+      }
+    }
+    return { done, errors };
+  }
+
+  const plFiles = (n) => `${n} ${n === 1 ? 'plik' : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? 'pliki' : 'plików'}`;
+  function leadProjectSection(lead, docs) {
+    const insp = docs.filter((d) => d.kind === 'inspiration');
+    const reqs = docs.filter((d) => d.kind === 'requirement');
+    const status = h('p', { class: 'small', 'aria-live': 'polite' });
+    const del = (d) =>
+      h('button', {
+        class: 'link-btn link-btn--danger', type: 'button', text: 'Usuń', 'aria-label': `Usuń plik ${d.name}`,
+        onclick: async () => {
+          if (!(await confirmDialog({ title: 'Usunąć plik?', text: `Plik „${d.name}” zostanie trwale usunięty.`, ok: 'Usuń' }))) return;
+          const { error } = await q(api(`docs/${d.id}`, { method: 'DELETE' }));
+          if (error) return toast(errMsg(error), 'error');
+          toast('Plik usunięty.');
+          route();
+        },
+      });
+    const picker = (kind, label, accept) => {
+      const inp = h('input', { type: 'file', multiple: true, hidden: true, accept, 'data-doc-upload': kind });
+      const btn = h('button', { class: 'btn btn--sm', type: 'button', text: label, onclick: () => inp.click() });
+      inp.addEventListener('change', async () => {
+        if (!inp.files.length) return;
+        busy(btn, true, 'Wgrywam…');
+        const r = await uploadDocs(lead.id, kind, inp.files, (i, n) => (status.textContent = `Wgrywam ${i} z ${n}…`));
+        busy(btn, false);
+        inp.value = '';
+        status.textContent = r.errors.length ? `Nie wgrano: ${r.errors.join('; ')}` : '';
+        if (r.done) { toast(kind === 'inspiration' ? `Dodano inspiracje: ${r.done}.` : `Dodano pliki z wymaganiami: ${r.done}.`); route(); }
+      });
+      return [inp, btn];
+    };
+    const tile = (d) =>
+      h('li', { 'data-doc': d.id },
+        /^image\//.test(d.content_type)
+          ? h('a', { href: docUrl(d), target: '_blank', rel: 'noopener', 'aria-label': `Otwórz inspirację ${d.name}` }, h('img', { src: docUrl(d, d.has_thumb ? '?thumb=1' : ''), alt: `Inspiracja klienta: ${d.name}`, loading: 'lazy', decoding: 'async' }))
+          : h('a', { class: 'doc-tile', href: docUrl(d), target: '_blank', rel: 'noopener', 'aria-label': `Otwórz plik ${d.name}` }, h('span', { class: 'doc-tile__ext', text: (d.name.split('.').pop() || 'plik').toUpperCase() }), h('span', { class: 'doc-tile__name', text: d.name })),
+        h('div', { class: 'file-photos__bar' },
+          h('span', { class: 'small', text: fmtBytes(d.size_bytes) }),
+          h('a', { class: 'link-btn', href: docUrl(d, '?download=1'), download: d.name, text: 'Pobierz' }),
+          del(d)
+        )
+      );
+    const reqText = h('textarea', { id: 'req-text', rows: '6', maxlength: '8000', 'data-req-text': '', placeholder: 'np. „Klient chce sklep z 20 produktami w przyszłości”, „menu musi być do pobrania jako PDF”, „ważne: strona po polsku i ukraińsku”, „nie używać zdjęć stockowych z ludźmi”.' });
+    reqText.value = lead.requirements || '';
+    const counter = h('span', { class: 'small muted' });
+    const upd = () => (counter.textContent = `${reqText.value.length} / 8000`);
+    reqText.addEventListener('input', upd);
+    upd();
+    const saveReq = h('button', { class: 'btn btn--primary btn--sm', type: 'button', 'data-req-save': '', text: 'Zapisz wymagania' });
+    saveReq.addEventListener('click', async () => {
+      busy(saveReq, true);
+      const { error } = await q(api(`leads/${lead.id}/project`, { method: 'PATCH', body: { requirements: reqText.value } }));
+      busy(saveReq, false);
+      if (error) return toast(errMsg(error), 'error');
+      lead.requirements = reqText.value.trim();
+      toast('Wymagania zapisane — dopiszą się do polecenia na stronę.');
+      route();
+    });
+    return h(
+      'section',
+      { class: 'panel files-panel project-panel', id: 'projekt-zgloszenia', 'aria-labelledby': 'project-title' },
+      h('div', { class: 'brief-sec__head' }, h('h2', { id: 'project-title', text: 'Wymagania i inspiracje klienta' }), h('span', { class: 'small muted', text: `${plFiles(reqs.length)} z wymaganiami · ${insp.length} ${insp.length === 1 ? 'inspiracja' : insp.length % 10 >= 2 && insp.length % 10 <= 4 && (insp.length % 100 < 12 || insp.length % 100 > 14) ? 'inspiracje' : 'inspiracji'}` })),
+      h('p', { class: 'small muted', text: 'Wszystko z tej sekcji dopisuje się automatycznie do polecenia „B. Strona internetowa”. Pliki dołącz do czatu z AI razem z poleceniem.' }),
+      h('h3', null, h('label', { for: 'req-text', text: 'Dodatkowe wymagania klienta' })),
+      reqText,
+      h('div', { class: 'actions project-panel__row' }, saveReq, counter),
+      reqs.length ? h('ul', { class: 'file-photos doc-list' }, reqs.map(tile)) : h('p', { class: 'small muted', text: 'Brak plików z wymaganiami. Możesz dodać np. specyfikację, notatki ze spotkania lub zrzuty ekranu.' }),
+      h('div', { class: 'actions' }, ...picker('requirement', '+ Dodaj plik z wymaganiami (PDF, DOCX, TXT, zdjęcie)', '.pdf,.docx,.txt,image/jpeg,image/png,image/webp')),
+      h('h3', { text: 'Inspiracje (zdjęcia i PDF)' }),
+      insp.length ? h('ul', { class: 'file-photos' }, insp.map(tile)) : h('p', { class: 'small muted', text: 'Brak inspiracji. Dodaj zrzuty stron, zdjęcia lub PDF-y, które podobają się klientowi.' }),
+      h('div', { class: 'actions' }, ...picker('inspiration', '+ Dodaj inspiracje', 'image/jpeg,image/png,image/webp,.svg,.pdf')),
+      status
+    );
+  }
+
   /** Centrum briefów na górze zgłoszenia: briefy w dwóch kolumnach, łączenie i polecenia dla AI. */
-  function leadBriefHub(lead, briefs, logo, mailer) {
+  function leadBriefHub(lead, briefs, logo, mailer, docs = []) {
     const hub = h('section', { class: 'panel brief-hub no-print', id: 'briefy-zgloszenia', 'aria-labelledby': 'brief-hub-title' });
     const own = briefs.filter((x) => !x.merged_at);
     const last = (k) => own.filter((x) => x.kind === k).pop();
@@ -1463,7 +2016,13 @@
       const aiSite = h('button', {
         class: 'btn btn--primary', type: 'button', 'data-hub-ai': 'site', disabled: !siteSrc,
         text: choice ? 'Prompt: cała strona z wybranym logo + SEO' : 'Prompt: cała strona + SEO',
-        onclick: () => withKind(siteSrc, () => promptPreview('Polecenie: cała strona z panelem i SEO', P.site(siteSrc.answers || {}, metaOf(siteSrc), choice), 'Skopiowano polecenie: cała strona z panelem i SEO.')),
+        onclick: () => withKind(siteSrc, () => promptPreview('Polecenie: cała strona z panelem i SEO', P.site(siteSrc.answers || {}, metaOf(siteSrc), choice, projectExtras(lead, docs)), 'Skopiowano polecenie: cała strona z panelem i SEO.')),
+      });
+      const fxSummary = P.effectsSummary ? P.effectsSummary(lead.effects || {}) : '';
+      const aiFx = h('button', {
+        class: 'btn btn--primary', type: 'button', 'data-hub-ai': 'effects', disabled: !siteSrc || !P.EFFECTS,
+        text: fxSummary ? 'Zmień efekty i animacje…' : 'Wybierz efekty i animacje…',
+        onclick: () => withKind(siteSrc, () => effectsDialog(lead, siteSrc.answers || {})),
       });
       const note = [];
       if (!needsBrand) note.push('Projekt logo i hasła: klient nie prosi o logo ani hasło albo brief nie jest jeszcze wypełniony.');
@@ -1479,7 +2038,8 @@
             'div',
             { class: 'hub-ai__grid' },
             h('div', { class: 'hub-ai__item' }, h('strong', { text: 'A. Logo i hasło' }), h('p', { class: 'small muted', text: '4 różne propozycje logo i haseł na stronie wyboru dla klienta + ZIP z plikami.' }), aiLogo),
-            h('div', { class: 'hub-ai__item' }, h('strong', { text: 'B. Strona internetowa' }), h('p', { class: 'small muted', text: `Cała strona ze wszystkimi funkcjami z briefu, panelem do edycji i kompletnym SEO${choice ? ` — z wybranym logo (opcja ${choice.option})` : ''}.` }), aiSite)
+            h('div', { class: 'hub-ai__item' }, h('strong', { text: 'B. Strona internetowa' }), h('p', { class: 'small muted', text: `Cała strona ze wszystkimi funkcjami z briefu, panelem do edycji i kompletnym SEO${choice ? ` — z wybranym logo (opcja ${choice.option})` : ''}${projectExtrasNote(lead, docs)}.` }), aiSite),
+            h('div', { class: 'hub-ai__item', 'data-fx-box': '' }, h('strong', { text: 'C. Efekty i animacje' }), h('p', { class: 'small muted', 'data-fx-summary': '', text: fxSummary ? `Wybrane: ${fxSummary}` : 'Przejścia między stronami, animacje sekcji, tło, kursor i dodatki wizerunkowe. Wybór dopisze się do polecenia B.' }), aiFx)
           ),
           note.length ? h('ul', { class: 'small muted hub-ai__notes' }, ...note.map((t) => h('li', { text: t }))) : null
         )

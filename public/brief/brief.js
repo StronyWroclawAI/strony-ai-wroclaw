@@ -341,6 +341,7 @@
     }
 
     if (f.type === 'upload') return renderUpload(f, hintId, errId);
+    if (f.type === 'sections_list') return renderSectionsList(f, hintId, errId);
 
     if (f.type === 'radio' || f.type === 'checkbox') {
       wrap = el('fieldset', { class: 'bf-field', 'data-field': f.id, 'aria-describedby': describedBy });
@@ -406,6 +407,73 @@
       upd();
       wrap.appendChild(counter);
     }
+    wrap.appendChild(el('p', { class: 'bf-err', id: errId, 'aria-live': 'polite' }));
+    return wrap;
+  }
+
+  /* Własne sekcje: lista wierszy „nazwa + co ma zawierać”, zapisywana jako tekst (jeden wiersz = „Nazwa — opis”). */
+  var SECTIONS_MAX = 12;
+  function parseSections(v) {
+    return String(v || '').split('\n').map(function (l) { return l.trim(); }).filter(Boolean).map(function (l) {
+      var i = l.indexOf(' — ');
+      return i === -1 ? { name: l, desc: '' } : { name: l.slice(0, i).trim(), desc: l.slice(i + 3).trim() };
+    });
+  }
+  function renderSectionsList(f, hintId, errId) {
+    var wrap = el('fieldset', { class: 'bf-field bf-seclist', 'data-field': f.id, 'aria-describedby': [hintId, errId].filter(Boolean).join(' ') });
+    wrap.appendChild(el('legend', null, f.label));
+    if (f.hint) wrap.appendChild(el('p', { class: 'bf-hint', id: hintId, text: f.hint }));
+    var list = el('ol', { class: 'bf-seclist__rows' });
+    var rows = parseSections(answers[f.id]);
+    var clean = function (s, isName) {
+      s = String(s || '').replace(/[\r\n\t]+/g, ' ');
+      return isName ? s.replace(/ — /g, ' - ') : s;
+    };
+    var save = function () {
+      var out = [];
+      list.querySelectorAll('li').forEach(function (li) {
+        var n = clean(li.querySelector('[data-sec-name]').value, true).trim();
+        var d = clean(li.querySelector('[data-sec-desc]').value).trim();
+        if (n) out.push(d ? n + ' — ' + d : n);
+      });
+      setAnswer(f.id, out.join('\n').slice(0, f.max || 3000));
+    };
+    var addBtn;
+    var renumber = function () {
+      var items = list.querySelectorAll('li');
+      items.forEach(function (li, i) {
+        li.querySelector('[data-sec-name]').setAttribute('aria-label', 'Własna sekcja ' + (i + 1) + ' — nazwa');
+        li.querySelector('[data-sec-desc]').setAttribute('aria-label', 'Własna sekcja ' + (i + 1) + ' — co ma się w niej znaleźć');
+        li.querySelector('[data-sec-del]').setAttribute('aria-label', 'Usuń własną sekcję ' + (i + 1));
+      });
+      addBtn.disabled = items.length >= SECTIONS_MAX;
+      addBtn.textContent = items.length ? '+ Dodaj kolejną sekcję' : '+ Dodaj własną sekcję';
+    };
+    var addRow = function (s, focus) {
+      var name = el('input', { type: 'text', maxlength: '80', placeholder: 'Nazwa sekcji, np. Metamorfozy', 'data-sec-name': '' });
+      var desc = el('input', { type: 'text', maxlength: '200', placeholder: 'Co ma się w niej znaleźć, np. zdjęcia przed i po', 'data-sec-desc': '' });
+      name.value = s ? s.name : '';
+      desc.value = s ? s.desc : '';
+      name.addEventListener('input', save);
+      desc.addEventListener('input', save);
+      var del = el('button', { type: 'button', class: 'bf-seclist__del', 'data-sec-del': '', text: 'Usuń' });
+      var li = el('li', { class: 'bf-seclist__row' }, name, desc, del);
+      del.addEventListener('click', function () {
+        var next = li.nextElementSibling || li.previousElementSibling;
+        li.remove();
+        save();
+        renumber();
+        (next ? next.querySelector('[data-sec-name]') : addBtn).focus();
+      });
+      list.appendChild(li);
+      if (focus) name.focus();
+    };
+    addBtn = el('button', { type: 'button', class: 'bf-seclist__add', 'data-sec-add': '' });
+    addBtn.addEventListener('click', function () { addRow(null, true); renumber(); });
+    rows.forEach(function (s) { addRow(s, false); });
+    wrap.appendChild(list);
+    wrap.appendChild(addBtn);
+    renumber();
     wrap.appendChild(el('p', { class: 'bf-err', id: errId, 'aria-live': 'polite' }));
     return wrap;
   }

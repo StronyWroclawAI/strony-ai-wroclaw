@@ -28,6 +28,214 @@
   };
   const colors = (a) => (a.colors === 'mam' && a.colors_list ? `kolory firmowe klienta: ${a.colors_list}` : 'kolory dobrane w projekcie strony (kolor główny, kolor akcentu, tło — podaj ich kody HEX w komentarzu w kodzie)');
 
+  /* ---------- Efekty wizualne i animacje (okno „Efekty i animacje” w zgłoszeniu) ----------
+     Każda opcja ma krótką nazwę (l), opis dla mnie (d) i tekst do polecenia (p).
+     Wybór zapisuje się przy zgłoszeniu (leads.effects) i dopisuje do polecenia na stronę. */
+  const EFFECTS = [
+    {
+      id: 'page', t: 'Przejścia między podstronami', preview: 'page', scope: 'multi',
+      note: 'Działa, gdy strona ma podstrony (przy one-page dotyczy tylko przejść do polityki prywatności itp.). Chrome, Edge i Safari pokazują animację; Firefox otwiera podstrony zwyczajnie. Kliknij opcję, aby zobaczyć podgląd.',
+      options: [
+        { v: 'none', l: 'Bez animacji', p: 'Podstrony otwierają się zwyczajnie, bez animacji przejścia.' },
+        { v: 'ai', l: 'Dobierz sam (AI)', d: 'AI wybierze przejście pasujące do marki', p: 'Rodzaj przejścia między podstronami dobierz do charakteru marki (spokojna branża — przenikanie lub wejście od dołu; nowoczesna/kreatywna — zasłona, kurtyna albo okrągłe odsłonięcie) i napisz w notatce, co wybrałeś i dlaczego.' },
+        // --- Subtelne
+        { c: 'Subtelne przejścia', v: 'fade', l: '1. Przenikanie (fade / crossfade)', d: 'stara podstrona znika, nowa pojawia się w tym samym miejscu — dyskretne, pasuje prawie wszędzie', p: 'PRZENIKANIE (crossfade): stara podstrona płynnie gaśnie, nowa pojawia się w tym samym miejscu (::view-transition-old/new(root): opacity, 300–350 ms, ease-out, obie animacje jednocześnie). Bez przesunięć.' },
+        { v: 'fadeshift', l: '2. Przenikanie z lekkim przesunięciem', d: 'stara treść odpływa w bok, nowa wchodzi z przeciwnej strony', p: 'PRZENIKANIE Z PRZESUNIĘCIEM: stara treść przesuwa się o 20–30 px w lewo i gaśnie (ok. 250 ms), nowa wchodzi z przeciwnej strony (z +20–30 px) i staje się widoczna (ok. 400 ms, miękkie wyhamowanie). Przy „Wstecz” kierunki odwrócone (typ przejścia z navigation.activation.navigationType === "traverse" / kolejności w menu).' },
+        { v: 'rise', l: '3. Zanikanie i pojawianie od dołu', d: 'nowa podstrona unosi się o kilka pikseli i staje się widoczna', p: 'ZANIKANIE I POJAWIANIE OD DOŁU: stara podstrona gaśnie (ok. 200 ms), nowa unosi się z 12–16 px w dół do pozycji wyjściowej i jednocześnie staje się widoczna (ok. 400 ms, start po 60 ms, krzywa cubic-bezier(.16,1,.3,1)).' },
+        { v: 'blur', l: '4. Rozmycie i wyostrzenie (blur / focus)', d: 'stara strona miękko się rozmywa, nowa wyostrza — filmowo, elegancko', p: 'ROZMYCIE I WYOSTRZENIE: stara podstrona rozmywa się (filter: blur 0 → 6 px) i gaśnie, nowa zaczyna lekko nieostra (blur 6 px → 0) i staje się wyraźna; całość 400–450 ms. Rozmycie tylko na komputerze (hover: hover) — na telefonie zwykłe przenikanie (blur na pełnym ekranie obciąża słabsze telefony).' },
+        // --- Przesuwające treść
+        { c: 'Przejścia przesuwające treść', v: 'slide', l: '5. Wjazd z boku (slide)', d: 'nowa podstrona wjeżdża z prawej (przy „Wstecz” z lewej), stara lekko się cofa', p: 'WJAZD Z BOKU (slide): nowa podstrona wjeżdża nad starą z prawej krawędzi (translateX 100% → 0, ok. 450 ms), stara przesuwa się o 30% w lewo i lekko ciemnieje (opacity .6). Kierunek według kolejności pozycji w menu (dalej w menu = z prawej) i odwrotny przy „Wstecz” — ustaw typ przejścia (viewTransition.types: "forward"/"backward") w zdarzeniu pagereveal.' },
+        { v: 'push', l: '6. Wypychanie poprzedniej strony (push)', d: 'nowa strona przesuwa poprzednią poza ekran jak panel', p: 'WYPYCHANIE (push): nowa podstrona wypycha poprzednią poza ekran — obie przesuwają się razem w poziomie (stara 0 → -100%, nowa 100% → 0), 450–500 ms, krzywa cubic-bezier(.65,0,.35,1); kierunek według kolejności w menu, odwrotny przy „Wstecz”.' },
+        { v: 'split', l: '7. Podział ekranu na panele (split)', d: 'stara strona rozcina się na dwie połowy, które rozsuwają się na boki', p: 'PODZIAŁ EKRANU (split): stara podstrona „rozcina się” pionowo na dwie połowy, które rozsuwają się na boki (lewa w lewo, prawa w prawo), odsłaniając nową — zrzut starej strony pokazany dwa razy: ::view-transition-old(root) z clip-path: inset(0 50% 0 0) i drugi element-warstwa z prawą połową (albo dwa panele dekoracyjne z nazwą marki), 550–600 ms. Efekt widowiskowy — tylko przy przejściach z menu.' },
+        { v: 'gallery', l: '8. Przejście poziome jak w galerii', d: 'podstrony przesuwają się jak slajdy w prezentacji', p: 'PRZEJŚCIE JAK W GALERII: obie podstrony najpierw lekko się zmniejszają (skala 0,92, zaokrąglone rogi), przesuwają w poziomie jak slajdy (stara w lewo, nowa z prawej) i nowa wraca do pełnego rozmiaru; ok. 700 ms. Kierunek według kolejności w menu, odwrotny przy „Wstecz”.' },
+        // --- Odsłanianie
+        { c: 'Odsłanianie nowej podstrony', v: 'wipe', l: '9. Zasłona przesuwająca się po ekranie (wipe)', d: 'kolorowy panel przejeżdża przez ekran, zasłania starą stronę i odsłania nową', p: 'ZASŁONA (wipe): panel w kolorze marki (z małym logo na środku) przejeżdża przez ekran od lewej do prawej — najpierw zasłania starą podstronę (ok. 250 ms), potem odjeżdża dalej, odsłaniając nową (ok. 300 ms). Panel jako dekoracyjna warstwa dodawana w zdarzeniu pagereveal (aria-hidden, inert, usuwana po zakończeniu).' },
+        { v: 'curtain', l: '10. Kurtyna (curtain reveal)', d: 'dwie części zasłony zamykają się na środku i rozsuwają', p: 'KURTYNA: dwie części zasłony w kolorze marki zamykają się na środku ekranu (cienka jasna linia na styku, ok. 230 ms), na chwilę (ok. 50 ms) pozostają zamknięte i rozsuwają się na boki, odsłaniając nową podstronę z lekkim przybliżeniem (skala 1,03 → 1); 560 ms na telefonie, 620 ms na komputerze; łagodna krzywa przy zamykaniu, długie wyhamowanie przy otwieraniu.' },
+        { v: 'reveal', l: '11. Odsłanianie od krawędzi (reveal)', d: 'nowa strona wysuwa się spod krawędzi jak karta', p: 'ODSŁANIANIE OD KRAWĘDZI: nowa podstrona odsłania się od dołu ekranu w górę (::view-transition-new(root): clip-path inset(100% 0 0 0) → inset(0), ok. 500 ms) z lekkim cieniem na krawędzi, stara pozostaje pod spodem i lekko ciemnieje.' },
+        { v: 'circle', l: '12. Okrągłe odsłonięcie (circular reveal)', d: 'nowa podstrona rośnie jak koło od klikniętego linku', p: 'OKRĄGŁE ODSŁONIĘCIE: nowa podstrona rozchodzi się kołem od miejsca kliknięcia do pełnego ekranu (clip-path: circle(0 at X Y) → circle(150% at X Y), ok. 550 ms). Współrzędne kliknięcia zapisz przy pointerdown w sessionStorage i w pagereveal ustaw jako zmienne CSS (przy wejściu z klawiatury lub „Wstecz” — środek ekranu).' },
+        { v: 'shape', l: '13. Maska o niestandardowym kształcie', d: 'odsłanianie przez ukośne cięcie lub łuk — w duchu marki', p: 'MASKA O KSZTAŁCIE MARKI: nowa podstrona odsłania się przez ukośne cięcie przesuwające się po ekranie (clip-path: polygon z czterema punktami, od lewej do prawej pod kątem ok. 20°, ok. 550 ms); kształt możesz dopasować do znaku logo (łuk, zaokrąglenie) — opisz w notatce, co wybrałeś.' },
+        // --- Powiększenie / przemiana
+        { c: 'Powiększenie lub przemiana elementu', v: 'zoomin', l: '14. Powiększenie nowej strony (zoom in)', d: 'nowa podstrona zaczyna odrobinę mniejsza i płynnie rośnie', p: 'POWIĘKSZENIE (zoom in): nowa podstrona zaczyna lekko pomniejszona (skala 0,94) i przezroczysta, płynnie rośnie do normalnego rozmiaru (ok. 450 ms), stara gaśnie (ok. 250 ms) — wrażenie wejścia głębiej.' },
+        { v: 'zoomout', l: '15. Oddalenie starej strony (zoom out)', d: 'poprzednia podstrona odsuwa się w głąb, nowa zajmuje ekran', p: 'ODDALENIE (zoom out): stara podstrona delikatnie się zmniejsza (skala 1 → 0,92, zaokrąglone rogi) i gaśnie, jakby odsuwała się w głąb, a nowa pojawia się nad nią (opacity 0 → 1); ok. 450 ms, efekt subtelny.' },
+        { v: 'morph', l: '16. Przemiana wspólnego elementu (morph)', d: 'karta, logo lub nagłówek płynnie „przechodzi” na kolejną stronę', p: 'PRZEMIANA WSPÓLNEGO ELEMENTU (shared element): elementy obecne na obu podstronach (np. karta usługi → nagłówek strony usługi, logo, tytuł) dostają tę samą unikalną nazwę view-transition-name (np. "usluga-strzyzenie") i płynnie zmieniają położenie i rozmiar (::view-transition-group, ok. 450 ms); reszta strony — krótkie przenikanie. Nazwy nadawaj tylko klikniętemu elementowi (zdarzenia pageswap/pagereveal), żeby nie powtórzyły się na liście.' },
+        { v: 'imagezoom', l: '17. Zdjęcie z karty rośnie do dużej grafiki', d: 'miniatura płynnie przechodzi w duże zdjęcie na kolejnej stronie — portfolio, galeria, sklep', p: 'ZDJĘCIE Z KARTY DO DUŻEJ GRAFIKI: miniatura zdjęcia na liście (realizacje, galeria, produkty) płynnie rośnie i przechodzi w duże zdjęcie na podstronie szczegółów (wspólna view-transition-name nadana klikniętej miniaturze w pageswap i dużemu zdjęciu w pagereveal; object-fit dopasowany, ok. 500 ms); przy „Wstecz” zdjęcie wraca na swoje miejsce na liście.' },
+        { v: 'flip3d', l: '18. Efekt 3D — obrót karty', d: 'stara i nowa strona obracają się jak dwie strony karty — mocny efekt', p: 'EFEKT 3D (obrót karty): stara i nowa podstrona obracają się w przestrzeni jak dwie strony karty (perspective ok. 1200 px; stara rotateY 0 → -90°, potem nowa 90° → 0), ok. 650 ms; na telefonie zamiast obrotu zwykłe przenikanie. Mocny efekt — tylko dla kreatywnych marek.' },
+        // --- Uzupełniające
+        { c: 'Efekty uzupełniające', v: 'wash', l: '19. Kolorowa fala (color wash)', d: 'przez ekran przechodzi fala w kolorze marki', p: 'KOLOROWA FALA: przez ekran po skosie przechodzi szeroka fala w kolorach marki (gradient), która na moment zasłania starą podstronę i odsłania nową; ok. 600 ms, szybko ustępuje treści. Dekoracyjna warstwa z pagereveal.' },
+        { v: 'logo', l: '22. Logo lub nazwa jako krótki ekran przejściowy', d: 'na moment logo / nazwa marki na kolorowym tle — krótko, nie jak ekran ładowania', p: 'KRÓTKI EKRAN Z LOGO: na moment pojawia się kolorowy ekran marki z logo lub nazwą (wejście ok. 200 ms, pozostaje ok. 150 ms, znika ok. 250 ms, odsłaniając nową podstronę) — maksymalnie 600 ms, nigdy jak ekran ładowania; bez sztucznego opóźniania nawigacji (animacja startuje dopiero, gdy nowa strona jest gotowa).' },
+      ],
+    },
+    {
+      id: 'pagex', t: 'Uzupełnienia przejścia', multi: true, preview: 'page', scope: 'multi',
+      note: 'Można połączyć z wybranym przejściem powyżej.',
+      options: [
+        { v: 'stagger', l: '20. Sekwencyjne pojawianie się treści (stagger)', d: 'po zmianie podstrony: najpierw nagłówek, potem tekst, zdjęcie i przyciski', p: 'SEKWENCYJNE WEJŚCIE TREŚCI (stagger): po przejściu na nową podstronę elementy pierwszego ekranu pojawiają się kolejno — nagłówek, tekst, zdjęcie, przyciski (każdy: opacity + 10–14 px w górę, odstęp 60–80 ms, maks. 5 kroków). H1 nie może startować z opacity: 0 przy pierwszym wejściu na stronę (LCP) — sekwencja tylko po przejściu z innej podstrony (klasa ustawiana w pagereveal).' },
+        { v: 'pinheader', l: '21. Nagłówek pozostaje, zmienia się tylko treść', d: 'logo i menu stoją w miejscu — nic nie „skacze”', p: 'NAGŁÓWEK STOI W MIEJSCU: nagłówek z logo i menu ma własną nazwę view-transition-name (np. site-header) i pozostaje nieruchomy podczas przejścia — animuje się tylko główna treść. Przy przejściach zasłaniających cały ekran (zasłona, kurtyna, fala, ekran z logo) nagłówek może zostać nad warstwą, jeśli to wygląda spójniej — sprawdź oba warianty i wybierz lepszy.' },
+      ],
+    },
+    {
+      id: 'scroll', t: 'Styl przewijania strony', preview: 'scroll', scope: 'scroll',
+      note: 'Najważniejsze przy stronie one page — cała strona to przewijane sekcje. Kliknij opcję, aby zobaczyć podgląd.',
+      options: [
+        { v: 'normal', l: 'Zwykłe, naturalne przewijanie', d: 'sekcje jedna pod drugą — najspokojniej i najbezpieczniej', p: 'ZWYKŁE PRZEWIJANIE: naturalne przewijanie strony w tempie użytkownika, sekcje jedna pod drugą, bez przechwytywania kółka myszy.' },
+        { v: 'ai', l: 'Dobierz sam (AI)', d: 'AI wybierze styl pasujący do marki i ilości treści', p: 'Styl przewijania dobierz do marki i ilości treści (dużo tekstu — zwykłe przewijanie; mało treści i mocne zdjęcia — sekcje nachodzące na siebie lub przyciąganie do sekcji) i napisz w notatce, co wybrałeś.' },
+        { v: 'stack', l: 'Sekcje nachodzące na siebie (karty)', d: 'kolejna sekcja wjeżdża na poprzednią, która lekko się cofa i przyciemnia', p: 'SEKCJE NACHODZĄCE NA SIEBIE: główne sekcje są przyklejane (position: sticky; top: 0), a kolejna przewija się NAD poprzednią, która lekko się zmniejsza (skala 0,96) i przyciemnia — CSS scroll-driven animations (animation-timeline: view()), bez efektu w przeglądarkach bez obsługi. Tylko dla sekcji, które mieszczą się na ekranie — dłuższe przewijają się zwyczajnie; na telefonie efekt łagodniejszy. Nigdy nie ukrywaj treści, której nie da się przewinąć.' },
+        { v: 'snap', l: 'Przyciąganie do sekcji', d: 'strona miękko „zatrzymuje się” na początku każdej sekcji', p: 'PRZYCIĄGANIE DO SEKCJI: scroll-snap-type: y proximity (NIE mandatory — nie blokuje czytania dłuższych sekcji), scroll-snap-align: start na sekcjach i scroll-padding-top równe wysokości nagłówka. Najlepiej przy sekcjach pełnoekranowych; wyłączone przy ograniczonym ruchu.' },
+        { v: 'curtain', l: 'Odsłanianie sekcji spod poprzedniej', d: 'sekcja odjeżdża w górę jak kurtyna, a następna czeka pod nią', p: 'ODSŁANIANIE SPOD POPRZEDNIEJ: w 1–2 miejscach strony (np. pierwszy ekran → kolejna sekcja, ostatnia sekcja → stopka) następna sekcja jest przyklejona pod spodem (position: sticky), a poprzednia odjeżdża w górę jak kurtyna z miękkim cieniem na dolnej krawędzi. Nie przy każdej sekcji.' },
+        { v: 'zoomsec', l: 'Sekcje rosną przy wejściu', d: 'sekcja wjeżdża lekko pomniejszona z zaokrąglonymi rogami i rośnie do pełnej szerokości', p: 'SEKCJE ROSNĄ PRZY WEJŚCIU: sekcje z wyraźnym tłem (ciemne, ze zdjęciem) wchodzą w widok lekko pomniejszone (skala 0,92, zaokrąglone rogi ok. 24 px) i rosną do pełnej szerokości, gdy dochodzą do środka ekranu (animation-timeline: view(), animation-range: entry 0% cover 40%); tylko transform i border-radius na warstwie tła, bez zmiany wymiarów układu.' },
+        { v: 'splitsticky', l: 'Zdjęcie stoi, tekst się przewija', d: 'w wybranych sekcjach połowa ze zdjęciem jest przyklejona, zdjęcie zmienia się z treścią', p: 'PRZYKLEJONA POŁOWA: w wybranych sekcjach (np. O nas, oferta, etapy współpracy) połowa ze zdjęciem jest przyklejona (position: sticky), a obok przewija się tekst; zdjęcie płynnie zmienia się wraz z kolejnymi akapitami (przenikanie). Na telefonie zdjęcie nad tekstem, bez przyklejania.' },
+      ],
+    },
+    {
+      id: 'scrollx', t: 'Dodatki przewijania', multi: true, preview: 'scroll', scope: 'scroll',
+      options: [
+        { v: 'scrollspy', l: 'Aktywna pozycja menu + pasek postępu', d: 'menu pokazuje, w której sekcji jesteś; cienki pasek postępu', p: 'AKTYWNA POZYCJA MENU: menu podświetla sekcję, w której jest odwiedzający (IntersectionObserver, aria-current="true"), a podkreślenie płynnie przesuwa się między pozycjami; pod nagłówkiem cienki pasek postępu przewijania.' },
+        { v: 'parallax', l: 'Paralaksa warstw', d: 'tła i dekoracje przesuwają się wolniej niż treść', p: 'PARALAKSA: tła i dekoracje wybranych sekcji przesuwają się wolniej niż treść (transform sterowany przez animation-timeline: scroll()/view(), maks. 10–15% przesunięcia); wyłączona na telefonie i przy ograniczonym ruchu.' },
+        { v: 'dots', l: 'Kropki nawigacji z boku', d: 'pionowe kropki — po jednej na sekcję', p: 'KROPKI NAWIGACJI: z prawej strony pionowe kropki (po jednej na sekcję, z podpisem po najechaniu i aria-label), aktywna wyróżniona; kliknięcie przewija do sekcji; ukryte na telefonie.' },
+        { v: 'horizontal', l: 'Poziomy pas przy przewijaniu w dół', d: 'np. realizacje lub galeria przesuwają się w bok, gdy przewijasz w dół', p: 'POZIOMY PAS: jedna sekcja (realizacje / galeria / etapy współpracy) zostaje na chwilę przypięta, a jej zawartość przesuwa się poziomo w rytm przewijania w dół (sticky + animation-timeline: view()); na telefonie, przy ograniczonym ruchu i bez obsługi — zwykły poziomy pas przewijany palcem, z przyciskami „wstecz/dalej”.' },
+        { v: 'textreveal', l: 'Tekst rozjaśniany przewijaniem', d: 'słowa dużego hasła lub cytatu „zapalają się” jedno po drugim', p: 'TEKST ROZJAŚNIANY PRZEWIJANIEM: w jednej sekcji z dużym hasłem lub cytatem słowa przechodzą z przygaszonego na pełny kolor w rytm przewijania (animation-timeline: view()); tekst jest w HTML i czytelny także w stanie początkowym (kontrast min. 3:1).' },
+      ],
+    },
+    {
+      id: 'anchor', t: 'Kliknięcie w menu — przejście do sekcji', preview: 'scroll', scope: 'scroll',
+      options: [
+        { v: 'smooth', l: 'Płynne przewijanie', d: 'strona płynnie przewija się do sekcji', p: 'Kliknięcie w menu płynnie przewija do sekcji (scroll-behavior: smooth, wyłączane przy ograniczonym ruchu).' },
+        { v: 'highlight', l: 'Płynne + wyróżnienie sekcji', d: 'po dojściu tytuł sekcji na moment się wyróżnia', p: 'Kliknięcie w menu płynnie przewija do sekcji, a jej tytuł po dojściu na chwilę (ok. 1 s) delikatnie się wyróżnia (podkreślenie rysowane od lewej).' },
+        { v: 'instant', l: 'Natychmiastowy skok', p: 'Kliknięcie w menu przenosi do sekcji natychmiast, bez animacji przewijania.' },
+        { v: 'fadejump', l: 'Przygaszenie i skok', d: 'przy dalekiej sekcji strona na moment przygasa zamiast długo przewijać', p: 'SKOK Z PRZYGASZENIEM: gdy sekcja jest daleko (ponad 2 ekrany), zamiast długiego przewijania — krótkie przenikanie przez View Transition w obrębie strony: document.startViewTransition(() => sekcja.scrollIntoView({ behavior: "instant" })), ok. 300 ms; bliskie sekcje — płynne przewijanie. Bez obsługi API — zwykłe płynne przewijanie.' },
+        { v: 'curtainjump', l: 'Kurtyna z nazwą sekcji', d: 'panel w kolorze marki przechodzi przez ekran, pod nim strona przeskakuje', p: 'KURTYNA PRZY SKOKU: po kliknięciu pozycji menu przez ekran przechodzi panel w kolorze marki z nazwą sekcji (View Transition w obrębie strony, ok. 450 ms), a pod nim strona przeskakuje do sekcji; tylko dla pozycji menu, nie dla linków w treści; bez obsługi API — płynne przewijanie.' },
+      ],
+    },
+    {
+      id: 'reveal', t: 'Pojawianie się treści przy przewijaniu',
+      options: [
+        { v: 'none', l: 'Bez animacji', p: 'Treść sekcji jest widoczna od razu, bez animacji przy przewijaniu.' },
+        { v: 'fadeup', l: 'Delikatne wyłanianie', d: 'elementy wyłaniają się z dołu, ok. 16 px', p: 'Elementy sekcji (nagłówki, karty, zdjęcia) wyłaniają się przy przewijaniu: przezroczystość 0 → 1 i przesunięcie 16 px w górę, ok. 500 ms, z małym opóźnieniem między kolejnymi elementami.' },
+        { v: 'sides', l: 'Wysuwanie z boków', d: 'w układzie naprzemiennym tekst i zdjęcie z przeciwnych stron', p: 'Bloki wysuwają się z boków (tekst z jednej, zdjęcie z drugiej strony, 24–40 px), ok. 600 ms; na telefonie tylko delikatne wyłanianie z dołu.' },
+        { v: 'mask', l: 'Odsłanianie zdjęć maską', d: 'zdjęcia odsłaniane „kurtyną” (clip-path)', p: 'Zdjęcia i duże grafiki są odsłaniane maską (clip-path: inset od dołu lub z boku) z lekkim przybliżeniem zdjęcia w środku (1,08 → 1), ok. 800 ms; teksty tylko delikatnie się wyłaniają.' },
+        { v: 'stagger', l: 'Kaskada kart', d: 'karty w siatce pojawiają się jedna po drugiej', p: 'Karty w siatkach (oferta, zespół, galeria) pojawiają się kaskadowo jedna po drugiej (opóźnienie 60–80 ms, maks. 6 kroków), pozostałe elementy — delikatne wyłanianie.' },
+      ],
+    },
+    {
+      id: 'hero', t: 'Pierwszy ekran (hero)',
+      options: [
+        { v: 'static', l: 'Statyczny', p: 'Pierwszy ekran bez animacji wejścia.' },
+        { v: 'words', l: 'Nagłówek słowo po słowie', d: 'słowa nagłówka wjeżdżają po kolei', p: 'Nagłówek pierwszego ekranu pojawia się słowo po słowie (każde słowo wysuwa się z maski od dołu, opóźnienie 60–80 ms) — tekst jest w HTML od początku i jest widoczny dla Google i czytników; animacja nie może opóźnić LCP (zacznij ją od razu po wyrenderowaniu, bez czekania na skrypty, albo pomiń dla elementu LCP).' },
+        { v: 'typewriter', l: 'Zmieniające się słowo', d: 'np. „Strony dla salonów / warsztatów / kawiarni”', p: 'W nagłówku pierwszego ekranu jedno słowo zmienia się co ok. 2,5 s (efekt pisania lub przewijania w pionie) — lista słów z briefu (np. usługi, grupy klientów); pierwsze słowo jest w HTML, dla czytników ekranu cały zestaw w ukrytym tekście, aria-live wyłączone.' },
+        { v: 'parallax', l: 'Paralaksa zdjęcia', d: 'zdjęcie w tle przesuwa się wolniej niż treść', p: 'Zdjęcie w tle pierwszego ekranu przesuwa się wolniej niż treść (paralaksa: animation-timeline: scroll() w CSS z prostym zapasem w JS; tylko transform; wyłączona na telefonie i przy ograniczonym ruchu).' },
+        { v: 'kenburns', l: 'Powolne przybliżanie zdjęcia', d: 'efekt „Ken Burns”', p: 'Zdjęcie pierwszego ekranu bardzo powoli się przybliża (skala 1 → 1,06 przez 12–16 s, tylko transform), co daje „żywy” kadr bez rozpraszania.' },
+        { v: 'video', l: 'Krótkie wideo w tle', d: 'tylko gdy klient ma materiał', p: 'Pierwszy ekran z krótkim, wyciszonym, zapętlonym wideo w tle (materiał od klienta; MP4/WebM do ok. 3 MB, poster jako obraz LCP, przycisk pauzy, na telefonie i przy wolnym łączu tylko zdjęcie). Jeśli klient nie ma wideo — zdjęcie z powolnym przybliżaniem.' },
+      ],
+    },
+    {
+      id: 'bg', t: 'Tło strony',
+      options: [
+        { v: 'plain', l: 'Spokojne, jednolite', p: 'Tło strony jednolite (kolory marki), bez animacji.' },
+        { v: 'gradient', l: 'Płynnie zmieniający się gradient', d: 'kolory marki powoli „płyną” w tle', p: 'W tle pierwszego ekranu (i ewentualnie sekcji wyróżnionych) gradient z kolorów marki, który bardzo powoli się przemieszcza (animacja background-position 20–30 s, nieskończona; wyłączona przy ograniczonym ruchu).' },
+        { v: 'aurora', l: 'Miękkie plamy światła („aurora”)', d: 'rozmyte kolorowe plamy dryfujące w tle', p: 'W tle 2–3 rozmyte, półprzezroczyste plamy w kolorach marki, które powoli dryfują (transform, 18–25 s); jedna warstwa position: fixed z pointer-events: none; kontrast tekstu musi zostać min. 4,5:1.' },
+        { v: 'grid', l: 'Siatka lub kropki z paralaksą', d: 'delikatny wzór, który przesuwa się przy przewijaniu', p: 'Delikatny wzór (siatka linii lub kropek, 4–6% krycia) w tle wybranych sekcji, przesuwający się wolniej przy przewijaniu; wzór w CSS (bez obrazków).' },
+        { v: 'scrollcolor', l: 'Tło zmienia kolor między sekcjami', d: 'płynna zmiana koloru tła przy przewijaniu', p: 'Kolor tła strony płynnie zmienia się między sekcjami (każda sekcja ma swój odcień z palety marki, zmiana ok. 600 ms przy wejściu sekcji w widok — IntersectionObserver albo animation-timeline: view()); tekst zawsze z kontrastem min. 4,5:1.' },
+        { v: 'grain', l: 'Subtelne „ziarno” jak na fotografii', d: 'nadaje tłu fakturę premium', p: 'Na tle subtelna faktura „ziarna” (szum SVG feTurbulence jako jedna stała warstwa, 3–5% krycia, bez animacji) — daje wrażenie druku premium.' },
+      ],
+    },
+    {
+      id: 'cursor', t: 'Kursor (tylko komputer z myszą)', note: 'Na telefonach i tabletach kursora nie ma — tam zostaje zwykłe działanie.',
+      options: [
+        { v: 'default', l: 'Zwykły kursor', p: 'Zwykły kursor systemowy.' },
+        { v: 'follower', l: 'Kropka z obwódką', d: 'mała kropka + pierścień, który miękko za nią podąża', p: 'Własny kursor: mała kropka w kolorze akcentu i pierścień, który miękko za nią podąża (interpolacja w requestAnimationFrame, tylko transform); nad linkami i przyciskami pierścień się powiększa. Kursor systemowy zostaje widoczny (nie ukrywaj go — dostępność); tylko przy (hover: hover) and (pointer: fine), wyłączony przy ograniczonym ruchu.' },
+        { v: 'label', l: 'Kursor z podpisem nad zdjęciami', d: 'np. „Zobacz” nad galerią i realizacjami', p: 'Nad zdjęciami galerii i realizacji obok kursora pojawia się okrągła etykieta z czynnością („Zobacz”, „Powiększ”, „Przeciągnij” przy sliderze); tylko na komputerze z myszą, element dekoracyjny aria-hidden.' },
+        { v: 'spotlight', l: 'Światło za kursorem', d: 'delikatna poświata podąża za kursorem na ciemnych sekcjach', p: 'Na ciemnych sekcjach (np. pierwszy ekran) za kursorem podąża delikatna, rozmyta poświata w kolorze akcentu (radial-gradient sterowany zmiennymi CSS, aktualizowany w requestAnimationFrame); tylko komputer z myszą.' },
+      ],
+    },
+    {
+      id: 'extras', t: 'Dodatki wizerunkowe', multi: true,
+      options: [
+        { v: 'progress', l: 'Pasek postępu czytania', p: 'Cienki pasek postępu przewijania pod nagłówkiem (animation-timeline: scroll() z zapasem w JS).' },
+        { v: 'counters', l: 'Animowane liczniki', d: 'tylko prawdziwe liczby z briefu', p: 'Animowane liczniki (np. lata doświadczenia, zrealizowane projekty) liczące od zera, gdy sekcja wejdzie w widok — WYŁĄCZNIE prawdziwe liczby z briefu; bez danych pomiń liczniki.' },
+        { v: 'tilt', l: 'Karty pochylające się 3D', d: 'karta lekko obraca się za kursorem', p: 'Karty oferty/realizacji lekko pochylają się w 3D za kursorem (maks. 6°, perspective, tylko transform), z delikatnym połyskiem; tylko komputer z myszą.' },
+        { v: 'magnetic', l: 'Przyciski „magnetyczne”', d: 'główne przyciski lekko przyciągają się do kursora', p: 'Główne przyciski (CTA) lekko „przyciągają się” do kursora (przesunięcie maks. 6–8 px, powrót sprężysty); tylko komputer z myszą.' },
+        { v: 'cardglow', l: 'Podświetlenie karty za kursorem', d: 'poświata wewnątrz karty podąża za myszą', p: 'Wewnątrz kart po najechaniu pojawia się miękka poświata podążająca za kursorem (radial-gradient ze zmiennymi CSS) i podświetlona krawędź.' },
+        { v: 'marquee', l: 'Przewijany pas logotypów lub haseł', d: 'np. partnerzy, marki, z którymi pracuje firma', p: 'Płynnie przewijany w poziomie pas (logotypy partnerów/marek albo krótkie hasła marki), zatrzymywany po najechaniu i przy ograniczonym ruchu; tylko prawdziwe logotypy z materiałów klienta.' },
+        { v: 'beforeafter', l: 'Suwak „przed / po”', d: 'metamorfozy, remonty, renowacje', p: 'Suwak porównania „przed / po” (dwa zdjęcia, przeciągany uchwyt, obsługa klawiaturą strzałkami, etykiety „Przed” i „Po”) — w panelu możliwość dodawania par zdjęć.' },
+        { v: 'zoomgallery', l: 'Galeria z płynnym powiększeniem', d: 'miniatura „rośnie” do pełnego ekranu', p: 'Galeria: kliknięta miniatura płynnie „rośnie” do widoku pełnoekranowego (View Transitions w obrębie strony albo animacja FLIP), z obsługą klawiatury i gestów przesuwania.' },
+        { v: 'blurup', l: 'Zdjęcia ładowane z rozmyciem', d: 'najpierw rozmyty podgląd, potem ostre zdjęcie', p: 'Zdjęcia poniżej pierwszego ekranu ładują się z małym rozmytym podglądem (kolor dominujący lub miniatura ~20 px), który płynnie zamienia się w ostre zdjęcie.' },
+        { v: 'underline', l: 'Animowane podkreślenia linków', p: 'Linki w treści i menu mają podkreślenie rysowane od lewej przy najechaniu i fokusie.' },
+        { v: 'menuanim', l: 'Efektowne menu mobilne', d: 'pełnoekranowe, pozycje pojawiają się kaskadowo', p: 'Menu mobilne otwiera się na cały ekran (tło w kolorze marki), a pozycje pojawiają się kaskadowo; zamykanie Escape, pułapka fokusu, blokada przewijania strony pod menu.' },
+        { v: 'stickycta', l: 'Pływający przycisk kontaktu (telefon)', p: 'Na telefonie przy dolnej krawędzi pływający przycisk głównej akcji (Zadzwoń / Rezerwuj / Napisz), chowany przy przewijaniu w dół i pokazywany przy przewijaniu w górę; nie zasłania stopki ani formularza.' },
+        { v: 'totop', l: 'Przycisk „do góry” z postępem', p: 'Przycisk „do góry” z kółkiem pokazującym postęp przewijania; pojawia się po przewinięciu jednego ekranu.' },
+        { v: 'darkmode', l: 'Tryb ciemny', p: 'Przełącznik trybu jasnego/ciemnego (domyślnie według ustawień systemu, wybór zapamiętany), z kolorami ciemnej wersji dobranymi do marki i kontrastem AA w obu trybach.' },
+        { v: 'sound', l: 'Dźwięki interfejsu', d: 'tylko po włączeniu przez odwiedzającego — rzadko potrzebne', p: 'Bardzo ciche dźwięki interfejsu (kliknięcia, otwarcie menu) — DOMYŚLNIE WYŁĄCZONE, włączane ikonką głośnika; nigdy autoodtwarzanie.' },
+        { v: 'paneltoggle', l: 'Włącz/wyłącz animacje w panelu', d: 'klient sam zdecyduje, czy animacje mają działać', p: 'W panelu administracyjnym (Ustawienia → Wygląd) przełączniki: animacje przewijania, efekty kursora, tło animowane, przejścia między podstronami — każdy włącz/wyłącz, z podglądem na żywo.' },
+      ],
+    },
+    {
+      id: 'intensity', t: 'Ogólny charakter animacji',
+      options: [
+        { v: 'subtle', l: 'Subtelny', d: 'elegancko, prawie niezauważalnie', p: 'Charakter animacji: SUBTELNY — krótkie (200–500 ms), małe przesunięcia (8–16 px), nic nie odciąga od treści.' },
+        { v: 'medium', l: 'Wyraźny', d: 'nowocześnie, ale bez przesady', p: 'Charakter animacji: WYRAŹNY — animacje zauważalne i dopracowane (400–700 ms), ale nigdy nie opóźniają korzystania ze strony.' },
+        { v: 'bold', l: 'Efektowny', d: 'strona ma „wow”, dla marek kreatywnych', p: 'Charakter animacji: EFEKTOWNY — strona ma robić wrażenie (dłuższe sekwencje do ok. 900 ms na pierwszym ekranie, warstwy, paralaksa), ale każda akcja użytkownika (klik, przewijanie) działa natychmiast.' },
+      ],
+    },
+  ];
+  const effectOpt = (g, v) => (g.options || []).find((o) => o.v === v);
+  /** Czy zapisano jakikolwiek wybór efektów. */
+  const hasEffects = (fx) => !!fx && EFFECTS.some((g) => (g.multi ? Array.isArray(fx[g.id]) && fx[g.id].length : fx[g.id])) || !!(fx && (fx.notes || fx.sitetype));
+  /** Rodzaj strony z briefu: 'onepage' | 'multi' | '' (nieustalony). */
+  const briefSiteType = (a) => (!a ? '' : a.layout === 'onepage' || a.site_type === 'onepage' ? 'onepage' : a.site_type === 'podstrony' ? 'multi' : '');
+  /** Krótkie podsumowanie wyboru (do panelu). */
+  function effectsSummary(fx) {
+    if (!hasEffects(fx)) return '';
+    const parts = [];
+    const type = fx.sitetype === 'onepage' || fx.sitetype === 'multi' ? fx.sitetype : '';
+    if (type) parts.push(type === 'onepage' ? 'Strona: one page' : 'Strona: podstrony');
+    EFFECTS.forEach((g) => {
+      if (!groupFits(g, type)) return;
+      if (g.multi) {
+        const l = (fx[g.id] || []).map((v) => (effectOpt(g, v) || {}).l).filter(Boolean);
+        if (l.length) parts.push(`${g.t}: ${l.join(', ')}`);
+      } else if (fx[g.id] && effectOpt(g, fx[g.id])) parts.push(`${g.t}: ${effectOpt(g, fx[g.id]).l}`);
+    });
+    if (fx.notes) parts.push(`Uwagi: ${fx.notes}`);
+    return parts.join(' · ');
+  }
+  /** Blok polecenia „Efekty wizualne i animacje”. */
+  const SITE_TYPE_TXT = {
+    onepage: 'ONE PAGE — wszystkie sekcje na jednej przewijanej stronie, menu przewija do sekcji (przejścia między podstronami nie dotyczą; pojedyncze podstrony jak polityka prywatności — krótkie przenikanie).',
+    multi: 'PODSTRONY — każda pozycja menu otwiera osobną stronę (osobny adres URL); przejścia między podstronami są kluczowe, efekty przewijania dotyczą treści w obrębie podstron.',
+  };
+  /** Czy grupa efektów dotyczy wybranego rodzaju strony. */
+  const groupFits = (g, type) => !type || !g.scope || (type === 'onepage' ? g.scope !== 'multi' : true);
+  function effectsTask(fx) {
+    if (!hasEffects(fx)) return '';
+    const lines = [];
+    const type = fx.sitetype === 'onepage' || fx.sitetype === 'multi' ? fx.sitetype : '';
+    if (type) lines.push(`RODZAJ STRONY: ${SITE_TYPE_TXT[type]}`);
+    EFFECTS.forEach((g) => {
+      if (!groupFits(g, type)) return;
+      if (g.multi) {
+        const chosen = (fx[g.id] || []).map((v) => effectOpt(g, v)).filter(Boolean);
+        if (chosen.length) lines.push(`${g.t.toUpperCase()}:\n${chosen.map((o) => `- ${o.p}`).join('\n')}`);
+      } else {
+        const o = fx[g.id] && effectOpt(g, fx[g.id]);
+        if (o) lines.push(`${g.t.toUpperCase()}:\n- ${o.p}`);
+      }
+    });
+    const page = type !== 'onepage' && ((fx.page && fx.page !== 'none') || (Array.isArray(fx.pagex) && fx.pagex.length > 0));
+    const scrolling = ['scroll', 'scrollx', 'anchor'].some((k) => (Array.isArray(fx[k]) ? fx[k].length : fx[k] && fx[k] !== 'normal' && fx[k] !== 'smooth' && fx[k] !== 'instant'));
+    return `EFEKTY WIZUALNE I ANIMACJE (wybrane przeze mnie po briefie — wdróż dokładnie te)
+${lines.join('\n\n')}${fx.notes ? `\n\nMOJE UWAGI DO EFEKTÓW:\n${fx.notes}` : ''}
+
+ZASADY TECHNICZNE ANIMACJI (obowiązkowe)
+- Animuj wyłącznie transform i opacity (ew. clip-path, filter tylko na małych elementach); żadnych animacji width/height/top/left/margin — zero przesunięć układu (CLS < 0,1).
+- Treść jest w HTML i widoczna od razu: nigdy nie ukrywaj nagłówka H1 ani obrazu pierwszego ekranu (opacity: 0) w oczekiwaniu na skrypt — animacje nie mogą pogorszyć LCP. Animacje „przy przewijaniu” dotyczą tylko elementów poniżej pierwszego ekranu, a bez JavaScriptu wszystko jest widoczne (klasa włączająca animacje dodawana przez skrypt).
+- Wszystko wyłączone przy @media (prefers-reduced-motion: reduce): zostaje zwykła nawigacja, bez kurtyn, przesunięć, paralaksy i efektów kursora.
+- Efekty kursora, pochylenia i „magnetyczne” przyciski tylko przy (hover: hover) and (pointer: fine); na telefonach ich nie ma.
+- Jeden lekki skrypt (bez bibliotek typu GSAP, jeśli nie są konieczne), IntersectionObserver zamiast nasłuchu scroll, requestAnimationFrame dla ruchu za kursorem.${scrolling ? `
+- Efekty przewijania: NIE przechwytuj kółka myszy ani gestów (żadnego „scroll-jackingu”) — strona zawsze przewija się w tempie użytkownika. Efekty zależne od przewijania przez CSS scroll-driven animations (animation-timeline: scroll()/view()) w @supports, a w przeglądarkach bez obsługi — strona bez efektu (wszystko widoczne). Przyklejone (sticky) elementy nie mogą zasłaniać treści ani fokusu klawiatury; kotwice i przycisk „Wstecz” działają normalnie.` : ''}${page ? `
+- Przejścia między podstronami: View Transitions między dokumentami (CSS @view-transition { navigation: auto; } w media (prefers-reduced-motion: no-preference)) — zwykłe linki i zwykła nawigacja, BEZ routera SPA i bez AJAX. Warstwy dekoracyjne (kurtyna, skrzydła) dokładaj w zdarzeniu „pagereveal” ze skryptu wczytanego w <head> BEZ defer, z typem przejścia (viewTransition.types) i aria-hidden + inert; po zakończeniu usuwaj warstwę. Link do tej samej strony i kotwice na tej samej stronie nie uruchamiają przejścia. Przeglądarki bez obsługi (Firefox) otwierają podstrony zwyczajnie — bez błędów. „Wstecz/Dalej” i pozycja przewinięcia działają jak w zwykłej stronie.` : ''}
+- Na końcu odpowiedzi wypisz, które efekty wdrożyłeś i gdzie można je wyłączyć.`;
+  }
+
   /* ---------- Układ strony: reguły dla każdego układu ---------- */
   const SEP = '────────────────────────────────────────';
   const LAYOUT_RULES = {
@@ -147,11 +355,34 @@ ${R.panel.map((x) => `- ${x}`).join('\n')}${R.note ? `\n${R.note}` : ''}`;
     if (a.site_type === 'podstrony') return 'WIELE_STRON';
     return 'DO USTALENIA — wybierz ONE_PAGE, gdy sekcji jest mniej niż 6, w przeciwnym razie WIELE_STRON (i napisz to w notatce)';
   }
+  /** Własne sekcje dopisane przez klienta w briefie (pole custom_sections: wiersze „Nazwa — opis”). */
+  function customSections(a) {
+    return String(a.custom_sections || '')
+      .split('\n')
+      .map((l) => l.trim())
+      .filter(Boolean)
+      .map((l) => {
+        const i = l.indexOf(' — ');
+        return i === -1 ? { name: l, desc: '' } : { name: l.slice(0, i).trim(), desc: l.slice(i + 3).trim() };
+      })
+      .filter((s) => s.name);
+  }
+  function customSectionsTask(a) {
+    const list = customSections(a);
+    if (!list.length) return '';
+    return `WŁASNE SEKCJE KLIENTA (dopisane w briefie — zrealizuj każdą jako osobną sekcję z tytułem H2, w menu i w panelu do edycji)
+${list.map((s, i) => `${i + 1}. ${s.name}${s.desc ? ` — ${s.desc}` : ''}`).join('\n')}
+Umieść je w logicznym miejscu kolejności sekcji; jeśli opis jest krótki, zaproponuj treść i oznacz [DO POTWIERDZENIA PRZEZ KLIENTA].
+
+`;
+  }
   /** Moduły wybrane w briefie (sekcje + funkcje). */
   function modulesOf(a) {
     const list = [];
     const sec = isOrg(a) ? val('org_sections', a) : val('sections', a);
     if (sec) list.push(sec);
+    const custom = customSections(a);
+    if (custom.length) list.push(`własne sekcje klienta: ${custom.map((s) => s.name).join(', ')}`);
     const booking = val('booking', a);
     if (booking && !/^Nie/i.test(booking)) list.push(`rezerwacje: ${booking}`);
     const integ = val('integrations', a);
@@ -213,6 +444,35 @@ KONFLIKTY I UWAGI
     return `\nUSTAWIENIA UKŁADU W PANELU (strona ma układ: ${R.t}) — pokazuj WYŁĄCZNIE te opcje układu, a podgląd na żywo renderuj w tym układzie:\n${R.panel.map((x) => `- ${x}`).join('\n')}\n`;
   }
 
+  /* ---------- Zasady techniczne dla każdej strony ---------- */
+  /** Przewijanie do sekcji pod przyklejonym nagłówkiem — bez dużego odstępu między nagłówkiem strony a treścią. */
+  const ANCHOR_SPEC = `PRZEWIJANIE DO SEKCJI POD PRZYKLEJONYM NAGŁÓWKIEM (obowiązkowo)
+- Po kliknięciu pozycji menu (i po wejściu z adresem #sekcja) tytuł sekcji ma stanąć tuż pod nagłówkiem strony — bez dużej pustej przerwy między nagłówkiem a treścią i bez chowania tytułu pod nagłówkiem.
+- Zmienne CSS: --hdr = rzeczywista wysokość przyklejonego nagłówka (aktualizowana w JS przy zmianie rozmiaru okna, np. ResizeObserver na nagłówku — na telefonie nagłówek bywa niższy), --pad = górny odstęp wewnętrzny sekcji (padding-top).
+- Reguła dla sekcji z kotwicą: section[id] { scroll-margin-top: calc(var(--hdr) - var(--pad) + 1.75rem); }
+  (odejmujemy padding sekcji, bo inaczej nad tytułem zostaje pusty pas o wysokości paddingu).
+- Jeśli przewijasz z JavaScriptu, używaj element.scrollIntoView() albo licz przesunięcie tą samą formułą — nigdy dwóch różnych odstępów.
+- Sprawdź każdą pozycję menu na 390 px i 1366 px: tytuł sekcji ok. 1,75rem pod dolną krawędzią nagłówka.`;
+
+  /** Formularze zgodne z RODO. */
+  const RODO_SPEC = (a) => `FORMULARZE ZGODNE Z RODO (obowiązkowo dla każdego formularza: kontakt, zapytanie, rezerwacja, zapisy)
+- Pod formularzem krótka klauzula informacyjna (art. 13 RODO): kto jest administratorem danych (pełna nazwa firmy/organizacji, adres, NIP/KRS — z briefu, a gdy ich brak: [DANE ADMINISTRATORA DO UZUPEŁNIENIA]), cel (odpowiedź na zapytanie / obsługa rezerwacji), podstawa prawna (art. 6 ust. 1 lit. b RODO — działania przed zawarciem umowy, lub lit. f — prawnie uzasadniony interes: odpowiedź na wiadomość), jak długo dane są przechowywane (np. do zakończenia korespondencji, najdłużej 12 miesięcy), komu są powierzane (hosting, dostawca poczty), prawa osoby (dostęp, sprostowanie, usunięcie, ograniczenie, sprzeciw, przenoszenie, skarga do Prezesa UODO) i link do pełnej polityki prywatności.
+- Minimalizacja danych: tylko pola potrzebne do odpowiedzi (imię, e-mail lub telefon, wiadomość); pozostałe opcjonalne i oznaczone „(opcjonalnie)”.
+- Wysłanie zwykłego zapytania NIE wymaga zgody — nie dodawaj obowiązkowego checkboxa „wyrażam zgodę na przetwarzanie danych”. Jeśli klient chce checkbox, może to być tylko potwierdzenie „Zapoznałem(-am) się z informacją o przetwarzaniu danych”.
+- Zgody dodatkowe (newsletter, informacje handlowe e-mailem/SMS — RODO i Prawo komunikacji elektronicznej) tylko jako osobne, NIEZAZNACZONE domyślnie i NIEOBOWIĄZKOWE pola, każde z jasnym opisem celu i informacją o możliwości wycofania zgody.${isOrg(a) ? '\n- Zapisy dzieci i młodzieży: dane podaje rodzic/opiekun (pole „Imię i nazwisko rodzica/opiekuna”), osobne pole zgody na publikację wizerunku dziecka (niezaznaczone, nieobowiązkowe).' : ''}
+- Danych szczególnych (np. o zdrowiu) nie zbieraj w formularzu, chyba że to konieczne (np. gabinet) — wtedy wyraźna zgoda (art. 9 ust. 2 lit. a) i informacja, po co.
+- Polityka prywatności (podstrona lub okno) z pełną informacją: administrator, cele i podstawy, odbiorcy (Cloudflare — hosting, dostawca poczty), przekazywanie poza EOG (standardowe klauzule umowne / Data Privacy Framework), okresy przechowywania, prawa, pliki cookies (tylko niezbędne; analityka i piksele wyłącznie po zgodzie z banera, z równie widocznym przyciskiem „Odrzuć”).
+- Bezpieczeństwo: tylko HTTPS, walidacja również po stronie serwera, antyspam bez śledzenia (pole-pułapka honeypot, limit wysyłek; Cloudflare Turnstile zamiast reCAPTCHA), dane formularza nie trafiają do logów ani do localStorage, komunikat po wysłaniu bez powtarzania danych osobowych w adresie URL.
+- Dane administratora i treść klauzuli edytowalne w panelu (Ustawienia → Dane firmy / RODO).`;
+
+  /** Niezawodność funkcji serwera (wnioski z błędu 524 na mojej stronie). */
+  const SERVER_RELIABILITY = `=== 1b. NIEZAWODNOŚĆ SERWERA (obowiązkowo — zapobiega „wiszeniu” strony i błędowi Cloudflare 524) ===
+- NIE trzymaj w zmiennej modułu obietnicy (Promise) wspólnej dla wielu żądań (np. „raz na instancję sprawdź/utwórz dane w KV/D1”). Gdy żądanie, które ją zaczęło, zostanie przerwane (np. odwiedzający odświeży stronę w trakcie ładowania), Cloudflare anuluje jego operacje, obietnica nigdy się nie kończy, a WSZYSTKIE kolejne żądania tej kopii serwera czekają do błędu 524 (po ok. 100 s). Zamiast tego: każde żądanie czeka tylko na własne zapytania, a „pamięć” instancji to zwykła wartość logiczna ustawiana dopiero PO udanym zakończeniu (np. let schemaOk = false; … schemaOk = true). Inicjalizacja musi być bezpieczna przy równoległym uruchomieniu.
+- Każdy odczyt z KV/D1 na ścieżce wyświetlania strony ma limit czasu (np. 5–6 s: Promise.race z setTimeout). Po przekroczeniu strona pokazuje treść zapisaną w HTML (wartości początkowe) zamiast wisieć.
+- Zadania w tle (statystyki, powiadomienia e-mail) tylko przez context.waitUntil i też z limitem czasu — nigdy nie blokują odpowiedzi.
+- API panelu przy przekroczeniu czasu zwraca czytelny błąd (503, komunikat po polsku), a panel pokazuje „Serwer chwilowo nie odpowiada — spróbuj ponownie” z przyciskiem ponowienia; żadnych nieskończonych „Ładowanie…”.
+- W przeglądarce każde zapytanie (fetch) ma limit czasu (AbortController, ok. 8–10 s).`;
+
   /* ---------- Panel administracyjny (specyfikacja) ---------- */
   function panelSpec(a, standalone) {
     const scope = val('panel_scope', a);
@@ -233,6 +493,8 @@ ${isOrg(a) ? 'TO STRONA WIZERUNKOWA (bez sprzedaży): w panelu pomiń cennik, pr
 - Tryb awaryjny: gdy API nie odpowiada (np. plik otwarty z dysku), panel działa w trybie demonstracyjnym z zapisem w przeglądarce (IndexedDB) i wyraźnym paskiem „Tryb demonstracyjny — zmiany zapisują się tylko na tym komputerze”.
 - Dołącz krótką instrukcję wdrożenia: utworzenie KV, dodanie powiązania TRESCI, wygenerowanie hasha pierwszego hasła (mały skrypt) i ustawienie go jako zmiennej ADMIN_PASSWORD_HASH oraz SESSION_SECRET.
 - Panel ma własne style z unikalnym prefiksem klas (np. .cmsp-), żeby nie kolidował ze stylami strony. Kolory panelu dopasuj do marki: ${colors(a)}.
+
+${SERVER_RELIABILITY}
 
 === 2. LOGOWANIE ===
 - Mała ikonka kłódki przyklejona w lewym dolnym rogu strony (na telefonie nad dolnym paskiem przycisków) oraz link „Panel administratora” w stopce.
@@ -339,11 +601,13 @@ Na koniec przetestuj: logowanie (złe i dobre hasło), zmianę hasła (stare prz
 
   const isOrg = (a) => a && a.site_purpose === 'wizerunkowa';
   /** Logo i zdjęcia wgrane przez klienta w briefie (pliki są w panelu, w zgłoszeniu). */
-  const clientMaterials = (a) => {
+  const clientMaterials = (a, extras) => {
     const lines = [];
+    const insp = (extras && extras.inspirations) || [];
     const logo = a.logo_files || a.logo_files_current;
     if (logo) lines.push(`- Własne logo klienta (${logo}) — dołączam pliki. Użyj go bez przerysowywania, dobierz do niego kolory i przygotuj z niego favicon.`);
     if (a.photo_files) lines.push(`- ${a.photo_files} od klienta — dołączam je. Użyj ich w pierwszej kolejności (WebP, opisowe nazwy plików i atrybuty alt).`);
+    if (insp.length) lines.push(`- Inspiracje od klienta (${insp.length} ${insp.length === 1 ? 'plik' : insp.length < 5 ? 'pliki' : 'plików'}: ${insp.join(', ')}) — dołączam je. To przykłady stylu, który mu się podoba: przejmij nastrój, kolorystykę, typografię i rozmieszczenie elementów, ale NIE kopiuj cudzych stron, logo, tekstów ani zdjęć 1:1. Na początku odpowiedzi napisz w 3–5 punktach, co bierzesz z inspiracji.`);
     return lines.length ? `MATERIAŁY OD KLIENTA
 ${lines.join('\n')}
 
@@ -412,7 +676,25 @@ LOGO I HASŁO — WYBRANE PRZEZ KLIENTA (gotowe, nie projektuj nowych)
   }
 
   /* ---------- 1. Strona + panel (+ SEO, + wybrane logo) ---------- */
-  function site(a, meta, choice) {
+  /** Dodatkowe wymagania klienta (tekst + pliki dodane w panelu). */
+  function requirementsTask(extras) {
+    const r = extras && extras.requirements;
+    if (!r || (!r.text && !(r.files || []).length)) return '';
+    return `DODATKOWE WYMAGANIA KLIENTA (najwyższy priorytet — zrealizuj wszystkie; jeśli któreś jest sprzeczne z briefem, wymagania mają pierwszeństwo, a konflikt opisz w notatce)
+${r.text ? `${r.text.trim()}\n` : ''}${(r.files || []).length ? `Dołączam pliki z wymaganiami: ${r.files.join(', ')} — przeczytaj je przed rozpoczęciem pracy.\n` : ''}
+`;
+  }
+
+  function site(a, meta, choice, extras) {
+    extras = extras || {};
+    const fx = effectsTask(extras.effects);
+    // Rodzaj strony ustalony w oknie „Efekty i animacje” — gdy klient w briefie nie zdecydował (albo ustalono inaczej z klientem)
+    const st = extras.effects && extras.effects.sitetype;
+    if (st === 'onepage' || st === 'multi') {
+      const b = briefSiteType(a);
+      if (b !== st && !(st === 'multi' && a.layout === 'onepage')) a = { ...a, site_type: st === 'onepage' ? 'onepage' : 'podstrony' };
+      if (st === 'multi' && a.layout === 'onepage') extras = { ...extras, fxConflict: 'UWAGA: klient wybrał w briefie układ One Page, a efekty dobrałem dla strony z podstronami — zastosuj układ zgodnie z regułą One Page, a przejścia między podstronami tylko tam, gdzie są osobne strony (np. polityka prywatności); konflikt opisz w notatce.' };
+    }
     const needsBrand = H.needsLogo(a) || H.needsTagline(a);
     const what = [H.needsLogo(a) ? 'logo' : '', H.needsTagline(a) ? 'hasło' : ''].filter(Boolean).join(' i ');
     const brand = chosenBrand(choice);
@@ -425,21 +707,26 @@ ZASADY OGÓLNE
 - Treści pisz po polsku, zgodnie z myślą przewodnią, wartościami i sposobem zwracania się do klientów z briefu.
 - Uwzględnij wszystkie sekcje i funkcje wybrane w briefie; propozycje dodatkowe wypisz osobno na końcu, nie dodawaj ich samowolnie.
 - Dostępność WCAG 2.1 AA, wygląd na telefonie (390 px) bez przewijania poziomego, szybkie ładowanie, prefers-reduced-motion.
-${brand || (needsBrand ? `
+
+${requirementsTask(extras)}${brand || (needsBrand ? `
 LOGO I HASŁO
 Klient prosi o: ${what}. Powstają w osobnym kroku (strona wyboru z 4 opcjami, którą klient akceptuje).
 - Jeśli do tej wiadomości dołączam wybrane ${what} — użyj ich i dopasuj do nich kolory oraz typografię strony.
 - Jeśli nie dołączam — użyj tymczasowego logotypu z nazwy firmy i oznacz miejsca [LOGO DO PODMIANY] / [HASŁO DO PODMIANY].
 ` : '')}
-${clientMaterials(a)}${isOrg(a) ? `${orgSpec(a)}
+${clientMaterials(a, extras)}${isOrg(a) ? `${orgSpec(a)}
 
-` : ''}${layoutTask(a)}
+` : ''}${customSectionsTask(a)}${layoutTask(a)}
 
 ZADANIE 1: STRONA
 - Czysty HTML/CSS/JS (bez frameworków i bez serwera), gotowy do wgrania na hosting statyczny (np. Cloudflare Pages). Strona główna w index.html${a.site_type === 'podstrony' ? ', podstrony jako osobne pliki HTML' : ''}; wszystkie pliki spakuj do ZIP.
 - Zanim zaczniesz kodować, wypisz krótko: mapę sekcji, główny przekaz pierwszego ekranu, kolory z kodami HEX i plan SEO (zadanie 2).
 - Zdjęcia: użyj wyłącznie materiałów wskazanych w briefie; tam, gdzie ich brakuje, wstaw neutralne tła zastępcze opisane [ZDJĘCIE: co ma przedstawiać].
 
+${ANCHOR_SPEC}
+
+${RODO_SPEC(a)}
+${fx ? `\n${extras.fxConflict ? `${extras.fxConflict}\n` : ''}${fx}\n` : ''}
 ${seoSpec(a, meta)}
 
 ZADANIE 3: PANEL ADMINISTRACYJNY
@@ -635,5 +922,5 @@ NA KONIEC
 * Podaj listę plików z rozmiarami.`;
   }
 
-  window.BRIEF_PROMPTS = { site, logoPage, panel, portfolio, seoSpec };
+  window.BRIEF_PROMPTS = { site, logoPage, panel, portfolio, seoSpec, EFFECTS, effectsSummary, hasEffects, briefSiteType, groupFits };
 })();

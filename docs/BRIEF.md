@@ -10,6 +10,15 @@ Brief to szczegółowy kwestionariusz, który klient wypełnia online przed rozp
 - Polecenie na stronę zawiera sekcję **UKŁAD STRONY** dopasowaną do wyboru klienta: zasada nadrzędna (funkcje stałe, układ decyduje tylko o formie, rdzeń zawsze wdrażany, moduły z briefu), reguły **tylko wybranego układu** (strona + ustawienia panelu), podział ONE_PAGE / WIELE_STRON z briefu oraz konflikty i uwagi. Przy „Nie mam preferencji” AI dostaje regułę wyboru i reguły wszystkich układów.
 - Panel w poleceniu: zapis na serwerze (Cloudflare Pages Functions + KV), hasło jako hash po stronie serwera, kopie ostatnich zapisów, podgląd sekcji przed zmianą treści, włączanie/wyłączanie wersji językowych.
 
+## Wymagania, inspiracje i efekty (schemat bazy v25)
+- **Własne sekcje** (brief, krok „Sekcje strony”): klient dodaje wiersze „nazwa + co ma zawierać” (do 12). Zapis jako tekst `custom_sections` (jeden wiersz = „Nazwa — opis”); w poleceniu dla AI osobny blok „WŁASNE SEKCJE KLIENTA”.
+- **Wymagania i inspiracje klienta** (zgłoszenie): pole tekstowe z wymaganiami (do 8000 znaków) + pliki z wymaganiami (PDF, DOCX, TXT, zdjęcia; do 15) i inspiracje (zdjęcia, SVG, PDF; do 40). Pliki w KV (`d/<id>`), lista w tabeli `lead_docs`; podgląd i pobieranie tylko po zalogowaniu.
+- **Efekty i animacje** (przycisk „C” przy poleceniach dla AI). Najpierw **rodzaj strony** (z briefu albo wybrany w oknie, gdy klient nie zdecydował):
+  - **One page** — styl przewijania (zwykłe, sekcje nachodzące na siebie, przyciąganie do sekcji, odsłanianie spod poprzedniej, sekcje rosnące przy wejściu, przyklejone zdjęcie), dodatki przewijania (aktywna pozycja menu + pasek postępu, paralaksa, kropki, poziomy pas, tekst rozjaśniany) i kliknięcie w menu (płynne, z wyróżnieniem, skok, przygaszenie, kurtyna z nazwą sekcji) — wszystko z podglądem na miniaturze strony; przejść między podstronami nie ma.
+  - **Podstrony** — 22 przejścia między podstronami (+ uzupełnienia: sekwencyjne wejście treści, stały nagłówek) z podglądem; przewijanie w obrębie podstron opcjonalnie.
+  - Dalej wspólne: pojawianie się treści, pierwszy ekran, tło, kursor, dodatki wizerunkowe, charakter animacji, uwagi. Zapis w `leads.effects` (JSON, z `sitetype`); rodzaj strony z okna trafia też do polecenia (PODZIAŁ NA STRONY), a przy zmianie wbrew briefowi panel ostrzega.
+- Wszystko powyżej dopisuje się automatycznie do polecenia „B. Strona internetowa”, razem ze stałymi zasadami: odstęp pod przyklejonym nagłówkiem (`scroll-margin-top`), formularze zgodne z RODO, niezawodność funkcji serwera (bez wspólnej obietnicy między żądaniami, limity czasu — wnioski z błędu 524).
+
 ## Logo i zdjęcia od klienta
 
 - **W briefie:** gdy klient zaznaczy, że ma logo, pojawia się pole „Wgraj swoje logo” (SVG, PDF, PNG, JPG, WebP; do 20 MB, do 6 plików, np. różne wersje). W briefie „Logo i hasło” jest pole na obecne logo. W kroku „Treści i materiały” klient może wgrać do 40 zdjęć — telefon/przeglądarka zmniejsza je przed wysłaniem do 2560 px, więc zdjęcia prosto z telefonu wgrywają się szybko.

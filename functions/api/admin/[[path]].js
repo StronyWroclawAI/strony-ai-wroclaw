@@ -8,7 +8,7 @@ import { sendEmail, notifyAboutLead, emailConfigured, sendClientEmail } from '..
 import { gmailConfigured, gmailAddress } from '../../_lib/smtp.js';
 import { normalizeUrl } from '../../_lib/validate.js';
 import { newToken, cleanAnswers, BRIEF_KINDS } from '../../_lib/brief.js';
-import { saveUpload, serveFile, deleteFileRow, publicFile } from '../../_lib/files.js';
+import { saveUpload, serveFile, deleteFileRow, publicFile, saveDoc, publicDoc, deleteDocRow } from '../../_lib/files.js';
 import { readStats } from '../../_lib/stats.js';
 import { profileUrl, embedInfo, socialKind } from '../../_lib/social.js';
 import { VARIANT_NAMES, VARIANT_MAX_BYTES, variantKey, allVariantKeys, imageInfo, checkVariant, parseVariants, variantStatus, expectedVariants } from '../../_lib/media.js';
@@ -18,6 +18,32 @@ const STATUSES = ['nowe', 'kontakt', 'w_realizacji', 'zakonczone', 'odrzucone'];
 const ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const MAX_UPLOAD = 5 * 1024 * 1024;
 const TYPES = { 'image/webp': 'webp', 'image/jpeg': 'jpg', 'image/png': 'png' };
+
+// Wybrane efekty wizualne (okno „Efekty i animacje”): tylko krótkie identyfikatory opcji + uwagi.
+const FX_KEY = /^[a-z]{2,20}$/;
+const FX_VAL = /^[a-z0-9_-]{1,30}$/;
+function cleanEffects(input) {
+  const out = {};
+  if (!input || typeof input !== 'object' || Array.isArray(input)) return out;
+  for (const [k, v] of Object.entries(input).slice(0, 30)) {
+    if (!FX_KEY.test(k)) continue;
+    if (k === 'notes') {
+      if (typeof v === 'string' && v.trim()) out.notes = v.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '').trim().slice(0, 2000);
+    } else if (Array.isArray(v)) {
+      const arr = [...new Set(v.filter((x) => typeof x === 'string' && FX_VAL.test(x)))].slice(0, 40);
+      if (arr.length) out[k] = arr;
+    } else if (typeof v === 'string' && FX_VAL.test(v)) out[k] = v;
+  }
+  return out;
+}
+function parseEffects(s) {
+  try {
+    const v = JSON.parse(s || '{}');
+    return v && typeof v === 'object' && !Array.isArray(v) ? v : {};
+  } catch {
+    return {};
+  }
+}
 
 const LISTS = {
   faq: { table: 'faq_items', fields: { question: [1, 300], answer: [1, 5000], mode: [1, 10, ['all', 'free', 'paid']] } },
@@ -205,7 +231,9 @@ export async function onRequest(context) {
         }
         const emails = await all(env, `SELECT id, kind, to_email, subject, body, status, error, created_at FROM lead_emails WHERE lead_id = ? ORDER BY created_at DESC LIMIT 100`, lead.id);
         const files = (await all(env, `SELECT * FROM lead_files WHERE lead_id = ? ORDER BY kind, created_at`, lead.id)).map(publicFile);
-        return json({ ok: true, lead, notes, brief: brief || null, briefs, files, logo: logo || null, emails, mail: { gmail: gmailConfigured(env), from: gmailConfigured(env) ? gmailAddress(env) : null } });
+        const docs = (await all(env, `SELECT * FROM lead_docs WHERE lead_id = ? ORDER BY kind, created_at`, lead.id)).map(publicDoc);
+        lead.effects = parseEffects(lead.effects);
+        return json({ ok: true, lead, notes, brief: brief || null, briefs, files, docs, logo: logo || null, emails, mail: { gmail: gmailConfigured(env), from: gmailConfigured(env) ? gmailAddress(env) : null } });
       }
       case 'PATCH /leads/:id': {
         const b = await body(request);
@@ -247,6 +275,7 @@ export async function onRequest(context) {
         const oldLogo = await first(env, `SELECT kv_key FROM logo_proposals WHERE lead_id = ?`, id);
         if (oldLogo && env.MEDIA) await env.MEDIA.delete(oldLogo.kv_key);
         for (const f of await all(env, `SELECT * FROM lead_files WHERE lead_id = ?`, id)) await deleteFileRow(env, f);
+        for (const d of await all(env, `SELECT * FROM lead_docs WHERE lead_id = ?`, id)) await deleteDocRow(env, d);
         await env.DB.batch([
           env.DB.prepare(`DELETE FROM lead_notes WHERE lead_id = ?`).bind(id),
           env.DB.prepare(`DELETE FROM briefs WHERE lead_id = ?`).bind(id),
@@ -280,6 +309,52 @@ export async function onRequest(context) {
         const row = await first(env, `SELECT * FROM lead_files WHERE id = ?`, checkId(seg[1]));
         if (!row) throw notFound('Nie znaleziono pliku.');
         await deleteFileRow(env, row);
+        return json({ ok: true });
+      }
+      // ----- Projekt: wymagania klienta i efekty wizualne (do polecenia dla AI) -----
+      case 'PATCH /leads/:id/project': {
+        const id = checkId(seg[1]);
+        const b = await body(request);
+        const sets = [];
+        const vals = [];
+        if (b.requirements !== undefined) {
+          if (typeof b.requirements !== 'string' || b.requirements.length > 8000) throw bad('Wymagania mogą mieć najwyżej 8000 znaków.');
+          sets.push('requirements = ?');
+          vals.push(b.requirements.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '').trim());
+        }
+        if (b.effects !== undefined) {
+          sets.push('effects = ?');
+          vals.push(JSON.stringify(cleanEffects(b.effects)));
+        }
+        if (!sets.length) throw bad('Brak zmian do zapisania.');
+        const r = await run(env, `UPDATE leads SET ${sets.join(', ')}, updated_at = ? WHERE id = ?`, ...vals, nowIso(), id);
+        if (!r.meta.changes) throw notFound();
+        return json({ ok: true });
+      }
+      // ----- Dokumenty projektu: inspiracje i wymagania (pliki) -----
+      case 'POST /leads/:id/docs': {
+        const lead = await first(env, `SELECT id FROM leads WHERE id = ?`, checkId(seg[1]));
+        if (!lead) throw notFound();
+        let form;
+        try {
+          form = await request.formData();
+        } catch {
+          throw bad('Nieprawidłowe dane pliku.');
+        }
+        const r = await saveDoc(env, { leadId: lead.id, form });
+        if (!r.ok) throw new HttpError(r.status, r.message);
+        return json({ ok: true, doc: r.doc }, 201);
+      }
+      case 'GET /docs/:id': {
+        const row = await first(env, `SELECT * FROM lead_docs WHERE id = ?`, checkId(seg[1]));
+        if (!row) throw notFound('Nie znaleziono pliku.');
+        const sp = new URL(request.url).searchParams;
+        return serveFile(env, row, { thumb: sp.get('thumb') === '1', download: sp.get('download') === '1' });
+      }
+      case 'DELETE /docs/:id': {
+        const row = await first(env, `SELECT * FROM lead_docs WHERE id = ?`, checkId(seg[1]));
+        if (!row) throw notFound('Nie znaleziono pliku.');
+        await deleteDocRow(env, row);
         return json({ ok: true });
       }
       // ----- E-mail do klienta (z konta Gmail) -----
