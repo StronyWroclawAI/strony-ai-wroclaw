@@ -204,7 +204,7 @@ button { font: inherit; }
 .hero {
   position: relative; color: var(--white); overflow: hidden;
   background: var(--navy-800);
-  padding: calc(var(--header-h) + clamp(32px, 6vw, 72px)) 0 clamp(56px, 8vw, 96px);
+  padding: calc(var(--header-h) + clamp(20px, 2.4vw, 32px)) 0 clamp(56px, 8vw, 96px);
 }
 .hero__bg {
   position: absolute; inset: 0; pointer-events: none;
