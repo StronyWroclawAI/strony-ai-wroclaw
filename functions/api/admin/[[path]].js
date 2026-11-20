@@ -14,6 +14,18 @@ import { profileUrl, embedInfo, socialKind } from '../../_lib/social.js';
 import { VARIANT_NAMES, VARIANT_MAX_BYTES, variantKey, allVariantKeys, imageInfo, checkVariant, parseVariants, variantStatus, expectedVariants } from '../../_lib/media.js';
 import { SLUG_RE, VER_RE, PATH_RE, MAX_FILE, MAX_TOTAL, MAX_FILES, CARD_TYPES, extOf, isImagePath, sniffOk, slugify, deleteCardFiles, cardUrl } from '../../_lib/card.js';
 
+/** Zakres zgłoszenia: 'strona' | 'strona_logo' | '' (nie podano). Brak pola w żądaniu = bez zmian. */
+function cleanScope(v, keep) {
+  if (v === undefined) return keep || '';
+  return v === 'strona' || v === 'strona_logo' ? v : '';
+}
+/** Logo przy „tylko stronie”: 'wlasne' | 'bez' | ''. Przy innym zakresie zawsze ''. Brak pola = bez zmian. */
+function cleanLogo(scope, v, keep) {
+  if (scope !== 'strona') return '';
+  const x = v === undefined ? keep : v;
+  return x === 'wlasne' || x === 'bez' ? x : '';
+}
+
 const STATUSES = ['nowe', 'kontakt', 'w_realizacji', 'zakonczone', 'odrzucone'];
 const ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const MAX_UPLOAD = 5 * 1024 * 1024;
@@ -202,7 +214,7 @@ export async function onRequest(context) {
           ok: true,
           items: await all(
             env,
-            `SELECT l.id, l.created_at, l.company_name, l.industry, l.contact_name, l.email, l.status, l.notification_status, l.source, l.site_purpose,
+            `SELECT l.id, l.created_at, l.company_name, l.industry, l.contact_name, l.email, l.status, l.notification_status, l.source, l.site_purpose, l.service_scope, l.logo_choice,
                     (SELECT b.status FROM briefs b WHERE b.lead_id = l.id ORDER BY b.created_at DESC LIMIT 1) AS brief_status,
                     (SELECT lp.status FROM logo_proposals lp WHERE lp.lead_id = l.id) AS logo_status
              FROM leads l ORDER BY l.created_at DESC LIMIT 1000`
@@ -245,7 +257,7 @@ export async function onRequest(context) {
           return json({ ok: true });
         }
         // Poprawienie danych zgłoszenia (np. błędny adres e-mail)
-        const old = await first(env, `SELECT email FROM leads WHERE id = ?`, id);
+        const old = await first(env, `SELECT email, service_scope, logo_choice FROM leads WHERE id = ?`, id);
         if (!old) throw notFound();
         const company = str(b.company_name, [1, 150], 'Nazwa firmy');
         const contact = str(b.contact_name, [1, 100], 'Osoba kontaktowa');
@@ -262,9 +274,11 @@ export async function onRequest(context) {
         }
         const message = str(b.message, [1, 5000], 'Opis / oczekiwania');
         const purpose = b.site_purpose === 'wizerunkowa' ? 'wizerunkowa' : 'firma';
+        const scope = cleanScope(b.service_scope, old.service_scope);
+        const logo = cleanLogo(scope, b.logo_choice, old.logo_choice);
         const t = nowIso();
         await env.DB.batch([
-          env.DB.prepare(`UPDATE leads SET company_name = ?, industry = ?, contact_name = ?, email = ?, phone = ?, website_url = ?, facebook_url = ?, instagram_url = ?, message = ?, site_purpose = ?, updated_at = ? WHERE id = ?`).bind(company, industry, contact, email, phone, urls.website_url, urls.facebook_url, urls.instagram_url, message, purpose, t, id),
+          env.DB.prepare(`UPDATE leads SET company_name = ?, industry = ?, contact_name = ?, email = ?, phone = ?, website_url = ?, facebook_url = ?, instagram_url = ?, message = ?, site_purpose = ?, service_scope = ?, logo_choice = ?, updated_at = ? WHERE id = ?`).bind(company, industry, contact, email, phone, urls.website_url, urls.facebook_url, urls.instagram_url, message, purpose, scope, logo, t, id),
           // adres do wysyłki briefu idzie za zgłoszeniem (odpowiedzi klienta w briefie zostają bez zmian)
           env.DB.prepare(`UPDATE briefs SET contact_email = ?, updated_at = ? WHERE lead_id = ? AND (contact_email IS NULL OR contact_email = ?)`).bind(email, t, id, old.email),
         ]);
@@ -476,9 +490,9 @@ export async function onRequest(context) {
         const id = uuid();
         await run(
           env,
-          `INSERT INTO leads (id, submission_id, created_at, updated_at, company_name, industry, contact_name, email, phone, website_url, message, status, notification_status, source, site_purpose)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'kontakt', 'skipped', 'reczne', ?)`,
-          id, uuid(), t, t, company, industry, contact, email, phone, site.value, message, b.site_purpose === 'wizerunkowa' ? 'wizerunkowa' : 'firma'
+          `INSERT INTO leads (id, submission_id, created_at, updated_at, company_name, industry, contact_name, email, phone, website_url, message, status, notification_status, source, site_purpose, service_scope, logo_choice)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'kontakt', 'skipped', 'reczne', ?, ?, ?)`,
+          id, uuid(), t, t, company, industry, contact, email, phone, site.value, message, b.site_purpose === 'wizerunkowa' ? 'wizerunkowa' : 'firma', cleanScope(b.service_scope, ''), cleanLogo(cleanScope(b.service_scope, ''), b.logo_choice, '')
         );
         return json({ ok: true, id });
       }

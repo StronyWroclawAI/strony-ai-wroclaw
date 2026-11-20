@@ -31,10 +31,10 @@
 <link rel="icon" href="/assets/img/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
-<link rel="stylesheet" href="/assets/css/style.css?v=37">
+<link rel="stylesheet" href="/assets/css/style.css?v=39">
 <script src="/assets/js/przejscia.js?v=1"></script>
 <script src="/assets/js/industry-combo.js?v=1" defer></script>
-<script src="/assets/js/main.js?v=17" defer></script>
+<script src="/assets/js/main.js?v=19" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#tresc">Przejdź do treści</a>
@@ -567,6 +567,25 @@
       <div class="form-card" data-cms-block="form-open">
         <form class="lead-form" id="lead-form" action="/api/zgloszenie" method="post" novalidate>
           <div class="form-alert" role="alert" tabindex="-1" hidden data-form-alert></div>
+
+          <fieldset class="scope-pick" data-scope-pick>
+            <legend class="scope-pick__legend">Czego potrzebujesz? <span class="req" aria-hidden="true">*</span></legend>
+            <div class="scope-pick__opts">
+              <label class="scope-opt"><input type="radio" name="service_scope" value="strona" required aria-describedby="e-service_scope"><span class="scope-opt__box"><strong>Strona internetowa</strong><span class="scope-opt__desc">bez projektowania logo</span></span></label>
+              <label class="scope-opt"><input type="radio" name="service_scope" value="strona_logo" aria-describedby="e-service_scope"><span class="scope-opt__box"><strong>Strona + logo</strong><span class="scope-opt__desc">logo zaprojektuję razem ze stroną</span></span></label>
+            </div>
+            <p class="field__error" id="e-service_scope" data-error-for="service_scope"></p>
+            <div class="logo-pick" data-logo-pick hidden>
+              <fieldset class="logo-pick__set">
+                <legend class="logo-pick__legend">A co z logo? <span class="req" aria-hidden="true">*</span></legend>
+                <div class="logo-pick__opts">
+                  <label class="logo-opt"><input type="radio" name="logo_choice" value="wlasne" aria-describedby="e-logo_choice"><span class="logo-opt__box"><strong>Dostarczę własne logo</strong><span class="logo-opt__desc">mam gotowe logo firmy</span></span></label>
+                  <label class="logo-opt"><input type="radio" name="logo_choice" value="bez" aria-describedby="e-logo_choice"><span class="logo-opt__box"><strong>Nie potrzebuję logo</strong><span class="logo-opt__desc">wystarczy nazwa firmy</span></span></label>
+                </div>
+                <p class="field__error" id="e-logo_choice" data-error-for="logo_choice"></p>
+              </fieldset>
+            </div>
+          </fieldset>
 
           <label class="purpose-check" data-purpose><input type="checkbox" name="site_purpose" value="wizerunkowa"><span><strong>Strona wizerunkowa</strong><span class="purpose-check__long"> — klub, szkoła, akademia, stowarzyszenie (bez sprzedaży usług)</span><span class="purpose-check__short"> (klub, szkoła, akademia)</span></span></label>
 

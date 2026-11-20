@@ -7,6 +7,7 @@ Zmiany są widoczne na stronie **od razu** po zapisaniu. Sesja wygasa po 12 godz
 - Lista pokazuje zgłoszenia od najnowszych. Liczba przy zakładce to zgłoszenia o statusie „Nowe”.
 - **Filtry:** status (przyciski u góry), wyszukiwarka (firma, imię, e-mail), „Tylko bez wysłanego powiadomienia”.
 - **+ Dodaj zgłoszenie ręcznie:** dla firm, z którymi kontakt zacząłeś sam (mailowo, telefonicznie). Takie zgłoszenie ma odznakę „Dodane ręcznie”.
+- **Czego potrzebuje klient** (odznaka na liście i w szczegółach): „Strona + logo” albo „Tylko strona”. Przy „Tylko strona” klient wybiera w formularzu, co z logo: **dostarczy własne logo** (poproś o plik, najlepiej SVG lub PNG) albo **logo niepotrzebne**. Odznaka pokazuje np. „Tylko strona · własne logo”. Można to zmienić w **Edytuj dane** (schemat bazy v28).
 - Kliknij zgłoszenie, aby zobaczyć szczegóły.
   - **Edytuj dane:** poprawiasz firmę, osobę, e-mail, telefon, linki i opis (np. gdy klient pomylił adres e-mail). Kolejne wiadomości z panelu idą na nowy adres.
   - **Status:** Nowe → Kontakt → W realizacji → Zakończone, albo Odrzucone. Zmiana zapisuje się od razu.

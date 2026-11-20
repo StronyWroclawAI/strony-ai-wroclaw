@@ -444,6 +444,23 @@
       toggleOther();
     }
 
+    // „Tylko strona” → pytanie o logo: dostarczę własne / nie potrzebuję
+    var logoPick = form.querySelector('[data-logo-pick]');
+    function scopeValue() { return (form.querySelector('input[name="service_scope"]:checked') || {}).value || ''; }
+    function logoChoice() {
+      if (scopeValue() !== 'strona') return '';
+      return (form.querySelector('input[name="logo_choice"]:checked') || {}).value || '';
+    }
+    function toggleLogo() {
+      if (!logoPick) return;
+      var show = scopeValue() === 'strona';
+      logoPick.hidden = !show;
+      if (!show) setError('logo_choice', '');
+    }
+    form.querySelectorAll('input[name="service_scope"]').forEach(function (r) { r.addEventListener('change', toggleLogo); });
+    toggleLogo();
+    window.addEventListener('pageshow', toggleLogo); // przywrócenie strony z pamięci przeglądarki
+
     // Czyść błąd pola, gdy użytkownik je poprawia
     form.addEventListener('input', function (e) {
       if (e.target.name && e.target.getAttribute('aria-invalid') === 'true') setError(e.target.name, '');
@@ -504,6 +521,8 @@
       return {
         submission_id: submissionId,
         site_purpose: form.querySelector('input[name="site_purpose"]:checked') ? 'wizerunkowa' : 'firma',
+        service_scope: (form.querySelector('input[name="service_scope"]:checked') || {}).value || '',
+        logo_choice: logoChoice(),
         company_name: val(f.company_name),
         industry: val(f.industry),
         industry_other: val(f.industry_other),
@@ -522,6 +541,8 @@
 
     function validate(d) {
       var e = {};
+      if (!d.service_scope) e.service_scope = 'Zaznacz, czego potrzebujesz: samej strony czy strony z logo.';
+      else if (d.service_scope === 'strona' && !d.logo_choice) e.logo_choice = 'Zaznacz, czy dostarczysz własne logo, czy logo nie jest potrzebne.';
       if (!d.company_name) e.company_name = MSG.required;
       else if (d.company_name.length > 150) e.company_name = MSG.tooLong;
       if (!d.industry) e.industry = 'Wybierz branżę z listy.';
@@ -548,6 +569,7 @@
       Object.keys(errors).forEach(function (name) {
         setError(name, errors[name]);
         var el = form.elements[name];
+        if (el && typeof el.focus !== 'function' && el.length) el = el[0]; // grupa przycisków radio
         if (!first && el && typeof el.focus === 'function') first = el;
       });
       var count = Object.keys(errors).length;
@@ -559,6 +581,10 @@
       var p = form.querySelector('[data-error-for="' + name + '"]');
       if (p) p.textContent = msg || '';
       var el = form.elements[name];
+      if (el && !el.setAttribute && el.length) { // grupa przycisków radio (np. „Czego potrzebujesz?”)
+        Array.prototype.forEach.call(el, function (r) { if (msg) r.setAttribute('aria-invalid', 'true'); else r.removeAttribute('aria-invalid'); });
+        return;
+      }
       // pole w zwiniętej części formularza — rozwijamy ją, żeby błąd był widoczny
       if (msg && el && el.closest) { var more = el.closest('details'); if (more) more.open = true; }
       if (el && el.setAttribute) {

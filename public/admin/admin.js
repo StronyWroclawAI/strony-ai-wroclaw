@@ -4,7 +4,7 @@
    Sesja jest w ciasteczku HttpOnly — ten skrypt nie zna hasła ani kluczy.
    ========================================================= */
 (function () {
-  const PANEL_VERSION = '2026-11-11 · wolne miejsca, efekty one page';
+  const PANEL_VERSION = '2026-11-20 · zakres zgłoszenia + wybór logo';
   'use strict';
 
   // ---------- Pomocnicze ----------
@@ -217,6 +217,54 @@
       inputs: [firm, org],
       bind(company, industry) { labels.company = company; labels.industry = industry; setTimeout(sync, 30); },
     };
+  }
+
+  /** Czego potrzebuje klient: tylko strona albo strona + logo (zaznaczone w formularzu zgłoszeniowym). */
+  const SCOPE_LABEL = { strona: 'Tylko strona internetowa', strona_logo: 'Strona internetowa + logo' };
+  /** Logo przy „tylko stronie”: wlasne = klient dostarczy własne logo, bez = logo niepotrzebne. */
+  const LOGO_LABEL = { wlasne: 'Klient dostarczy własne logo', bez: 'Logo niepotrzebne' };
+  const LOGO_SHORT = { wlasne: 'własne logo', bez: 'bez logo' };
+  const scopeBadge = (v, short, logo) =>
+    v === 'strona_logo' ? h('span', { class: 'status status--scope_logo', 'data-scope': v, text: short ? 'Strona + logo' : SCOPE_LABEL.strona_logo })
+    : v === 'strona' ? h('span', { class: 'status status--scope_site', 'data-scope': v, 'data-logo': logo || '', text: (short ? 'Tylko strona' : SCOPE_LABEL.strona) + (LOGO_SHORT[logo] ? ` · ${LOGO_SHORT[logo]}` : '') })
+    : null;
+  /** Pełna informacja do szczegółów zgłoszenia: zakres + co z logo. */
+  const scopeInfo = (v, logo) => {
+    const b = scopeBadge(v, false);
+    if (!b) return h('span', { class: 'muted', text: 'nie podano' });
+    if (v !== 'strona') return b;
+    return h('span', { class: 'scope-info' }, b, ' ',
+      logo ? h('span', { class: `status status--logo_${logo}`, 'data-logo-info': logo, text: LOGO_LABEL[logo] }) : h('span', { class: 'muted', text: 'logo: nie podano' }));
+  };
+  function scopePicker(initial, initialLogo) {
+    const name = `scope-${Math.random().toString(36).slice(2, 8)}`;
+    const opt = (n, v, title, desc, checked) => h('label', { class: 'check' }, h('input', { type: 'radio', name: n, value: v, checked }), h('span', null, h('strong', { text: title }), desc));
+    const lname = `${name}-logo`;
+    const logoBox = h(
+      'div',
+      { class: 'scope-logo', 'data-scope-logo': '' },
+      h('p', { class: 'scope-logo__q', text: 'A co z logo?' }),
+      opt(lname, 'wlasne', 'Klient dostarczy własne logo', ' — trzeba poprosić o plik (najlepiej SVG lub PNG)', initialLogo === 'wlasne'),
+      opt(lname, 'bez', 'Logo niepotrzebne', ' — strona bez logo (np. sama nazwa firmy)', initialLogo === 'bez'),
+      opt(lname, '', 'Nie podano', '', !initialLogo)
+    );
+    const el = h(
+      'fieldset',
+      { class: 'kind-pick scope-pick', 'data-scope-pick': '' },
+      h('legend', { text: 'Czego potrzebuje klient' }),
+      opt(name, 'strona', 'Tylko strona internetowa', ' — bez projektowania logo', initial === 'strona'),
+      logoBox,
+      opt(name, 'strona_logo', 'Strona internetowa + logo', ' — logo do zaprojektowania razem ze stroną', initial === 'strona_logo'),
+      opt(name, '', 'Nie podano', ' — np. starsze zgłoszenie', false)
+    );
+    const inputs = Array.from(el.querySelectorAll(`input[name="${name}"]`));
+    const logoInputs = Array.from(logoBox.querySelectorAll('input'));
+    if (!inputs.some((i) => i.checked)) inputs[2].checked = true;
+    const get = () => (inputs.find((i) => i.checked) || {}).value || '';
+    const sync = () => (logoBox.hidden = get() !== 'strona');
+    inputs.forEach((i) => i.addEventListener('change', sync));
+    sync();
+    return { el, inputs: inputs.concat(logoInputs), get, getLogo: () => (get() === 'strona' ? (logoInputs.find((i) => i.checked) || {}).value || '' : '') };
   }
 
   /** Wybór branży — ta sama lista co w formularzu zgłoszeniowym na stronie (z „Inna branża” i polem do wpisania). */
@@ -509,6 +557,7 @@
                 h(
                   'div',
                   { class: 'lead-row__badges' },
+                  scopeBadge(l.service_scope, true, l.logo_choice),
                   l.site_purpose === 'wizerunkowa' ? h('span', { class: 'status status--w_realizacji', text: 'Wizerunkowa' }) : null,
                   l.source === 'reczne' ? h('span', { class: 'status status--odrzucone', text: 'Dodane ręcznie' }) : null,
                   l.source !== 'reczne' && ['failed', 'skipped'].includes(l.notification_status) ? h('span', { class: `status status--${l.notification_status}`, text: NOTIF_LABEL[l.notification_status] }) : null,
@@ -532,7 +581,7 @@
       manualForm,
       failedCount
         ? h('div', { class: 'alert alert--warn', text: `${failedCount} zgłoszeń nie ma wysłanego powiadomienia e-mail. Zgłoszenia są bezpiecznie zapisane — otwórz je, aby wysłać powiadomienie ponownie, albo sprawdź konfigurację w Ustawieniach.` })
-        : null,
+        : '', // pusty tekst zamiast null (replaceChildren wypisałby „null”)
       h('div', { class: 'toolbar' }, chips),
       h('div', { class: 'toolbar' }, field('Szukaj', search), h('label', { class: 'check' }, failed, 'Tylko bez wysłanego powiadomienia')),
       listBox
@@ -552,6 +601,7 @@
     };
     const ind = industryPicker('');
     const pur = purposePicker('firma');
+    const scp = scopePicker('');
     const logoIn = h('input', { type: 'file', multiple: true, accept: '.svg,.pdf,.png,.jpg,.jpeg,.webp', 'data-manual-logo': '' });
     const btn = h('button', { class: 'btn btn--primary', type: 'submit', text: 'Zapisz zgłoszenie' });
     const form = h(
@@ -571,6 +621,8 @@
           Object.keys(f).forEach((k) => (payload[k] = f[k].value.trim()));
           payload.industry = ind.get();
           payload.site_purpose = pur.get();
+          payload.service_scope = scp.get();
+          payload.logo_choice = scp.getLogo();
           busy(btn, true);
           const { data, error } = await q(api('leads', { method: 'POST', body: payload }));
           if (error) { busy(btn, false); return toast(errMsg(error), 'error'); }
@@ -587,6 +639,7 @@
       h('h2', { text: 'Dodaj zgłoszenie ręcznie' }),
       h('p', { class: 'small muted', text: 'Dla firm, z którymi kontakt nawiązałeś mailowo lub telefonicznie, a nie przez formularz na stronie. Dzięki temu wszyscy klienci i ich briefy są w jednym miejscu.' }),
       pur.el,
+      scp.el,
       h('div', { class: 'grid-2' }, field('Nazwa firmy *', f.company_name), field('Osoba kontaktowa *', f.contact_name), field('E-mail *', f.email), field('Telefon', f.phone), field('Branża', ind.select), ind.otherBox, field('Obecna strona', f.website_url)),
       field('Opis / jak nawiązano kontakt', f.message),
       field('Logo klienta (opcjonalnie)', logoIn, 'Jeśli klient przysłał swoje logo (np. e-mailem): SVG, PDF, PNG, JPG lub WebP, do 20 MB. Możesz wybrać kilka wersji. Później pobierzesz je w zgłoszeniu.'),
@@ -622,6 +675,7 @@
       [
         ['Data', fmtDate(lead.created_at)],
         ['Firma', lead.company_name],
+        ['Czego potrzebuje', scopeInfo(lead.service_scope, lead.logo_choice)],
         ['Rodzaj strony', lead.site_purpose === 'wizerunkowa' ? h('span', { class: 'status status--w_realizacji', text: 'Strona wizerunkowa (bez sprzedaży)' }) : 'Strona firmy'],
         ['Branża', lead.industry],
         ['Osoba kontaktowa', lead.contact_name],
@@ -658,6 +712,8 @@
       ind.select.addEventListener('change', () => (dirty = true));
       const pur = purposePicker(lead.site_purpose);
       pur.inputs.forEach((i) => i.addEventListener('change', () => (dirty = true)));
+      const scp = scopePicker(lead.service_scope || '', lead.logo_choice || '');
+      scp.inputs.forEach((i) => i.addEventListener('change', () => (dirty = true)));
       Object.values(f).forEach((i) => i.addEventListener('input', () => (dirty = true)));
       const emsg = h('div', { 'aria-live': 'polite' });
       const save = h('button', { class: 'btn btn--primary', type: 'submit', text: 'Zapisz dane' });
@@ -674,6 +730,8 @@
               Object.keys(f).forEach((k) => (payload[k] = f[k].value.trim()));
               payload.industry = ind.get();
               payload.site_purpose = pur.get();
+              payload.service_scope = scp.get();
+              payload.logo_choice = scp.getLogo();
               if (!payload.company_name || !payload.contact_name || !payload.email) return emsg.replaceChildren(h('div', { class: 'alert alert--error', text: 'Nazwa firmy, osoba kontaktowa i e-mail są wymagane.' }));
               busy(save, true);
               const { error } = await q(api(`leads/${lead.id}`, { method: 'PATCH', body: payload }));
@@ -684,6 +742,7 @@
               route();
             },
           },
+          scp.el,
           pur.el,
           h('div', { class: 'grid-2' }, field('Nazwa firmy *', f.company_name), field('Branża', ind.select), ind.otherBox, field('Osoba kontaktowa *', f.contact_name), field('E-mail *', f.email), field('Telefon', f.phone), field('Obecna strona', f.website_url), field('Facebook', f.facebook_url), field('Instagram', f.instagram_url)),
           field('Oczekiwania / opis', f.message),
@@ -1942,6 +2001,16 @@
 
     const parts = [h('div', { class: 'brief-hub__head' }, h('h2', { id: 'brief-hub-title', text: 'Briefy i polecenia dla AI' }), h('a', { class: 'small', href: '/brief/podglad', target: '_blank', rel: 'noopener', text: 'Jak to widzi klient? ↗' }))];
 
+    // podpowiedź z formularza: czego klient potrzebuje (tylko strona / strona + logo)
+    if (lead.service_scope && !full && !logoB && !siteB) {
+      parts.push(
+        h('p', { class: 'hub-scope', 'data-hub-scope': lead.service_scope }, scopeBadge(lead.service_scope), ' ',
+          lead.service_scope === 'strona_logo'
+            ? 'Klient zaznaczył w formularzu stronę z logo — pasuje kompleksowy brief (logo + hasło + strona) albo dwa osobne.'
+            : 'Klient zaznaczył w formularzu tylko stronę — wystarczy brief „2. Strona internetowa”.' +
+              (lead.logo_choice === 'wlasne' ? ' Logo dostarczy klient — poproś o plik (najlepiej SVG lub PNG).' : lead.logo_choice === 'bez' ? ' Klient nie potrzebuje logo.' : ''))
+      );
+    }
     // 1) kompleksowy brief albo dwie kolumny
     if (full) {
       parts.push(h('div', { class: 'hub-grid hub-grid--one' }, card('Kompleksowy brief: logo + hasło + strona', '', full, 'pelny')));

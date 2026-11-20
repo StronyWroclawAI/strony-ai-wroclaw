@@ -33,6 +33,18 @@ export function normalizeUrl(value) {
   }
 }
 
+/** Etykieta zakresu zgłoszenia (do e-maila i panelu). */
+export function scopeLabel(v, logo) {
+  if (v === 'strona_logo') return 'Strona internetowa + logo';
+  if (v === 'strona') return 'Tylko strona internetowa' + (logo === 'wlasne' ? ' — klient dostarczy własne logo' : logo === 'bez' ? ' — logo niepotrzebne' : '');
+  return 'nie podano';
+}
+
+/** Logo przy „tylko stronie”: 'wlasne' | 'bez' | '' (nie dotyczy). */
+export function cleanLogoChoice(scope, v) {
+  return scope === 'strona' && (v === 'wlasne' || v === 'bez') ? v : '';
+}
+
 export function validateLead(body) {
   const errors = {};
   const b = body && typeof body === 'object' ? body : {};
@@ -42,6 +54,11 @@ export function validateLead(body) {
 
   const site_purpose = b.site_purpose === 'wizerunkowa' ? 'wizerunkowa' : 'firma';
   const org = site_purpose === 'wizerunkowa';
+  const service_scope = b.service_scope === 'strona' || b.service_scope === 'strona_logo' ? b.service_scope : '';
+  if (!service_scope) errors.service_scope = 'Zaznacz, czego potrzebujesz: samej strony czy strony z logo.';
+  const logo_choice = cleanLogoChoice(service_scope, b.logo_choice);
+  if (service_scope === 'strona' && !logo_choice) errors.logo_choice = 'Zaznacz, czy dostarczysz własne logo, czy logo nie jest potrzebne.';
+
   const company_name = oneLine(b.company_name, 150);
   if (!company_name) errors.company_name = org ? 'Podaj nazwę organizacji.' : 'Podaj nazwę firmy.';
   else if (company_name.length > 150) errors.company_name = 'Nazwa firmy może mieć maksymalnie 150 znaków.';
@@ -89,6 +106,8 @@ export function validateLead(body) {
     data: {
       submission_id,
       site_purpose,
+      service_scope,
+      logo_choice,
       company_name,
       industry,
       contact_name,

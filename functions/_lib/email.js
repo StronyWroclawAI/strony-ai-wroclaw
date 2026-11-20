@@ -4,6 +4,7 @@
 // załóż na stronyaiwroclaw@gmail.com.
 
 import { esc } from './render.js';
+import { scopeLabel } from './validate.js';
 import { contactEmail } from './http.js';
 import { gmailConfigured, sendViaGmail } from './smtp.js';
 
@@ -68,6 +69,7 @@ export async function sendEmail(env, { subject, text, html, replyTo, idempotency
 export function leadEmail(lead, origin) {
   const rows = [
     ['Firma', lead.company_name],
+    ['Czego potrzebuje', lead.service_scope ? scopeLabel(lead.service_scope, lead.logo_choice) : ''],
     ['Rodzaj strony', lead.site_purpose === 'wizerunkowa' ? 'wizerunkowa (bez sprzedaży usług)' : 'strona firmy'],
     ['Branża', lead.industry],
     ['Osoba kontaktowa', lead.contact_name],
@@ -100,7 +102,7 @@ export function leadEmail(lead, origin) {
 <p style="margin:22px 0 0"><a href="${esc(panel)}" style="display:inline-block;background:#142e50;color:#fff;text-decoration:none;padding:12px 18px;border-radius:8px;font-weight:bold">Otwórz w panelu</a></p>
 <p style="font-size:13px;color:#4d5a70;margin-top:18px">Odpowiedź na tę wiadomość trafi bezpośrednio do zgłaszającego (${esc(lead.email)}).</p>
 </div></div></body></html>`;
-  return { subject: `Nowe zgłoszenie: ${lead.company_name}`, text, html };
+  return { subject: `Nowe zgłoszenie: ${lead.company_name}${lead.service_scope === 'strona_logo' ? ' (strona + logo)' : lead.service_scope === 'strona' ? ' (strona)' : ''}`, text, html };
 }
 
 /**

@@ -142,10 +142,10 @@ export async function onRequestPost(context) {
   const lead = { id: uuid(), created_at: t, updated_at: t, status: 'nowe', ...data };
   try {
     const res = await env.DB.prepare(
-      `INSERT OR IGNORE INTO leads (id, submission_id, created_at, updated_at, company_name, industry, contact_name, email, phone, website_url, facebook_url, instagram_url, message, site_purpose)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      `INSERT OR IGNORE INTO leads (id, submission_id, created_at, updated_at, company_name, industry, contact_name, email, phone, website_url, facebook_url, instagram_url, message, site_purpose, service_scope, logo_choice)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
-      .bind(lead.id, data.submission_id, t, t, data.company_name, data.industry, data.contact_name, data.email, data.phone, data.website_url, data.facebook_url, data.instagram_url, data.message, data.site_purpose)
+      .bind(lead.id, data.submission_id, t, t, data.company_name, data.industry, data.contact_name, data.email, data.phone, data.website_url, data.facebook_url, data.instagram_url, data.message, data.site_purpose, data.service_scope, data.logo_choice)
       .run();
     if (!res.meta || res.meta.changes === 0) {
       // To samo zgłoszenie zostało już zapisane (np. ponowne kliknięcie po zerwanym połączeniu).
