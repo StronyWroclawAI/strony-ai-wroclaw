@@ -168,3 +168,11 @@ Odpowiedzi z wcześniej wypełnionych briefów na usunięte pytania nadal są wi
 - Po wysłaniu brief jest zablokowany do edycji, dopóki go nie odblokujesz.
 - Usunięcie briefu w panelu kasuje odpowiedzi i unieważnia link.
 - Wysłanie briefu nie jest zamówieniem. Zakres, terminy i zgody ustalacie przed rozpoczęciem projektu (taka informacja jest w formularzu).
+
+## Logo ustalone wcześniej w zgłoszeniu
+Jeśli w zgłoszeniu (z formularza albo dodanym ręcznie) wiadomo już, co z logo, brief strony („Strona internetowa” i „Strona + logo i hasło”) nie pyta „Czy masz logo?”:
+- **logo wgrane w zgłoszeniu** (np. przy ręcznym dodaniu) — klient widzi tylko informację „Twoje logo już mam”, bez pola do wgrania;
+- **„Dostarczę własne logo”** bez pliku — pytanie znika, zostaje tylko pole „Wgraj swoje logo”;
+- **„Nie potrzebuję logo”** — pytanie znika, klient widzi informację, że strona będzie z nazwą firmy.
+
+Nie dotyczy zgłoszeń „Strona + logo” (logo do zaprojektowania) ani briefu „Logo i hasło”. Ustalenie sprawdzane jest przy każdym otwarciu i zapisie briefu (`knownLogo` w `functions/_lib/brief.js`), więc działa też dla briefu utworzonego wcześniej, dopóki klient go nie wyśle. W panelu, w sekcji „Briefy i polecenia dla AI”, widać krótką notkę, że brief nie zapyta o logo.

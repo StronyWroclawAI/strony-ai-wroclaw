@@ -7,6 +7,8 @@
    showIf: pole pokazuje się tylko, gdy warunek jest spełniony:
      f + eq / in / has / not — odpowiedź na inne pole,
      p / notp — profil branży (np. 'gastro'), ind / notind — konkretna branża.
+     known / noknown — logo ustalone wcześniej w panelu (answers.logo_known: plik / wlasne / bez),
+     or — lista warunków, wystarczy jeden spełniony.
    requiredIf: pole wymagane tylko, gdy warunek jest spełniony.
    ========================================================= */
 (function (root) {
@@ -1149,7 +1151,8 @@
           },
           { id: 'tagline_words', type: 'text', label: 'Słowa, które warto (lub nie warto) użyć w haśle', placeholder: 'np. tak: „rodzinnie”, „od 1998”; nie: „profesjonalnie”', showIf: { f: 'tagline', in: ['zmiana', 'propozycja'] }, max: 300 },
           {
-            id: 'logo', type: 'radio', label: 'Czy masz logo?', required: true,
+            // ukryte, gdy w panelu jest już ustalone, co z logo (plik od klienta, „własne logo” albo „bez logo”) — patrz logo_known
+            id: 'logo', type: 'radio', label: 'Czy masz logo?', required: true, showIf: { noknown: true },
             options: [
               { v: 'tak_wektor', l: 'Tak, w dobrej jakości (np. SVG, PDF, AI)' },
               { v: 'tak_obraz', l: 'Tak, ale tylko jako obrazek (PNG/JPG)' },
@@ -1158,7 +1161,9 @@
               { v: 'nie', l: 'Nie mam i na razie nie potrzebuję — wystarczy nazwa firmy' },
             ],
           },
-          { id: 'logo_files', type: 'upload', upload: 'logo', label: 'Wgraj swoje logo', showIf: { f: 'logo', in: ['tak_wektor', 'tak_obraz', 'odswiezenie'] }, hint: 'Najlepiej w najwyższej jakości, jaką masz: SVG lub PDF (wektor), ewentualnie PNG z przezroczystym tłem. Możesz dodać kilka wersji (np. poziomą, pionową, na ciemne tło). Jeśli nie masz pliku pod ręką — prześlij go później e-mailem.' },
+          { id: 'logo_known_plik', type: 'info', showIf: { known: ['plik'] }, text: 'Twoje logo już mam — nie musisz go tu wgrywać. Jeśli chcesz dodać inną wersję (np. na ciemne tło), prześlij ją e-mailem.' },
+          { id: 'logo_known_bez', type: 'info', showIf: { known: ['bez'] }, text: 'Ustaliliśmy, że strona będzie bez logo — w jego miejscu pojawi się nazwa firmy. Jeśli coś się zmieniło, napisz do mnie.' },
+          { id: 'logo_files', type: 'upload', upload: 'logo', label: 'Wgraj swoje logo', showIf: { or: [{ f: 'logo', in: ['tak_wektor', 'tak_obraz', 'odswiezenie'] }, { known: ['wlasne'] }] }, hint: 'Najlepiej w najwyższej jakości, jaką masz: SVG lub PDF (wektor), ewentualnie PNG z przezroczystym tłem. Możesz dodać kilka wersji (np. poziomą, pionową, na ciemne tło). Jeśli nie masz pliku pod ręką — prześlij go później e-mailem.' },
           { id: 'logo_split_info', type: 'info', kinds: ['strona'], showIf: { f: 'logo', in: ['odswiezenie', 'zrobic'] }, text: 'Szczegóły nowego logo (napis, charakter, symbole, inspiracje) zbieram w osobnym, krótkim briefie „Logo i hasło”. Jeśli jeszcze go nie masz — napisz do mnie, wyślę link.' },
           { id: 'logo_keep', type: 'textarea', label: 'Co zachować z obecnego logo, a co zmienić?', hint: 'np. „zostawić kolor i liść, zmienić krój pisma na nowocześniejszy”.', showIf: { f: 'logo', eq: 'odswiezenie' }, max: 1500 },
           { id: 'logo_text', type: 'text', label: 'Jaki napis ma być w logo?', placeholder: 'np. pełna nazwa „Salon Ola”, skrót „SO”, nazwa + „Wrocław”', showIf: { f: 'logo', in: ['odswiezenie', 'zrobic'] }, max: 150 },
@@ -1419,7 +1424,7 @@
     fields: {
       show_address: SITE, style: SITE, theme: SITE, inspirations: SITE,
       // w briefie „Logo i hasło” nie pytamy, czy klient chce logo i hasło — to wynika z rodzaju briefu
-      tagline: SITE, logo: SITE, logo_files: SITE,
+      tagline: SITE, logo: SITE, logo_files: SITE, logo_known_plik: SITE, logo_known_bez: SITE,
       tagline_style: ['pelny', 'logo'], tagline_words: ['pelny', 'logo'], logo_keep: ['pelny', 'logo'], logo_text: ['pelny', 'logo'], logo_type: ['pelny', 'logo'],
       logo_feel: ['pelny', 'logo'], logo_symbols: ['pelny', 'logo'], logo_avoid: ['pelny', 'logo'], logo_uses: ['pelny', 'logo'], logo_inspirations: ['pelny', 'logo'],
     },
@@ -1587,6 +1592,11 @@
   /** Czy warunek showIf / requiredIf jest spełniony? */
   function cond(c, answers) {
     if (!c) return true;
+    // „lub”: wystarczy, że spełniony jest jeden z warunków
+    if (c.or) return c.or.some(function (x) { return cond(x, answers); });
+    // logo ustalone wcześniej w panelu (answers.logo_known: plik / wlasne / bez) — wtedy nie pytamy o nie ponownie
+    if (c.known && c.known.indexOf(answers.logo_known) === -1) return false;
+    if (c.noknown && answers.logo_known) return false;
     var prof = profileOf(answers);
     if (c.p && c.p.indexOf(prof) === -1) return false;
     if (c.notp && c.notp.indexOf(prof) !== -1) return false;

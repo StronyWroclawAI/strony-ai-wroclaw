@@ -7,7 +7,7 @@ import { ensureSchema, hasDb, uuid, nowIso, all, first, run, mediaUrl } from '..
 import { sendEmail, notifyAboutLead, emailConfigured, sendClientEmail } from '../../_lib/email.js';
 import { gmailConfigured, gmailAddress } from '../../_lib/smtp.js';
 import { normalizeUrl } from '../../_lib/validate.js';
-import { newToken, cleanAnswers, BRIEF_KINDS } from '../../_lib/brief.js';
+import { newToken, cleanAnswers, BRIEF_KINDS, knownLogo, applyKnownLogo } from '../../_lib/brief.js';
 import { saveUpload, serveFile, deleteFileRow, publicFile, saveDoc, publicDoc, deleteDocRow } from '../../_lib/files.js';
 import { readStats } from '../../_lib/stats.js';
 import { profileUrl, embedInfo, socialKind } from '../../_lib/social.js';
@@ -531,6 +531,8 @@ export async function onRequest(context) {
           pre.logo = 'zrobic';
           pre.tagline = 'propozycja';
         }
+        // logo ustalone już w zgłoszeniu (plik od klienta / „własne logo” / „bez logo”) — brief nie pyta o nie ponownie
+        applyKnownLogo(pre, await knownLogo(env, lead.id), kind);
         const t = nowIso();
         const item = { id: uuid(), token: newToken(), status: 'nowy', kind };
         await run(

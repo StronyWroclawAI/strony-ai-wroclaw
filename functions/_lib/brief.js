@@ -75,3 +75,35 @@ export async function notifyBriefSubmitted(env, brief, answers, origin) {
   }
   if (!r.ok) console.error('Powiadomienie o briefie nie zostało wysłane:', r.error);
 }
+
+/* Logo ustalone wcześniej w panelu (zgłoszenie): klient przysłał plik logo, zaznaczył „własne logo”
+   albo „logo niepotrzebne”. Wtedy brief strony nie pyta ponownie „Czy masz logo?”.
+   Zwraca { known, logo } albo null (brak informacji — brief pyta jak zwykle). */
+export async function knownLogo(env, leadId) {
+  if (!leadId) return null;
+  const lead = await env.DB.prepare(`SELECT service_scope, logo_choice FROM leads WHERE id = ?`).bind(leadId).first();
+  if (!lead) return null;
+  // „Strona + logo” = logo do zaprojektowania — wtedy pytania o logo zostają
+  if (lead.service_scope === 'strona_logo') return null;
+  const files = (await env.DB.prepare(`SELECT content_type FROM lead_files WHERE lead_id = ? AND kind = 'logo'`).bind(leadId).all()).results || [];
+  if (files.length) return { known: 'plik', logo: files.some((f) => /svg|pdf/.test(f.content_type)) ? 'tak_wektor' : 'tak_obraz', files: files.length };
+  if (lead.logo_choice === 'bez') return { known: 'bez', logo: 'nie' };
+  if (lead.logo_choice === 'wlasne') return { known: 'wlasne', logo: 'tak_obraz' };
+  return null;
+}
+
+/** Nakłada ustalenia z panelu na odpowiedzi briefu (nie dotyczy briefu „Logo i hasło”). */
+export function applyKnownLogo(answers, k, kind) {
+  if (kind === 'logo' || !answers || typeof answers !== 'object') return answers;
+  if (k) {
+    answers.logo_known = k.known;
+    answers.logo = k.logo;
+    // ten sam opis, który ustawia formularz briefu po wgraniu plików (trafia do polecenia dla AI)
+    if (k.files) answers.logo_files = `Wgrane pliki logo: ${k.files}`;
+  } else if (answers.logo_known) {
+    // ustalenie w panelu zostało cofnięte — brief znów pyta o logo
+    delete answers.logo_known;
+    delete answers.logo;
+  }
+  return answers;
+}

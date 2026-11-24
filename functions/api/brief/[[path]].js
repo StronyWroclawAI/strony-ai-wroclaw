@@ -3,7 +3,7 @@
 
 import { json, siteOrigin } from '../../_lib/http.js';
 import { ensureSchema, hasDb, nowIso } from '../../_lib/db.js';
-import { TOKEN_RE, cleanAnswers, requiredCoreErrors, notifyBriefSubmitted } from '../../_lib/brief.js';
+import { TOKEN_RE, cleanAnswers, requiredCoreErrors, notifyBriefSubmitted, knownLogo, applyKnownLogo } from '../../_lib/brief.js';
 import { saveUpload, serveFile, deleteFileRow, publicFile } from '../../_lib/files.js';
 
 const FILE_ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
@@ -87,6 +87,8 @@ export async function onRequest(context) {
       } catch {
         answers = {};
       }
+      // logo ustalone w panelu (plik od klienta / „własne logo” / „bez logo”) — brief nie pyta o nie ponownie
+      if (brief.status !== 'wyslany') applyKnownLogo(answers, await knownLogo(env, brief.lead_id), brief.kind);
       return json({ ok: true, kind: brief.kind || 'pelny', company_name: brief.company_name, status: brief.status, submitted_at: brief.submitted_at, answers }, 200, extraHeaders);
     }
 
@@ -100,6 +102,7 @@ export async function onRequest(context) {
       if (error) return error;
       const c = cleanAnswers(body.answers);
       if (!c.ok) return json({ ok: false, message: c.message }, 400, extraHeaders);
+      applyKnownLogo(c.answers, await knownLogo(env, brief.lead_id), brief.kind);
       const t = nowIso();
       await env.DB.prepare(`UPDATE briefs SET answers = ?, status = 'w_trakcie', updated_at = ? WHERE id = ?`).bind(JSON.stringify(c.answers), t, brief.id).run();
       return json({ ok: true, saved_at: t }, 200, extraHeaders);
@@ -111,6 +114,7 @@ export async function onRequest(context) {
       if (error) return error;
       const c = cleanAnswers(body.answers);
       if (!c.ok) return json({ ok: false, message: c.message }, 400, extraHeaders);
+      applyKnownLogo(c.answers, await knownLogo(env, brief.lead_id), brief.kind);
       const missing = requiredCoreErrors(c.answers);
       if (missing.length) return json({ ok: false, message: `Uzupełnij wymagane pola: ${missing.join(', ')}.` }, 422, extraHeaders);
       const t = nowIso();

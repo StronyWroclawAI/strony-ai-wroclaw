@@ -4,7 +4,7 @@
    Sesja jest w ciasteczku HttpOnly — ten skrypt nie zna hasła ani kluczy.
    ========================================================= */
 (function () {
-  const PANEL_VERSION = '2026-11-20 · zakres zgłoszenia + wybór logo';
+  const PANEL_VERSION = '2026-11-24 · brief bez pytań o znane logo';
   'use strict';
 
   // ---------- Pomocnicze ----------
@@ -873,7 +873,7 @@
         `${lead.source === 'reczne' ? 'Dodane ręcznie' : 'Zgłoszenie'} z ${fmtDate(lead.created_at)}`,
         h('button', { class: 'btn btn--primary', type: 'button', text: 'Napisz e-mail', onclick: () => mailer.compose('wlasna', `Strona internetowa dla ${lead.company_name}`, `Dzień dobry,\n\n\n\n${SIGN}`) })
       ),
-      leadBriefHub(lead, leadBriefs, leadLogo, mailer, leadDocs),
+      leadBriefHub(lead, leadBriefs, leadLogo, mailer, leadDocs, leadFiles),
       leadFilesSection(lead, leadFiles, leadBriefs),
       leadProjectSection(lead, leadDocs),
       h(
@@ -1945,7 +1945,7 @@
   }
 
   /** Centrum briefów na górze zgłoszenia: briefy w dwóch kolumnach, łączenie i polecenia dla AI. */
-  function leadBriefHub(lead, briefs, logo, mailer, docs = []) {
+  function leadBriefHub(lead, briefs, logo, mailer, docs = [], files = []) {
     const hub = h('section', { class: 'panel brief-hub no-print', id: 'briefy-zgloszenia', 'aria-labelledby': 'brief-hub-title' });
     const own = briefs.filter((x) => !x.merged_at);
     const last = (k) => own.filter((x) => x.kind === k).pop();
@@ -2008,8 +2008,18 @@
           lead.service_scope === 'strona_logo'
             ? 'Klient zaznaczył w formularzu stronę z logo — pasuje kompleksowy brief (logo + hasło + strona) albo dwa osobne.'
             : 'Klient zaznaczył w formularzu tylko stronę — wystarczy brief „2. Strona internetowa”.' +
-              (lead.logo_choice === 'wlasne' ? ' Logo dostarczy klient — poproś o plik (najlepiej SVG lub PNG).' : lead.logo_choice === 'bez' ? ' Klient nie potrzebuje logo.' : ''))
+              (lead.logo_choice === 'wlasne' && !files.some((f) => f.kind === 'logo') ? ' Logo dostarczy klient — poproś o plik (najlepiej SVG lub PNG).' : lead.logo_choice === 'bez' ? ' Klient nie potrzebuje logo.' : ''))
       );
+    }
+    // logo ustalone w zgłoszeniu — brief strony nie zapyta „Czy masz logo?” (tak samo liczy serwer: knownLogo w _lib/brief.js)
+    if (lead.service_scope !== 'strona_logo') {
+      const known = files.some((f) => f.kind === 'logo') ? 'plik' : lead.logo_choice === 'bez' ? 'bez' : lead.logo_choice === 'wlasne' ? 'wlasne' : '';
+      if (known) {
+        parts.push(h('p', { class: 'small muted hub-logo-known', 'data-hub-logo-known': known },
+          known === 'plik' ? 'Logo klienta jest już w zgłoszeniu — brief strony nie będzie o nie pytał (klient zobaczy informację, że logo już masz).'
+          : known === 'bez' ? 'Ustalono „bez logo” — brief strony nie będzie pytał o logo.'
+          : 'Ustalono, że klient ma własne logo — brief strony nie zapyta „Czy masz logo?”, poprosi tylko o wgranie pliku.'));
+      }
     }
     // 1) kompleksowy brief albo dwie kolumny
     if (full) {
